@@ -29,7 +29,7 @@ rect, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_TRIANGLE)
 ## DISPLAY IMAGE WITH MATLLIB ##
 # Create the dimensions of the figure and set title:
 fig = plt.figure(figsize=(12, 5))
-plt.suptitle("Contours introduction", fontsize=14, fontweight='bold')
+plt.suptitle("Birth detection", fontsize=14, fontweight='bold')
 fig.patch.set_facecolor('silver')
 
 ax = plt.subplot(1, 2, 1)
