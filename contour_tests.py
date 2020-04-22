@@ -13,10 +13,10 @@ INPUT_IMAGE_PATH_FILENAME = INPUT_IMAGE_PATH + INPUT_IMAGE_FILENAME
 
 #output images
 OUTPUT_IMAGE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
-OUTPUT_IMAGE_FILENAME_1 = 'transformed1.jpg'
+OUTPUT_IMAGE_FILENAME_1 = 'transformed1__approximated.jpg'
 OUTPUT_IMAGE_PATH_FILENAME_1 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_1
 
-OUTPUT_IMAGE_FILENAME_2 = 'transformed2.jpg'
+OUTPUT_IMAGE_FILENAME_2 = 'transformed2__approximated.jpg'
 OUTPUT_IMAGE_PATH_FILENAME_2 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_2
 
 OUTPUT_IMAGE_FILENAME_ORIGINAL = 'tr_original.jpg'
@@ -41,6 +41,11 @@ rect, thresholded = cv2.threshold(filtered , 0, 255, cv2.THRESH_BINARY + cv2.THR
 #thresholded  = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3) 
 #rect, thresholded = cv2.threshold(filtered , 60, 255, cv2.THRESH_BINARY) 
 
+def array_to_tuple(arr):
+    """Converts array to tuple"""
+
+    return tuple(arr.reshape(1, -1)[0])
+
 
 def draw_contour_outline(img, cnts, color, thickness=1):
     """Draws contours outlines of each contour"""
@@ -48,8 +53,28 @@ def draw_contour_outline(img, cnts, color, thickness=1):
     for cnt in cnts:
         cv2.drawContours(img, [cnt], 0, color, thickness)
 
+def draw_contour_points(img, cnts, color):
+    """Draw all points from a list of contours"""
+
+   
+    for cnt in cnts:
+        # print(cnt.shape)
+        # print(cnt)
+        squeeze = np.squeeze(cnt)
+        # print(squeeze.shape)
+        # print(squeeze)
+
+        for p in squeeze:
+            p = array_to_tuple(p)
+                   
+            if len(p) > 1:     
+                cv2.circle(img, p , 1, color, -1)
+            
+    return img
+
+
 contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-contours2, hierarchy2 = cv2.findContours(thresholded, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+contours2, hierarchy2 = cv2.findContours(thresholded, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
 
 
@@ -63,8 +88,13 @@ image_contours = original_image.copy()
 image_contours_2 = original_image.copy()
 
 # Draw the outline of all detected contours:
-draw_contour_outline(image_contours, contours, (0, 0, 255), 5)
-draw_contour_outline(image_contours_2, contours2, (255, 0, 0), 5)
+
+
+draw_contour_points(image_contours, contours, (0, 0, 255))
+draw_contour_points(image_contours_2, contours2, (255,0 , 0))
+
+#draw_contour_outline(image_contours, contours, (0, 0, 255), 5)
+#draw_contour_outline(image_contours_2, contours2, (255, 0, 0), 5)
 
 
 ## DISPLAY IMAGE WITH MATLLIB ##
@@ -80,7 +110,7 @@ plt.axis('off')
 
 
 ax = plt.subplot(3, 2, 2)
-#plt.imshow(grayscaled, cmap='gray')
+plt.imshow(grayscaled, cmap='gray')
 plt.title('Grayscaled')
 
 ax = plt.subplot(3, 2, 3)
@@ -93,8 +123,9 @@ plt.imshow(thresholded, cmap='gray')
 plt.title('Thresholded')
 plt.axis('off')
 
-
-
+m = cv2.moments(contours[0])
+print(m)
+print()
 plt.show()
 
 fig = plt.figure(figsize=(20, 8))
