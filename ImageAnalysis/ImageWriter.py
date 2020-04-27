@@ -35,12 +35,16 @@ class ImageWriter:
     
     Attributes
         ----------        
-    filePathAndName: Filepath
-        File Path, File Name and corresponding Mime Type of the File to identify it in Filesystem. 
-   
+    filePathAndNames: List of Filepaths
+        A Filepath Object consists of File Path, File Name and the corresponding Mime Type 
+        of the File to identify it in Filesystem. 
+    
+    image: Image
+        Image to write. 
+      
     Methods
     -------
-    writeImage(self, filePathAndName )
+    writeImages(self, image, filePathAndNames )
          See descriptions below.
     """ 
     
@@ -51,11 +55,12 @@ class ImageWriter:
         pass
 
 
-    def writeImages(self, image, filePathAndName ):
+    def writeImages(self, image, filePathAndNames ):
         
+    
         """ 
        
-        Writes an Image to a File.
+        Writes a List of Images to corresponding Files.
         -------              
       
         This function is based on the library OpenCV and the corresponding function cv2.imwrite.
@@ -63,7 +68,9 @@ class ImageWriter:
       
         Parameters: 
         -------                 
-        filePathAndName (Filepath): File Path, File Name and corresponding Mime Type of the File to identify it in Filesystem. 
+        image (Image): Image to write
+        filePathAndNames (List of Filepaths): List of File Paths, File Names and corresponding Mime Types 
+        in order to identify the file. 
 
         
         Returns: 
@@ -71,11 +78,12 @@ class ImageWriter:
         Nothing will be returned. 
       
         """  
-
-        self.filePathAndName = filePathAndName 
+        
+        self.filePathAndName = filePathAndNames 
         self.image = image 
-        print(self.filePathAndName.filePathAndName())
-        cv2.imwrite(self.filePathAndName.filePathAndName(), self.image)
+        
+        for filePathAndName in filePathAndNames:
+            cv2.imwrite(filePathAndName.filePathAndName(), image)
 
 #==========================================================================
 # END

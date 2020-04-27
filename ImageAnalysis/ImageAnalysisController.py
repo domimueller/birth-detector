@@ -71,26 +71,7 @@ WRITER_FILE_NAME_1 = '1'
 WRITER_FILE_NAME_2 = '2'
 WRITER_FILE_NAME_3 = '3'
 
-# Build Dictionaries with this Information
-WRITER_FILE_1= {
-                    DICT_KEY_PATH : WRITER_FILE_PATH_1,
-                    DICT_KEY_NAME : WRITER_FILE_NAME_1  
-}
 
-WRITER_FILE_2= {
-                    DICT_KEY_PATH : WRITER_FILE_PATH_2,
-                    DICT_KEY_NAME : WRITER_FILE_NAME_2  
-}
-
-
-WRITER_FILE_3= {
-                    DICT_KEY_PATH : WRITER_FILE_PATH_3,
-                    DICT_KEY_NAME : WRITER_FILE_NAME_3  
-}
-
-
-# Build a List with this Dictionaries
-WRITER_FILES = [WRITER_FILE_1, WRITER_FILE_2, WRITER_FILE_3 ]
 
 
 #Mimetype Information for Image Writer 
@@ -185,11 +166,26 @@ class ImageAnalysisController:
                                            minor= WRITER_MINOR, 
                                            extension=WRITER_EXTENSION)   
         
-        writerFilepath = Filepath.Filepath(filePath = WRITER_FILE_PATH, 
-                                           fileName = WRITER_FILE_NAME,  
+        writerFilepath_1 = Filepath.Filepath(filePath = WRITER_FILE_PATH_1, 
+                                           fileName = WRITER_FILE_NAME_1,  
                                            mimeType=writerMimeType)
         
-        self.image = self.imageWriter.writeImages( image = self.obtainImage(), filePathAndName = writerFilepath ) 
+        
+        writerFilepath_2 = Filepath.Filepath(filePath = WRITER_FILE_PATH_2, 
+                                           fileName = WRITER_FILE_NAME_2,  
+                                           mimeType=writerMimeType) 
+        
+        
+        
+        writerFilepath_3= Filepath.Filepath(filePath = WRITER_FILE_PATH_3, 
+                                           fileName = WRITER_FILE_NAME_3,  
+                                           mimeType=writerMimeType)
+        
+        
+        # Build a List with this writerFilepaths
+        writerFilepaths = [writerFilepath_1, writerFilepath_2, writerFilepath_3 ]                                   
+        
+        self.image = self.imageWriter.writeImages( image = self.obtainImage(), filePathAndNames = writerFilepaths  ) 
         
         #jump to the next function
         self.controlImageProcessor()
@@ -208,7 +204,6 @@ class ImageAnalysisController:
         pass
     
     def obtainImage(self ):
-        print(self.image)
         return self.image
     
 
