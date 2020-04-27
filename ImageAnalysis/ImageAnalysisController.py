@@ -4,7 +4,7 @@
 
 
 #==========================================================================
-# ImageController.py – DESCRIPTIONS 
+# ImageAnalysisController.py – DESCRIPTIONS 
 #==========================================================================
 
 """
@@ -54,8 +54,8 @@ READER_EXTENSION = 'jpg'
 #How to add further file writing: 
     # 1. Add WRITER_FILE_PATH_* Constant
     # 2. Add WRITER_FILE_NAME_* Constant
-    # 3. Build WRITER_FILE_* Dictionary
-    # 4. Add Dictionary to List: WRITER_FILES
+    # 3. Build writerFilePath_* variable with dataType Filepath (below)
+    # 4. Add it to Tuple: writerFilepaths (below)
 
 # Prepare Key-Value-Pairs. 
 DICT_KEY_PATH = 'path'
@@ -88,10 +88,11 @@ def main():
     imageReader = ImageReader.ImageReader()
     traitRecognitor = TraitRecognitor.TraitRecognitor()
     scoreCalculator = ScoreCalculator.ScoreCalculator()       
-    imageWriter = ImageWriter.ImageWriter()       
     imageProcessor = ImageProcessor.ImageProcessor()       
     contourFinder = ContourFinder.ContourFinder()       
-    contourDrawer = ContourDrawer.ContourDrawer()       
+    contourDrawer = ContourDrawer.ContourDrawer()   
+    imageWriter = ImageWriter.ImageWriter()       
+    
     
     
     ImageAnalysisController(imageReader = imageReader, traitRecognitor = traitRecognitor, 
@@ -110,14 +111,32 @@ class ImageAnalysisController:
     
     Attributes
     ----------        
-    ATTRIBUTE : TYPE
-        DESCRIPTION.
+    imageReader : ImageReader
+         brings the data and functionality of the ImageReader.
+    traitRecognitor : TraitRecognitor
+         brings the data and functionality of the TraitRecognitor.
+    scoreCalculator : ScoreCalculator
+         brings the data and functionality of the ScoreCalculator.
+    imageProcessor : ImageProcessor
+         brings the data and functionality of the ImageProcessor.
+    contourFinder : ContourFinder
+         brings the data and functionality of the ContourFinder.
+    contourDrawer : ContourDrawer
+         brings the data and functionality of the ContourDrawer.         
+    imageWriter : ImageWriter
+         brings the data and functionality of the ImageWriter.         
 
-
-    Methods
+    Methods - see Descriptons below
     -------
-   FUNCTION(self, PARAMETER):
-        see Descripton below
+   controlImageReader(self )
+   controlImageProcessor(self )   
+   controlContourFinder(self )
+   controlContourDrawer(self ) 
+   controlTraitRecognitor(self ) 
+   controlScoreCalculator(self )
+   controlImageWriter(self )
+   obtainImage(self )
+        
         
     '''
     
@@ -133,9 +152,30 @@ class ImageAnalysisController:
         self.contourDrawer = contourDrawer
         self.image = None
         
+        #jump to the first function
         self.controlImageReader()
 
     def controlImageReader(self ):
+
+        """ 
+       
+        Controls the Execution of the ImageReader
+        -------              
+      
+        This function builds the data (based on Constants above) that will be needed for Image Reading. 
+        -------              
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        nothing will be returned.
+      
+        """  
+        
         
         readerMimeType = MimeType.MimeType(major = READER_MAJOR, 
                                            minor= READER_MINOR, 
@@ -148,19 +188,160 @@ class ImageAnalysisController:
         self.image = self.imageReader.readImage( filePathAndName = readerFilepath ) 
         
         #jump to the next function
-        self.controlTraitRecognitor()
+        self.controlImageProcessor()
+        
+    def controlImageProcessor(self ):
+       
+        """ 
+       
+        Controls the Execution of the ImageProcessor
+        -------              
+      
+        This function  controls the ImageProcessor. In this Project, Image Processing means f.e. brightening, 
+        filtering or binarizationing Images in order to facilitate contour detection.
+        -------              
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        nothing will be returned. 
+      
+        """  
+        
+        
+        #jump to the next function
+        self.controlContourFinder()
+
+    def controlContourFinder(self ):
+ 
+        """ 
+       
+        Controls the Execution of the ContourFinder.
+        -------              
+      
+        This function  controls the ContourFinder. In this Project, finding Contours is 
+        strongly  related to the OpenCV function: cv.findContours().
+
+        -------              
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        nothing will be returned.
+      
+        """  
+
+        
+        #jump to the next function
+        self.controlContourDrawer()
+
+    def controlContourDrawer(self ):
+        
+        """ 
+       
+        Controls the Execution of the ContourDrawer.
+        -------              
+      
+        This function  controls the ContourDrawer. Drawing Contours is 
+        strongly  related to the OpenCV function: cv.drawContours().
+        -------              
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        nothing will be returned.
+      
+        """  
+        
+    
+        #jump to the next function
+        self.controlTraitRecognitor()        
         
     def controlTraitRecognitor(self ):
+        
+        """ 
+       
+        Controls the Execution of the TraitRecognitor.
+        -------              
+      
+        This function  controls the TraitRecognitor. Traits are described in the report of the Bachelor Thesis.
+        -------              
+      
+        Parameters: 
+        -------                 
+        no parameters.
+        
+        Returns: 
+        -------              
+        nothing will be returned. 
+      
+        """  
+        
 
         #jump to the next function
         self.controlScoreCalculator()
 
     def controlScoreCalculator(self ):
+        
+        """ 
+       
+        Controls the Execution of the ScoreCalculator.
+        -------              
+      
+        This function controls the ScoreCalculator. The Calculation of the Score is 
+        based on the Interview Data of this Bachelor Thesis (Trait Ranking Data).
+        -------                
+      
+        Parameters: 
+        -------                 
+        no parameters.
+
+        
+        Returns: 
+        -------              
+        nothing will be returned. 
+      
+        """  
+        
 
         #jump to the next function
         self.controlImageWriter()
 
+
+    
     def controlImageWriter(self ):
+        
+        """ 
+       
+        Controls the Execution of the ImageWriter.
+        -------              
+      
+        This function builds the data (based on Constants above) that will be needed for Image Writing. 
+        -------               
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        nothing will be returned. 
+      
+        """  
+        
       
         writerMimeType = MimeType.MimeType(major = WRITER_MAJOR, 
                                            minor= WRITER_MINOR, 
@@ -182,31 +363,35 @@ class ImageAnalysisController:
                                            mimeType=writerMimeType)
         
         
-        # Build a List with this writerFilepaths
-        writerFilepaths = [writerFilepath_1, writerFilepath_2, writerFilepath_3 ]                                   
+        # Build a Tuple with this writerFilepaths
+        writerFilepaths = (writerFilepath_1, writerFilepath_2, writerFilepath_3 )                                   
         
         self.image = self.imageWriter.writeImages( image = self.obtainImage(), filePathAndNames = writerFilepaths  ) 
         
-        #jump to the next function
-        self.controlImageProcessor()
-
-    def controlImageProcessor(self ):
-        
-        #jump to the next function
-        self.controlContourFinder()
-
-    def controlContourFinder(self, ):
-        
-        #jump to the next function
-        self.controlContourDrawer()
-
-    def controlContourDrawer(self ):
-        pass
-    
     def obtainImage(self ):
+        
+        """ 
+       
+        Obtains the Image Attribute.
+        -------              
+      
+        This function facilitates to obtain the Image Attribute. It does not provide any further Business Logic.
+        -------                 
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        Image for further processing. 
+      
+        """  
+        
         return self.image
     
-
+    
 #==========================================================================
 # MAIN
 #==========================================================================

@@ -35,7 +35,7 @@ class ImageWriter:
     
     Attributes
         ----------        
-    filePathAndNames: List of Filepaths
+    filePathAndNames: Tuple of Filepaths
         A Filepath Object consists of File Path, File Name and the corresponding Mime Type 
         of the File to identify it in Filesystem. 
     
@@ -60,7 +60,7 @@ class ImageWriter:
     
         """ 
        
-        Writes a List of Images to corresponding Files.
+        Writes a Tuple of Images to corresponding Files.
         -------              
       
         This function is based on the library OpenCV and the corresponding function cv2.imwrite.
@@ -69,7 +69,7 @@ class ImageWriter:
         Parameters: 
         -------                 
         image (Image): Image to write
-        filePathAndNames (List of Filepaths): List of File Paths, File Names and corresponding Mime Types 
+        filePathAndNames (Tuple of Filepaths): Tuple of File Paths, File Names and corresponding Mime Types 
         in order to identify the file. 
 
         
