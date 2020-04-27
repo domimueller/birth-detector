@@ -142,7 +142,9 @@ def sort_contours_size(cnts):
     return cnts_sizes, cnts
 
 ## make image brighter
-M = np.ones(original_image.shape, dtype="uint8")*60    
+M = np.ones(original_image.shape, dtype="uint8")
+M = np.ones(original_image.shape, dtype="uint8")*60  
+  
 added_image_60 = cv2.add(original_image, M)
 
 
@@ -186,8 +188,8 @@ show_hist_with_matplotlib_rgb(hist_image_clahe_color_hsv_added_5, "color histogr
 
 
 grayscaled = cv2.cvtColor(image_clahe_color_hsv_added_5, cv2.COLOR_BGR2GRAY ) 
-filtered = cv2.GaussianBlur(grayscaled, (9  ,9), 0)
-#thresholded = cvthresholded = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 7, 3)
+filtered = cv2.GaussianBlur(grayscaled, (5  ,5), cv2.BORDER_REFLECT_101)
+#thresholded = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 7, 3)
 #thresholded  = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3) 
 #rect, thresholded = cv2.threshold(filtered , 60, 255, cv2.THRESH_BINARY) 
 rect, thresholded  = cv2.threshold(filtered , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_TRIANGLE)
@@ -219,7 +221,6 @@ bigContures = []
 
 """Sort contours based on the size"""
 for contour in contours:
-    print(contour)
     conturarea = int(cv2.contourArea(contour))
     if conturarea > 4000:
         bigContures.append(contour)
@@ -230,14 +231,12 @@ for bigContur in bigContures:
     #print(bigContur)
     a=bigContur
 
-print(len(bigContures))
-print(len(contours))
+
 
 """Sort contours based on the size"""
 bigContures2 = []
 
 for contour in contours2:
-    print(contour)
     conturarea = int(cv2.contourArea(contour))
     if conturarea > 1000:
         bigContures2.append(contour)
@@ -248,8 +247,6 @@ for bigContur in bigContures2:
     #print(bigContur)
     a=bigContur
 
-print(len(bigContures))
-print(len(contours))
 
 number_detected_contours3 = format(len(bigContures))
 number_detected_contours4 = format(len(bigContures2))
