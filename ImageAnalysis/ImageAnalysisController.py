@@ -34,19 +34,77 @@ import MimeType
 # CONSTANTS
 #==========================================================================
 
+#### INFORMATION AND CONFIGURATION FOR IMAGE READER ####
+#Filepath and Filename for the Image Reader
 
+READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
+READER_FILE_NAME = '1'
+
+#Mimetype Information for Image Reader 
+READER_MAJOR = 'image'
+READER_MINOR = 'jpeg'
+READER_EXTENSION = 'jpg' 
+
+
+#### INFORMATION AND CONFIGURATION FOR IMAGE WRITER ####
+
+# The Image Writer is capable of writing multiple Files of the same Mime Type
+# Limitation to one Mime Type per Executionn due to faster configuration
+
+#How to add further file writing: 
+    # 1. Add WRITER_FILE_PATH_* Constant
+    # 2. Add WRITER_FILE_NAME_* Constant
+    # 3. Build WRITER_FILE_* Dictionary
+    # 4. Add Dictionary to List: WRITER_FILES
+
+# Prepare Key-Value-Pairs. 
+DICT_KEY_PATH = 'path'
+DICT_KEY_NAME = 'name'
+
+# Prepare FilePaths to write . 
+WRITER_FILE_PATH_1 = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
+WRITER_FILE_PATH_2 = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
+WRITER_FILE_PATH_3 = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
+
+# Prepare FileNames to write . 
+WRITER_FILE_NAME_1 = '1'
+WRITER_FILE_NAME_2 = '2'
+WRITER_FILE_NAME_3 = '3'
+
+# Build Dictionaries with this Information
+WRITER_FILE_1= {
+                    DICT_KEY_PATH : WRITER_FILE_PATH_1,
+                    DICT_KEY_NAME : WRITER_FILE_NAME_1  
+}
+
+WRITER_FILE_2= {
+                    DICT_KEY_PATH : WRITER_FILE_PATH_2,
+                    DICT_KEY_NAME : WRITER_FILE_NAME_2  
+}
+
+
+WRITER_FILE_3= {
+                    DICT_KEY_PATH : WRITER_FILE_PATH_3,
+                    DICT_KEY_NAME : WRITER_FILE_NAME_3  
+}
+
+
+# Build a List with this Dictionaries
+WRITER_FILES = [WRITER_FILE_1, WRITER_FILE_2, WRITER_FILE_3 ]
+
+
+#Mimetype Information for Image Writer 
+WRITER_MAJOR = 'image'
+WRITER_MINOR = 'jpeg'
+WRITER_EXTENSION = 'jpg'
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
 
 def main():
 #
-    readerMimeType = MimeType.MimeType(major = 'image', minor='jpeg', extension='jpg')
-    
-    readerFilepath = Filepath.Filepath(filePath = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/', fileName = '1',  mimeType=readerMimeType)
-    
-    imageReader = ImageReader.ImageReader(readerFilepath)
-    
+
+    imageReader = ImageReader.ImageReader()
     traitRecognitor = TraitRecognitor.TraitRecognitor()
     scoreCalculator = ScoreCalculator.ScoreCalculator()       
     imageWriter = ImageWriter.ImageWriter()       
@@ -92,27 +150,67 @@ class ImageAnalysisController:
         self.imageProcessor = imageProcessor
         self.contourFinder = contourFinder
         self.contourDrawer = contourDrawer
+        self.image = None
+        
+        self.controlImageReader()
 
-    def controlImageReader(self, ):
-        pass
+    def controlImageReader(self ):
+        
+        readerMimeType = MimeType.MimeType(major = READER_MAJOR, 
+                                           minor= READER_MINOR, 
+                                           extension=READER_EXTENSION)   
+        
+        readerFilepath = Filepath.Filepath(filePath = READER_FILE_PATH, 
+                                           fileName = READER_FILE_NAME,  
+                                           mimeType=readerMimeType)
+        
+        self.image = self.imageReader.readImage( filePathAndName = readerFilepath ) 
+        
+        #jump to the next function
+        self.controlTraitRecognitor()
+        
+    def controlTraitRecognitor(self ):
 
-    def controlTraitRecognitor(self, ):
-        pass
+        #jump to the next function
+        self.controlScoreCalculator()
 
-    def controlScoreCalculator(self, ):
-        pass
+    def controlScoreCalculator(self ):
 
-    def controlImageWriter(self, ):
-        pass
+        #jump to the next function
+        self.controlImageWriter()
 
-    def controlImageProcessor(self, ):
-        pass
+    def controlImageWriter(self ):
+      
+        writerMimeType = MimeType.MimeType(major = WRITER_MAJOR, 
+                                           minor= WRITER_MINOR, 
+                                           extension=WRITER_EXTENSION)   
+        
+        writerFilepath = Filepath.Filepath(filePath = WRITER_FILE_PATH, 
+                                           fileName = WRITER_FILE_NAME,  
+                                           mimeType=writerMimeType)
+        
+        self.image = self.imageWriter.writeImages( image = self.obtainImage(), filePathAndName = writerFilepath ) 
+        
+        #jump to the next function
+        self.controlImageProcessor()
+
+    def controlImageProcessor(self ):
+        
+        #jump to the next function
+        self.controlContourFinder()
 
     def controlContourFinder(self, ):
-        pass
+        
+        #jump to the next function
+        self.controlContourDrawer()
 
-    def controlContourDrawer(self, ):
+    def controlContourDrawer(self ):
         pass
+    
+    def obtainImage(self ):
+        print(self.image)
+        return self.image
+    
 
 #==========================================================================
 # MAIN
