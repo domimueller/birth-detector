@@ -16,6 +16,10 @@
 # IMPORT DECLARATIONS
 #==========================================================================
 
+## Import Classes for Functionality
+import numpy as np
+
+
 import ImageReader 
 import TraitRecognitor
 import ScoreCalculator
@@ -27,8 +31,27 @@ import ContourDrawer
 import sys
 sys.path.append('../VO-Library')
 
+## Import Value Objects
+
+import AdaptiveThresholdingConfiguration
+import AdaptiveThresholdingType
+import ApproximationType
+import BGR
+import BrightenConfiguration
+import ColorSpaceConversion
+import ColorSpaceConversionType
+import ContourFinderConfiguration
+import EqualizingType
 import Filepath
+import FilterConfiguration
+import FilteringType
+import FinderType
+import KernelSize
 import MimeType
+import SimpleThresholdingConfiguration
+import SimpleThresholdingType
+import ThresholdingConfiguration
+import ThresholdingMethod
 
 #==========================================================================
 # CONSTANTS
@@ -78,6 +101,39 @@ WRITER_FILE_NAME_3 = '3'
 WRITER_MAJOR = 'image'
 WRITER_MINOR = 'jpeg'
 WRITER_EXTENSION = 'jpg'
+
+#### INFORMATION AND CONFIGURATION FOR IMAGE Processor ####
+
+# BrightenConfiguration #
+BRIGHTENING_IMAGE = True
+BRIGHTENER_FACTOR = 60
+EQUALIZING_IMAGE = True
+CLIP_LIMIT = 4.0
+
+## Equalizing Type
+'''
+    Possible Values for  ENUM_SELECT_EQUALIZING:
+    - 1 corresponds to CLAHE
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+ENUM_SELECT_EQUALIZING = 1 #CLAHE
+
+
+# FilterConfiguration #
+FILTERING_IMAGE = True
+KERNEL_WIDTH = 9
+KERNEL_LENGTH = 9
+## Filtering Type
+'''
+    Possible Values for  ENUM_SELECT_FILTERING:
+    - 1 corresponds to GAUSSIANBLUR
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR
+            
+
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -211,8 +267,31 @@ class ImageAnalysisController:
         nothing will be returned. 
       
         """  
+
+
         
+        # apply brightening configuration
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = BRIGHTENING_IMAGE, 
+                                                    brightenerFactor = BRIGHTENER_FACTOR, 
+                                                    equalizingImage = EQUALIZING_IMAGE, 
+                                                    clipLimit = CLIP_LIMIT , 
+                                                    equalizingType = EqualizingType.EqualizingType, 
+                                                    ENUM_SELECT = ENUM_SELECT_EQUALIZING)
+
+
+        self.image = self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
         
+        # apply filtering configuration
+        kernelSize = KernelSize.KernelSize(width = KERNEL_WIDTH, 
+                                           length = KERNEL_LENGTH)  
+         
+        filterConfig = FilterConfiguration.FilterConfiguration(filteringImage = FILTERING_IMAGE, 
+                                                              kernelSize = kernelSize,
+                                                              filteringType = FilteringType.FilteringType,           
+                                                              ENUM_SELECT = ENUM_SELECT_FILTERING)
+        
+        self.imageProcessor.filterImage(image = self.image, config = filterConfig )
+       
         #jump to the next function
         self.controlContourFinder()
 

@@ -1,17 +1,97 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
+#==========================================================================
+# FilterConfiguration.py – DESCRIPTIONS
+#==========================================================================
+
+'''
+@author: Dominique Müller <Dominique Müller <dominiquepeter.mueller@students.bfh.ch>
+
+'''
+
+
+#==========================================================================
+# IMPORT DECLARATIONS
+#==========================================================================
+   
+
+#==========================================================================
+# CONSTANTS
+#==========================================================================
+
+
+
+#==========================================================================
+# FUNCTIONS
+#==========================================================================
+ 
 class KernelSize:
-    def __init__(self):
-        self.kernelWidth = 9
-        self.kernelLength = 9
+    
+    """
+    A class used to represent the Filepath (path, name and mime-type) of a File
 
-    def kernelWidth(self, ):
-        pass
 
-    def kernelLength(self, ):
-        pass
+    -------
+        Attributes
+    ----------
+    kernelWidth : int
+       Kenel width 
+    kernelLength : int
+        Kernel length 
+ 
+        
+        
 
-    def kernelSize(self, ):
-        pass
+    
+    Methods - see Descripton below
+    -------
+   obtainKernelWidth(self)
+   obtainKernelLength
+   obtainKernelSize(self)
+
+        
+   """    
+    def __init__(self, width, length):
+        self.kernelWidth = width
+        self.kernelLength = length
+
+    def obtainKernelWidth(self ):
+       
+        """    
+        Returns the Kernel Width
+        ----------        
+              
+        Returns: 
+        ----------                
+        Returns the Kernel Width as int
+      
+        """          
+        return self.kernelWidth
+
+    def obtainKernelLength(self ):
+
+        """    
+        Returns the Kernel Length
+        ----------        
+              
+        Returns: 
+        ----------                
+        Returns the Kernel Length as int
+      
+        """        
+        return self.kernelLength
+
+    def obtainKernelSize(self ):
+        
+        """    
+        Returns the Kernel Length and Width
+        ----------        
+              
+        Returns: 
+        ----------                
+        Returns the Kernel Length and Width as String
+      
+        """      
+        return 'Länge: ' + str(self.kernelLength) + ' Pixel; Breite: ' + str(self.kernelWidth) + ' Pixel'
 

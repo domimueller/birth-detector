@@ -74,7 +74,7 @@ class ImageReader:
 
         
         self.filePathAndName = filePathAndName       
-        return cv2.imread(self.filePathAndName.filePathAndName())
+        return cv2.imread(self.filePathAndName.obtainFileNameAndPath())
 
 #==========================================================================
 # END

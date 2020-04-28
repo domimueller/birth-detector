@@ -17,16 +17,19 @@
 #==========================================================================
 
 
+import cv2 
+import numpy as np
 
 import sys
 sys.path.append('../VO-Library')
 
-import Filepath
-import MimeType
+
 
 #==========================================================================
 # CONSTANTS
 #==========================================================================
+
+
 
 #==========================================================================
 # FUNCTIONS
@@ -98,12 +101,35 @@ class ImageProcessor:
         
         Returns: 
         -------              
-        Nothing will be returned 
+        New Image will be returned 
       
         """  
         
-        pass
-
+        self.image = image
+        self.brightenConfig = config
+        
+        print(self.brightenConfig.obtainBrightenConfiguration())
+        
+        ## check if Brightening is desired and then perform the brightening based on the Brightener Factor
+        if self.brightenConfig.obtainBrighteningImage()== True: 
+            M = np.ones(self.image.shape, dtype="uint8")*self.brightenConfig.obtainBrightenerFactor()  
+            self.image = cv2.add(self.image, M)
+       
+        
+        ## check if Equalizing is desired and then perform the equalizing based on the CLAHE Method
+        if self.brightenConfig.obtainEqualizingImage()== True: 
+            
+           ## check if selected Equalizing Type = CLAHE. Enumeration Selection 
+           # done by enumeration Config variable ENUM_SELECT_EQUALIZING in ImageAnalysisController.py
+           if self.brightenConfig.obtainEqualizingType() == 'CLAHE':
+                cla = cv2.createCLAHE(clipLimit= self.brightenConfig.obtainClipLimit())
+                H, S, V = cv2.split(cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV))
+                eq_V = cla.apply(V)
+                self.image = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)            
+        
+        return self.image
+   
+    ## to be implemented
     def convertColorSpace(self, image, config):
 
         """ 
@@ -126,11 +152,11 @@ class ImageProcessor:
         
         Returns: 
         -------              
-        Nothing will be returned 
+        New Image will be returned  
       
         """          
         
-        pass
+        return self.image
 
     def filterImage(self, image, config):
        
@@ -157,9 +183,13 @@ class ImageProcessor:
         -------              
         Nothing will be returned 
         
-        """          
+        """    
+        self.image = image
+        self.filterConfig = config
         
-        pass
+        print(self.filterConfig.obtainFilterConfiguration())
+
+        return self.image
 
     def segmentImage(self, image, config):
 
@@ -187,11 +217,11 @@ class ImageProcessor:
         
         Returns: 
         -------              
-        Nothing will be returned 
+        New Image will be returned  
         
         """   
         
-        pass
+        return self.image
     
 
 

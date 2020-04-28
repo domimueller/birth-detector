@@ -51,13 +51,10 @@ class Filepath:
     
     Methods - see Descripton below
     -------
-   filePath(self):
-
-   fileName(self):
-
-   mimeType(self):
-        
-   fileNameAndPath(self):
+   obtainFilePath(self):
+   obtainFileName(self):
+   obtainMimeType(self):   
+   obtainFileNameAndPath(self):
         
                         
     """
@@ -67,7 +64,7 @@ class Filepath:
         self.fileName = fileName
         self.mimeType = mimeType
         
-    def filePath(self ):
+    def obtainFilePath(self ):
        
         """ 
        
@@ -81,7 +78,7 @@ class Filepath:
         """         	
         return self.filePath
 
-    def fileName(self ):
+    def obtainFileName(self ):
  
         """ 
        
@@ -97,7 +94,7 @@ class Filepath:
         return self.fileName
 
 
-    def mimeTypess(self ):
+    def obtainMimeType(self ):
         
         """ 
        
@@ -112,7 +109,7 @@ class Filepath:
         return self.mimeType()
     
 
-    def filePathAndName(self ):
+    def obtainFileNameAndPath(self ):
       
         """ 
        
@@ -126,4 +123,7 @@ class Filepath:
         """       
         return  self.filePath  + self.fileName + self.mimeType.extensionWithPoint()
 
+#==========================================================================
+# END
+#==========================================================================
 

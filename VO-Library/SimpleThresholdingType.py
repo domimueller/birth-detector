@@ -9,4 +9,4 @@ class SimpleThresholdingType(Enum):
     THRESH_TRUNC = 3
     THRESH_TOZERO = 4
     THRESH_TOZERO_INV = 5
-    THRESH_BINARY+THRESH_OTSU = 6
+    THRESH_BINARY_AND_THRESH_OTSU = 6

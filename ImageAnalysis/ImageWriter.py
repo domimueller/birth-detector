@@ -82,7 +82,7 @@ class ImageWriter:
         self.image = image 
         
         for filePathAndName in filePathAndNames:
-            cv2.imwrite(filePathAndName.filePathAndName(), image)
+            cv2.imwrite(filePathAndName.obtainFileNameAndPath(), image)
 
 #==========================================================================
 # END
