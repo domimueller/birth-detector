@@ -37,8 +37,7 @@ class ImageWriter:
         ----------        
     filePathAndNames: Tuple of Filepaths
         A Filepath Object consists of File Path, File Name and the corresponding Mime Type 
-        of the File to identify it in Filesystem. 
-    
+        of the File to identify it in Filesystem.     
     image: Image
         Image to write. 
       

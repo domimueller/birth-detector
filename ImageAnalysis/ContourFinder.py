@@ -19,3 +19,4 @@ class ContourFinder:
     def countRelevantContours(self, ):
         pass
 
+#Whereas the contours are the continuous lines or curves that bound or cover the full boundary of an object in an image
