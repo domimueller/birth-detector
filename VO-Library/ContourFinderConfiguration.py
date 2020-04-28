@@ -8,12 +8,12 @@ class ContourFinderConfiguration:
         self.finderType = None
         self.ENUM_SELECT_FINDER = None
 
-    def approxType(self, ):
+    def obtainApproxType(self, ):
         pass
 
-    def finderType(self, ):
+    def obtainFinderType(self, ):
         pass
 
-    def contourFinderConfiguration(self, ):
+    def obtainContourFinderConfiguration(self, ):
         pass
 

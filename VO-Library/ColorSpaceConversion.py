@@ -1,18 +1,108 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
+#==========================================================================
+# ColorSpaceConversion.py – DESCRIPTIONS
+#==========================================================================
+
+'''
+@author: Dominique Müller <Dominique Müller <dominiquepeter.mueller@students.bfh.ch>
+
+'''
+
+
+#==========================================================================
+# IMPORT DECLARATIONS
+#==========================================================================
+   
+
+#==========================================================================
+# CONSTANTS
+#==========================================================================
+
+
+
+#==========================================================================
+# FUNCTIONS
+#==========================================================================
+ 
+   
 class ColorSpaceConversion:
-    def __init__(self):
-        self.convertingImage = None
-        self.ConversionType = None
-        self.ENUM_SELECT = None
+    
+    """
+    A class used to represent the Configuration needed for Color Space Converiion
 
-    def convertingImage(self, ):
-        pass
+    -------
+        Attributes
+    ----------
+    convertingImage : Boolean
+        Determines  whether Conversion is desired or not. 
+    conversionType : <<Enumeration>> ConversionType
+        Enumeration with Color Space Conversion Types.
+    ENUM_SELECT : int
+        Selection of Conversion Type      
+        
+        
 
-    def conversionType(self, ):
-        pass
+    
+    Methods - see Descripton below
+    -------
+   obtainConvertingImage(self)
+   obtainConversionType(self)
+   obtainFilteringType(self)
+   obtainColorSpaceConversion(self)     
+       
+        
+   """
+   
+    
+    def __init__(self, convertingImage, conversionType, ENUM_SELECT ):
+        self.convertingImage = convertingImage
+        self.conversionType = conversionType
+        self.ENUM_SELECT = ENUM_SELECT
 
-    def colorSpaceConversion(self, ):
-        pass
+    def obtainConvertingImage(self ):
+       
+        """    
+        Returns whether Conversion is desired or not as a Boolean
+        ----------        
+              
+        Returns: 
+        ----------                
+        Conversion or not as a Boolean. 
+      
+        """          
+        return self.convertingImage
+
+    def obtainConversionType(self ):
+        
+        """    
+        Returns the Conversion Type as a String. 
+        ----------        
+              
+        Returns: 
+        ----------                
+        conversionType as a String. Therefore, Conversion Type needs to be 
+        extracted from Enumeration based on ENUM_SELECT.      
+        """  
+        
+        conversionType_enum_selection = self.conversionType(self.ENUM_SELECT)
+        conversionType_name = conversionType_enum_selection.name
+        return conversionType_name
+
+
+    def obtainColorSpaceConversion(self ):
+        """    
+        Returns the whole Conversion Configuration as a String
+        ----------        
+              
+        Returns: 
+        ----------                
+        Returns the whole Conversion Configuration.
+      
+        """  
+        
+        strForReturn = 'Conversion Type: ' + str(self.obtainConversionType()) 
+        
+        return strForReturn
 

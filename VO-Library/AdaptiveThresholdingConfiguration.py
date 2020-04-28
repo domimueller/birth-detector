@@ -7,12 +7,12 @@ class AdaptiveThresholdingConfiguration:
         self.ENUM_SELECT = None
         self.cSubtractor = None
 
-    def thresholdingType(self, ):
+    def obtainThresholdingType(self, ):
         pass
 
-    def cSubtractor(self, ):
+    def obtainCSubtractor(self, ):
         pass
 
-    def adaptiveThresholdingConfiguration(self, ):
+    def obtainAdaptiveThresholdingConfiguration(self, ):
         pass
 

@@ -29,14 +29,14 @@
 class KernelSize:
     
     """
-    A class used to represent the Filepath (path, name and mime-type) of a File
+    A class used to represent the Kernel Size
 
 
     -------
         Attributes
     ----------
     kernelWidth : int
-       Kenel width 
+       Kernel width 
     kernelLength : int
         Kernel length 
  
@@ -47,7 +47,7 @@ class KernelSize:
     Methods - see Descripton below
     -------
    obtainKernelWidth(self)
-   obtainKernelLength
+   obtainKernelLength(self)
    obtainKernelSize(self)
 
         
@@ -95,3 +95,7 @@ class KernelSize:
         """      
         return 'Länge: ' + str(self.kernelLength) + ' Pixel; Breite: ' + str(self.kernelWidth) + ' Pixel'
 
+#==========================================================================
+# END
+#==========================================================================
+ 

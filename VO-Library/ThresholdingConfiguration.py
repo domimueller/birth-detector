@@ -10,15 +10,15 @@ class ThresholdingConfiguration:
         self.maximumValue = None
         self.ENUM_SELECT = None
 
-    def thresholdingImage(self, ):
+    def obtainThresholdingImage(self, ):
         pass
 
-    def thresholdingMethod(self, ):
+    def obtainThresholdingMethod(self, ):
         pass
 
-    def maximumValue(self, ):
+    def obtainMaximumValue(self, ):
         pass
 
-    def thresholdingConfiguration(self, ):
+    def obtainThresholdingConfiguration(self, ):
         pass
 

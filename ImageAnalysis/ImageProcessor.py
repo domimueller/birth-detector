@@ -116,7 +116,7 @@ class ImageProcessor:
             self.image = cv2.add(self.image, M)
        
         
-        ## check if Equalizing is desired and then perform the equalizing based on the CLAHE Method
+        ## check if Equalizing is desired and then perform the equalizing based on the desired Method
         if self.brightenConfig.obtainEqualizingImage()== True: 
             
            ## check if selected Equalizing Type = CLAHE. Enumeration Selection 
@@ -155,6 +155,18 @@ class ImageProcessor:
         New Image will be returned  
       
         """          
+        self.image = image
+        self.colorspaceConvertConfig = config
+     
+        print(self.colorspaceConvertConfig.obtainColorSpaceConversion())
+        
+        ## check if Filtering is desired and then perform the filtering based on the desired Method
+        if self.colorspaceConvertConfig.obtainConvertingImage()== True: 
+                      
+           ## pass the value given by enumeration Config to the Function cv2.cvtColor() 
+           
+           conversionParameter = 'cv2.' + self.colorspaceConvertConfig.obtainConversionType()
+           self.image = cv2.cvtColor(self.image, eval(conversionParameter))
         
         return self.image
 
@@ -186,9 +198,18 @@ class ImageProcessor:
         """    
         self.image = image
         self.filterConfig = config
-        
+     
         print(self.filterConfig.obtainFilterConfiguration())
-
+        
+        ## check if Filtering is desired and then perform the filtering based on the desired Method
+        if self.filterConfig.obtainFilteringImage()== True: 
+                      
+           ## check if selected Filtering Type = GAUSSIANBLUR. Enumeration Selection 
+           # done by enumeration Config variable ENUM_SELECT_FILTERING in ImageAnalysisController.py
+           if self.filterConfig.obtainFilteringType() == 'GAUSSIANBLUR':        
+               self.image = cv2.GaussianBlur(self.image, 
+                                      (self.filterConfig.kernelSize.obtainKernelWidth(), self.filterConfig.kernelSize.obtainKernelLength()), 
+                                      0)
         return self.image
 
     def segmentImage(self, image, config):

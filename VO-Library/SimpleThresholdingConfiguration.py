@@ -6,9 +6,9 @@ class SimpleThresholdingConfiguration:
         self.thresholdingType = None
         self.ENUM_SELECT = None
 
-    def thresholdingType(self, ):
+    def obtainThresholdingType(self, ):
         pass
 
-    def simpleThresholdingConfiguration(self, ):
+    def obtainSimpleThresholdingConfiguration(self, ):
         pass
 

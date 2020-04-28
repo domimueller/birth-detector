@@ -7,15 +7,15 @@ class BGR:
         self.green = None
         self.red = None
 
-    def blue(self, ):
+    def obtainBlue(self, ):
         pass
 
-    def green(self, ):
+    def obtainGreen(self, ):
         pass
 
-    def red(self, ):
+    def obtainRed(self, ):
         pass
 
-    def bgr(self, ):
+    def obtainBgr(self, ):
         pass
 

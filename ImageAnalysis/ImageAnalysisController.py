@@ -103,8 +103,8 @@ WRITER_MINOR = 'jpeg'
 WRITER_EXTENSION = 'jpg'
 
 #### INFORMATION AND CONFIGURATION FOR IMAGE Processor ####
-
-# BrightenConfiguration #
+ 
+# Brighten Configuration #
 BRIGHTENING_IMAGE = True
 BRIGHTENER_FACTOR = 60
 EQUALIZING_IMAGE = True
@@ -120,7 +120,25 @@ CLIP_LIMIT = 4.0
 ENUM_SELECT_EQUALIZING = 1 #CLAHE
 
 
-# FilterConfiguration #
+
+# Color Space Conversion Configuration #
+CONVERTING_IMAGE = True
+## Converting Type
+'''
+    Possible Values for  ENUM_SELECT_FILTERING:
+    - 1 corresponds to COLOR_BGR2GRAY  
+    - 2 corresponds to COLOR_BGR2HSV 
+    - 3 corresponds to COLOR_HSV2BGR
+    - 4 corresponds to COLOR_GRAY2BGR 
+    - 5 corresponds to COLOR_BGR2YUV 
+    - 6 corresponds to COLOR_YUV2BGR 
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+ENUM_SELECT_CONVERTING = 1 #COLOR_BGR2GRAY
+
+
+# Filter Configuration #
 FILTERING_IMAGE = True
 KERNEL_WIDTH = 9
 KERNEL_LENGTH = 9
@@ -280,7 +298,16 @@ class ImageAnalysisController:
 
 
         self.image = self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
+
+        # apply color space conversion configuration
+
+        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = CONVERTING_IMAGE, 
+                                                              conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
+                                                              ENUM_SELECT = ENUM_SELECT_CONVERTING)
         
+        self.image = self.imageProcessor.convertColorSpace(image = self.image, config = colorspaceConvertConfig )
+
+
         # apply filtering configuration
         kernelSize = KernelSize.KernelSize(width = KERNEL_WIDTH, 
                                            length = KERNEL_LENGTH)  

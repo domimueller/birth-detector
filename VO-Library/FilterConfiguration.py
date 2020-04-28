@@ -32,7 +32,7 @@ class FilterConfiguration:
     
     
     """
-    A class used to represent the Filepath (path, name and mime-type) of a File
+    A class used to represent the the Configruation needed to Filter Image
 
 
     -------
@@ -106,6 +106,7 @@ class FilterConfiguration:
         filteringType as a String. Therefore, Filtering Type needs to be 
         extracted from Enumeration based on ENUM_SELECT.      
         """  
+        
         filteringType_enum_selection = self.filteringType(self.ENUM_SELECT)
         filteringType_name = filteringType_enum_selection.name
         return filteringType_name
