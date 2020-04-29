@@ -129,7 +129,6 @@ class ImageProcessor:
         
         return self.image
    
-    ## to be implemented
     def convertColorSpace(self, image, config):
 
         """ 
@@ -163,8 +162,7 @@ class ImageProcessor:
         ## check if Filtering is desired and then perform the filtering based on the desired Method
         if self.colorspaceConvertConfig.obtainConvertingImage()== True: 
                       
-           ## pass the value given by enumeration Config to the Function cv2.cvtColor() 
-           
+           # pass the value given by enumeration to the Function cv2.cvtColor() 
            conversionParameter = 'cv2.' + self.colorspaceConvertConfig.obtainConversionType()
            self.image = cv2.cvtColor(self.image, eval(conversionParameter))
         
@@ -242,6 +240,41 @@ class ImageProcessor:
         
         """   
         
+        self.threshConfig = config
+        self.image = image        
+        print(self.threshConfig.obtainThresholdingConfiguration())
+        print(self.threshConfig.simpleThresholdingConfiguration.obtainSimpleThresholdingConfiguration())
+        print(self.threshConfig.adaptiveThresholdingConfiguration.obtainAdaptiveThresholdingConfiguration())
+        
+        ## check if Thresholding is desired and then perform the threshilding based on the desired Method
+        if self.threshConfig.obtainThresholdingImage()== True: 
+            
+           ## check if selected Thresholding Method = THRESHOLD. Enumeration Selection 
+           # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py
+           if self.threshConfig.obtainThresholdingMethod() == 'THRESHOLD':    
+               print('Simple Threshold gewählt')
+               simple_method_parameter = 'cv2.' + str(self.threshConfig.simpleThresholdingConfiguration.obtainThresholdingType())
+               rect, self.image = cv2.threshold(self.image , 
+                                                0, 
+                                                self.threshConfig.obtainMaximumValue(), 
+                                                eval(simple_method_parameter))
+               
+               
+            ## check if selected Thresholding Method = ADAPTIVE_THRESHOLD. Enumeration Selection 
+           # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py              
+           elif self.threshConfig.obtainThresholdingMethod() == 'ADAPTIVE_THRESHOLD':    
+               print('Adaptive Threshold gewählt')
+               adaptive_method_parameter = 'cv2.' + str(self.threshConfig.adaptiveThresholdingConfiguration.obtainThresholdingType())
+              
+               rect, self.image = cv2.adaptiveThreshold(self.image, 
+                                                         self.threshConfig.obtainMaximumValue(), 
+                                                         eval(adaptive_method_parameter), 
+                                                         self.threshConfig.adaptiveThresholdingConfiguration.obtainBlockSize(),
+                                                         self.threshConfig.adaptiveThresholdingConfiguration.obtainCSubtractor())               
+        
+        return self.image        
+
+
         return self.image
     
 

@@ -138,6 +138,8 @@ CONVERTING_IMAGE = True
 ENUM_SELECT_CONVERTING = 1 #COLOR_BGR2GRAY
 
 
+
+
 # Filter Configuration #
 FILTERING_IMAGE = True
 KERNEL_WIDTH = 9
@@ -149,8 +151,57 @@ KERNEL_LENGTH = 9
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR
-            
+ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR  
+
+
+# Thresholding Configuration #
+THRESHOLDING_IMAGE = True
+
+## Thresholding Method
+'''
+    Possible Values for  ENUM_SELECT_THRESHOLDING:
+    - 1 corresponds to THRESHOLD
+    - 2 corresponds to ADAPTIVE_THRESHOLD
+    
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+ENUM_SELECT_THRESHOLDING = 2 #Simple Thresholding
+MAXIMUM_VALUE = 255 # value between 0 and 255 possible
+ 
+
+
+# simple Thresholding Configuration 
+'''
+    Possible Values for  ENUM_SELECT_SIMPLE_THRESHOLDING:
+    - 1 corresponds to THRESH_BINARY
+    - 2 corresponds to THRESH_BINARY_INV
+    - 3 corresponds to THRESH_TRUNC
+    - 4 corresponds to THRESH_TOZERO
+    - 5 corresponds to THRESH_TOZERO_INV
+    - 6 corresponds to THRESH_BINARY_AND_THRESH_OTSU 
+    - 7 corresponds to THRESH_BINARY_AND_THRESH_TRIANGLE
+    
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+ENUM_SELECT_SIMPLE_THRESHOLDING = 1 
+
+
+
+
+#adaptive Thresholding Configuration
+BLOCK_SIZE = 11
+C_SUBTRACTOR = 3
+'''
+    Possible Values for  ENUM_SELECT_ADAPTIVE_THRESHOLDING:
+    - 1 corresponds to ADAPTIVE_THRESH_MEAN_C
+    - 2 corresponds to ADAPTIVE_THRESH_GAUSSIAN_C     
+
+    Any other Values are not allowed and end up with an error message. 
+''' 
+ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
+
 
 #==========================================================================
 # FUNCTIONS
@@ -317,8 +368,32 @@ class ImageAnalysisController:
                                                               filteringType = FilteringType.FilteringType,           
                                                               ENUM_SELECT = ENUM_SELECT_FILTERING)
         
-        self.imageProcessor.filterImage(image = self.image, config = filterConfig )
+        self.image = self.imageProcessor.filterImage(image = self.image, config = filterConfig )
        
+        
+        
+        # apply simple thresholding configuration 
+        simpleThresholdingConfiguration = SimpleThresholdingConfiguration.SimpleThresholdingConfiguration(
+                                            thresholdingType= SimpleThresholdingType.SimpleThresholdingType,
+                                            ENUM_SELECT = ENUM_SELECT_SIMPLE_THRESHOLDING )
+        
+        # apply adaptive thresholding configuration 
+        adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(
+                                            thresholdingType= AdaptiveThresholdingType.AdaptiveThresholdingType,
+                                            ENUM_SELECT = ENUM_SELECT_ADAPTIVE_THRESHOLDING,
+                                            blockSize = BLOCK_SIZE, 
+                                            cSubtractor = C_SUBTRACTOR)      
+        # put all together 
+        threshConfig = ThresholdingConfiguration.ThresholdingConfiguration(thresholdingImage = THRESHOLDING_IMAGE,
+                        thresholdingMethod = ThresholdingMethod.ThresholdingMethod,
+                        ENUM_SELECT = ENUM_SELECT_THRESHOLDING,
+                        simpleThresholdingConfiguration = simpleThresholdingConfiguration,
+                        adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration,
+                        maximumValue = MAXIMUM_VALUE)
+        
+        self.image = self.imageProcessor.segmentImage(image = self.image, config = threshConfig )        
+        
+        
         #jump to the next function
         self.controlContourFinder()
 
