@@ -20,6 +20,10 @@
 # CONSTANTS
 #==========================================================================
 
+# Configuration for Console Output
+TITLE = '############ COLOR SPACE CONVERSION CONFIGURATION ############'
+DELIMITER = '; '
+NEWLINE = '\n'
 
 
 #==========================================================================
@@ -102,7 +106,8 @@ class ColorSpaceConversion:
       
         """  
         
-        strForReturn = 'Conversion Type: ' + str(self.obtainConversionType()) 
-        
+        data = 'Conversion Type: ' + str(self.obtainConversionType())  
+        strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE
+                
         return strForReturn
 

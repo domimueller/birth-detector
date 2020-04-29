@@ -20,6 +20,10 @@
 # CONSTANTS
 #==========================================================================
 
+# Configuration for Console Output
+TITLE = '############ FILTER CONFIGURATION ############'
+DELIMITER = '; '
+NEWLINE = '\n'
 
 
 #==========================================================================
@@ -122,8 +126,9 @@ class FilterConfiguration:
         Returns the whole Filtering Configuration.
       
         """  
-        
-        strForReturn = 'Kernel Size: ' + str(self.kernelSize.obtainKernelSize())  + '; Filter Type: ' + str(self.obtainFilteringType()) 
+        data = 'Filtering Desired: ' + str(self.obtainFilteringImage()) + DELIMITER + 'Kernel Size: ' + str(self.kernelSize.obtainKernelSize())  + DELIMITER + 'Filter Type: ' + str(self.obtainFilteringType()) 
+        strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE        
+
         
         return strForReturn
     

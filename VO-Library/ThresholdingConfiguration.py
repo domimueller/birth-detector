@@ -20,8 +20,12 @@
 # CONSTANTS
 #==========================================================================
 
+# Configuration for Console Output
+TITLE = '############ OVERALL THRESHOLDING CONFIGURATION ############'
+DELIMITER = '; '
+NEWLINE = '\n'
 
-
+ACTIVATION_MESSAGE = ' ACTIVATED'
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -40,13 +44,17 @@ class ThresholdingConfiguration:
         Attributes
     ----------
     thresholdingImage : Boolean
-        Determines  whether thresholding is desired or not. 
+        Determines  whether thresholding is desired or not.
+    threshold: int
+        threshold value to determine whether to apply new value on this pixel or not
     thresholdingMethod: <<Enumeration>> ThresholdingMethod
         Enumeration with Thresholding Methods        
-    ENUM_SELECT : int
-        Selection of Thresholding Method.         
-    simpleThresholdingConfiguration: SimpleThresholdingConfiguration
-        Configuration and data needed to apply Simple Thresholding
+    ENUM_SELECT_METHOD : int
+        Selection of Thresholding Method. 
+    thresholdingType: <<Enumeration>> ThresholdingType
+        Enumeration with Thresholding Type        
+    ENUM_SELECT_TYPE : int
+        Selection of Thresholding Type.                 
     adaptiveThresholdingConfiguration: AdaptiveThresholdingConfiguration        
         Configuration and data needed to apply adaptive Thresholding 
     maximumValue: int {{OCL} maximumValue< 256}
@@ -58,21 +66,25 @@ class ThresholdingConfiguration:
     Methods - see Descripton below
     -------
    obtainThresholdingImage(self)
+   obtainThreshold(self)
    obtainThresholdingMethod(self)
+   obtainThresholdinType(self)
    obtainMaximumValue(self)
    obtainThresholdingConfiguration(self)     
        
         
    """
-    def __init__(self, thresholdingImage, thresholdingMethod, ENUM_SELECT,
-                 simpleThresholdingConfiguration, adaptiveThresholdingConfiguration, maximumValue):
+    def __init__(self, thresholdingImage, threshold, thresholdingMethod, ENUM_SELECT_METHOD, thresholdingType, 
+                 ENUM_SELECT_TYPE, adaptiveThresholdingConfiguration, maximumValue):
         
         self.thresholdingImage = thresholdingImage
+        self. threshold = threshold
         self.thresholdingMethod = thresholdingMethod
-        self.simpleThresholdingConfiguration = simpleThresholdingConfiguration
+        self.ENUM_SELECT_METHOD = ENUM_SELECT_METHOD        
+        self.thresholdingType = thresholdingType
+        self.ENUM_SELECT_TYPE = ENUM_SELECT_TYPE                
         self.adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration
         self.maximumValue = maximumValue
-        self.ENUM_SELECT = ENUM_SELECT
 
     def obtainThresholdingImage(self ):
        
@@ -86,6 +98,20 @@ class ThresholdingConfiguration:
       
         """         
         return self.thresholdingImage
+    
+    def obtainThreshold(self ):
+        
+        """    
+        Returns the Threshold value 
+        ----------        
+              
+        Returns: 
+        ----------                
+        Threshold.
+      
+        """    
+        
+        return self.threshold    
 
     def obtainThresholdingMethod(self ):
 
@@ -96,13 +122,30 @@ class ThresholdingConfiguration:
         Returns: 
         ----------                
         Thresholding Method as a String. Therefore, Thresholding Method needs to be 
-        extracted from Enumeration based on ENUM_SELECT.      
+        extracted from Enumeration based on ENUM_SELECT_METHOD.      
+        """  
+        
+        thresholdingMethod_enum_selection = self.thresholdingMethod(self.ENUM_SELECT_METHOD)
+        thresholdingMethod_name = thresholdingMethod_enum_selection.name
+        
+        return thresholdingMethod_name
+    
+    def obtainThresholdingType(self ):
+
+        """    
+        Returns the Thresholding Type as a String. 
+        ----------        
+              
+        Returns: 
+        ----------                
+        Thresholding Type as a String. Therefore, Thresholding TYPE needs to be 
+        extracted from Enumeration based on ENUM_SELECT_TYPE.      
         """  
           
-        thresholdingMethod_enum_selection = self.thresholdingMethod(self.ENUM_SELECT)
-        thresholdingMethod_name = thresholdingMethod_enum_selection.name
+        thresholdingType_enum_selection = self.thresholdingType(self.ENUM_SELECT_TYPE)
+        thresholdingType_name = thresholdingType_enum_selection.name
 
-        return thresholdingMethod_name
+        return thresholdingType_name    
 
     def obtainMaximumValue(self ):
         
@@ -129,7 +172,12 @@ class ThresholdingConfiguration:
         Returns the whole Thresholding Configuration.
       
         """  
-        strForReturn = 'Thresholding Method: ' + str(self.obtainThresholdingMethod()) + '; Maximum Value: ' + str(self.obtainMaximumValue())        
+
+
+        activationMessage = str(self.obtainThresholdingMethod()) + ACTIVATION_MESSAGE
+        data = 'Thresholding Desired: ' + str(self.obtainThresholdingImage()) + DELIMITER + 'Threshold: ' +  str(self.obtainThreshold()) + DELIMITER + 'Thresholding Method: ' + str(self.obtainThresholdingMethod()) + DELIMITER + 'Thresholding Type: ' + str(self.obtainThresholdingType()) + DELIMITER + 'Maximum Value: ' + str(self.obtainMaximumValue())
+ 
+        strForReturn = TITLE + NEWLINE + activationMessage + NEWLINE + NEWLINE  + data + NEWLINE  + NEWLINE 
         return strForReturn
 
 #==========================================================================

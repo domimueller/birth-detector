@@ -243,39 +243,40 @@ class ImageProcessor:
         self.threshConfig = config
         self.image = image        
         print(self.threshConfig.obtainThresholdingConfiguration())
-        print(self.threshConfig.simpleThresholdingConfiguration.obtainSimpleThresholdingConfiguration())
-        print(self.threshConfig.adaptiveThresholdingConfiguration.obtainAdaptiveThresholdingConfiguration())
         
         ## check if Thresholding is desired and then perform the threshilding based on the desired Method
         if self.threshConfig.obtainThresholdingImage()== True: 
             
            ## check if selected Thresholding Method = THRESHOLD. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py
+           
            if self.threshConfig.obtainThresholdingMethod() == 'THRESHOLD':    
-               print('Simple Threshold gewählt')
-               simple_method_parameter = 'cv2.' + str(self.threshConfig.simpleThresholdingConfiguration.obtainThresholdingType())
+               type_parameter = 'cv2.' + str(self.threshConfig.obtainThresholdingType())
                rect, self.image = cv2.threshold(self.image , 
-                                                0, 
+                                                self.threshConfig.obtainThreshold(), 
                                                 self.threshConfig.obtainMaximumValue(), 
-                                                eval(simple_method_parameter))
+                                                eval(type_parameter))
                
                
             ## check if selected Thresholding Method = ADAPTIVE_THRESHOLD. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py              
-           elif self.threshConfig.obtainThresholdingMethod() == 'ADAPTIVE_THRESHOLD':    
-               print('Adaptive Threshold gewählt')
-               adaptive_method_parameter = 'cv2.' + str(self.threshConfig.adaptiveThresholdingConfiguration.obtainThresholdingType())
-              
-               rect, self.image = cv2.adaptiveThreshold(self.image, 
+           elif self.threshConfig.obtainThresholdingMethod() == 'ADAPTIVE_THRESHOLD':  
+                              
+
+               print(self.threshConfig.adaptiveThresholdingConfiguration.obtainAdaptiveThresholdingConfiguration())
+               
+               thresholding_type_parameter = 'cv2.' + str(self.threshConfig.obtainThresholdingType())
+               adaptive_type_parameter = 'cv2.' + str(self.threshConfig.adaptiveThresholdingConfiguration.obtainThresholdingType())
+
+               
+               self.image = cv2.adaptiveThreshold(self.image, 
                                                          self.threshConfig.obtainMaximumValue(), 
-                                                         eval(adaptive_method_parameter), 
+                                                         eval(adaptive_type_parameter),
+                                                         eval(thresholding_type_parameter),
                                                          self.threshConfig.adaptiveThresholdingConfiguration.obtainBlockSize(),
                                                          self.threshConfig.adaptiveThresholdingConfiguration.obtainCSubtractor())               
-        
+               
         return self.image        
-
-
-        return self.image
     
 
 

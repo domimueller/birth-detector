@@ -48,8 +48,7 @@ import FilteringType
 import FinderType
 import KernelSize
 import MimeType
-import SimpleThresholdingConfiguration
-import SimpleThresholdingType
+import ThresholdingType
 import ThresholdingConfiguration
 import ThresholdingMethod
 
@@ -156,24 +155,24 @@ ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR
 
 # Thresholding Configuration #
 THRESHOLDING_IMAGE = True
+MAXIMUM_VALUE = 255 # value between 0 and 255 possible
+THRESHOLD = 40
 
-## Thresholding Method
+## Thresholding Method Enumeration
 '''
-    Possible Values for  ENUM_SELECT_THRESHOLDING:
+    Possible Values for  ENUM_SELECT_METHOD:
     - 1 corresponds to THRESHOLD
     - 2 corresponds to ADAPTIVE_THRESHOLD
     
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_THRESHOLDING = 2 #Simple Thresholding
-MAXIMUM_VALUE = 255 # value between 0 and 255 possible
+ENUM_SELECT_METHOD = 2
+
  
-
-
-# simple Thresholding Configuration 
+# Thresholding Type Enumeration
 '''
-    Possible Values for  ENUM_SELECT_SIMPLE_THRESHOLDING:
+    Possible Values for  ENUM_SELECT_TYPE:
     - 1 corresponds to THRESH_BINARY
     - 2 corresponds to THRESH_BINARY_INV
     - 3 corresponds to THRESH_TRUNC
@@ -185,7 +184,7 @@ MAXIMUM_VALUE = 255 # value between 0 and 255 possible
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_SIMPLE_THRESHOLDING = 1 
+ENUM_SELECT_TYPE = 1 
 
 
 
@@ -193,6 +192,7 @@ ENUM_SELECT_SIMPLE_THRESHOLDING = 1
 #adaptive Thresholding Configuration
 BLOCK_SIZE = 11
 C_SUBTRACTOR = 3
+
 '''
     Possible Values for  ENUM_SELECT_ADAPTIVE_THRESHOLDING:
     - 1 corresponds to ADAPTIVE_THRESH_MEAN_C
@@ -372,11 +372,6 @@ class ImageAnalysisController:
        
         
         
-        # apply simple thresholding configuration 
-        simpleThresholdingConfiguration = SimpleThresholdingConfiguration.SimpleThresholdingConfiguration(
-                                            thresholdingType= SimpleThresholdingType.SimpleThresholdingType,
-                                            ENUM_SELECT = ENUM_SELECT_SIMPLE_THRESHOLDING )
-        
         # apply adaptive thresholding configuration 
         adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(
                                             thresholdingType= AdaptiveThresholdingType.AdaptiveThresholdingType,
@@ -384,10 +379,13 @@ class ImageAnalysisController:
                                             blockSize = BLOCK_SIZE, 
                                             cSubtractor = C_SUBTRACTOR)      
         # put all together 
-        threshConfig = ThresholdingConfiguration.ThresholdingConfiguration(thresholdingImage = THRESHOLDING_IMAGE,
+        threshConfig = ThresholdingConfiguration.ThresholdingConfiguration(
+                        thresholdingImage = THRESHOLDING_IMAGE,
+                        threshold = THRESHOLD,
                         thresholdingMethod = ThresholdingMethod.ThresholdingMethod,
-                        ENUM_SELECT = ENUM_SELECT_THRESHOLDING,
-                        simpleThresholdingConfiguration = simpleThresholdingConfiguration,
+                        ENUM_SELECT_METHOD = ENUM_SELECT_METHOD,
+                        thresholdingType = ThresholdingType.ThresholdingType,
+                        ENUM_SELECT_TYPE = ENUM_SELECT_TYPE,
                         adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration,
                         maximumValue = MAXIMUM_VALUE)
         

@@ -4,7 +4,6 @@
 class ScoreCalculator:
     def __init__(self):
         self.score = None
-        print('score')
 
 
     def calculateScore(self, trait, traitRecognitor):

@@ -14,13 +14,20 @@
 #==========================================================================
 # IMPORT DECLARATIONS
 #==========================================================================
-   
+
+
+import sys
+sys.path.append('../VO-Library')
 
 #==========================================================================
 # CONSTANTS
 #==========================================================================
 
 
+# Configuration for Console Output
+TITLE = '############ ADAPTIVE THRESHOLDING CONFIGURATION ############'
+DELIMITER = '; '
+NEWLINE = '\n'
 
 #==========================================================================
 # FUNCTIONS
@@ -118,8 +125,8 @@ class AdaptiveThresholdingConfiguration:
         Returns the whole Adaptive Thresholding Configuration.
       
         """  
-        
-        strForReturn = 'Adaptive Thresholding Type: ' + str(self.obtainThresholdingType())  + '; Block Size: ' + str(self.obtainBlockSize())+ '; C Subtractor: ' + str(self.obtainCSubtractor())        
+        data = 'Adaptive Thresholding Type: ' + str(self.obtainThresholdingType())  + DELIMITER + 'Block Size: ' + str(self.obtainBlockSize())+ DELIMITER+ 'C Subtractor: ' + str(self.obtainCSubtractor()) 
+        strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE      
         return strForReturn
     
 

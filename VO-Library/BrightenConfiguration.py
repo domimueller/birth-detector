@@ -20,7 +20,10 @@
 # CONSTANTS
 #==========================================================================
 
-
+# Configuration for Console Output
+TITLE = '############ Brightening CONFIGURATION ############'
+DELIMITER = '; '
+NEWLINE = '\n'
 
 #==========================================================================
 # FUNCTIONS
@@ -165,7 +168,9 @@ class BrightenConfiguration:
         Brightening Configuration as a String. 
       
         """    
-        strForReturn = 'Brightener Factor: ' + str(self.obtainBrightenerFactor())  + '; Equalizing Type: ' + str(self.obtainEqualizingType()) + '; Clip Limit: ' + str(self.obtainClipLimit()) 
+
+        data = 'Brightening Desired: ' + str(self.obtainBrighteningImage()) + DELIMITER + 'Brightener Factor: ' + str(self.obtainBrightenerFactor())  + DELIMITER + 'Equalizing Type: ' + str(self.obtainEqualizingType()) + DELIMITER +'Clip Limit: ' + str(self.obtainClipLimit()) 
+        strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE
         
         return strForReturn
     

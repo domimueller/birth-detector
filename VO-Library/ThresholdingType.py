@@ -3,7 +3,7 @@
 
 
 #==========================================================================
-# ThresholdingMethod.py – DESCRIPTIONS
+# ThresholdingType.py – DESCRIPTIONS
 #==========================================================================
 
 '''
@@ -20,10 +20,10 @@ from enum import Enum
 # FUNCTIONS
 #==========================================================================
   
-class SimpleThresholdingType(Enum):
+class ThresholdingType(Enum):
     
     """
-    A class used to represent the enumeration of the possible Simple Thresholding Types
+    A class used to represent the enumeration of the possible Thresholding Types
 
     """    
        
