@@ -272,9 +272,15 @@ negative_masks = cv2.bitwise_or(mask_light,mask_floor, mask=None)
 negative_bg = cv2.bitwise_and(filtered,background_image, mask=negative_masks)
 
 possible_cow_area_mask = cv2.bitwise_not(negative_masks)
-possible_cow_area = cv2.bitwise_and(filtered, filtered, mask=possible_cow_area_mask)
+contours_possible_cow_area_mask, hierarchy = cv2.findContours(possible_cow_area_mask, cv2.RETR_CCOMP , cv2.CHAIN_APPROX_SIMPLE )
 
-possible_cow_area_bg = cv2.bitwise_and(filtered, filtered, mask=possible_cow_area_mask)
+possible_cow_area_mask_loaded = cv2.imread('C:/Users/domim/OneDrive/Desktop/bilder/aaa_possible_area_mask.jpg')
+
+filtered_bgr = cv2.cvtColor(filtered, cv2.COLOR_HSV2BGR ) 
+possible_cow_area = cv2.bitwise_and( original_image,possible_cow_area_mask_loaded)
+
+
+#possible_cow_area_bg = cv2.bitwise_and(filtered, filtered, mask=possible_cow_area_mask)
 
 not_cow_light = cv2.bitwise_and(filtered,background_image, mask=mask_light)
 not_cow_floor = cv2.bitwise_and(filtered,background_image, mask=mask_floor)
@@ -299,6 +305,7 @@ filtered = cv2.GaussianBlur(grayscaled, (9  ,9), 0)
 
 # eher gut
 #thresholded  = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 3) 
+possible_cow_area = cv2.cvtColor(possible_cow_area, cv2.COLOR_BGR2GRAY) 
 rect, thresholded = cv2.threshold(possible_cow_area , 40, 255, cv2.THRESH_BINARY) 
 #rect, thresholded  = cv2.threshold(filtered , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_TRIANGLE)
 
@@ -328,6 +335,7 @@ image_contours_4 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
 image_contours_5 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
 image_contours_6 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
 image_contours_7 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_8 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
 
 
 # Draw the outline of all detected contours:
@@ -383,15 +391,35 @@ for bigContur in bigContures3:
     #print(bigContur)
     a=bigContur
 
+bigContures4 = []
+
+for contour in contours_possible_cow_area_mask:
+    conturarea = int(cv2.contourArea(contour))
+    if conturarea > 500:
+        possible_cow_area_approx = cv2.approxPolyDP(contour,50, True)
+        bigContures4.append(possible_cow_area_approx)
+        
+    #print(conturarea)
+    #if conturarea > 20:
+    
+for bigContur in bigContures4:
+    #print(bigContur)
+    a=bigContur
+
 
 
 
 number_detected_contours3 = format(len(bigContures))
 number_detected_contours4 = format(len(bigContures2))
 
+
+
 draw_contour_outline(image_contours_4, bigContures, (0, 0,255 ), 2)
 draw_contour_outline(image_contours_5, bigContures2, (0, 0, 255), 2)
 draw_contour_outline(image_contours_6, bigContures3, (0, 0, 255), 2)
+
+draw_contour_outline(image_contours_8, bigContures4, (0, 0, 255), 2)
+
 
 #draw_contour_outline(image_contours_7, bigContures4, (0, 0, 255), 2)
 
@@ -531,14 +559,17 @@ cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_negativ_masks.jpg', negative_masks)
 negative_bg= cv2.cvtColor(negative_bg, cv2.COLOR_HSV2BGR)
 cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_negativ_bg.jpg', negative_bg)
 
-possible_cow_area= cv2.cvtColor(possible_cow_area, cv2.COLOR_HSV2BGR)
+#possible_cow_area= cv2.cvtColor(possible_cow_area, cv2.COLOR_HSV2BGR)
 cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area.jpg', possible_cow_area)
 
-possible_cow_area_bg= cv2.cvtColor(possible_cow_area_bg, cv2.COLOR_HSV2BGR)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area_bg.jpg', possible_cow_area_bg)
+#possible_cow_area_bg= cv2.cvtColor(possible_cow_area_bg, cv2.COLOR_HSV2BGR)
+#cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area_bg.jpg', possible_cow_area_bg)
 
 
 cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area_mask.jpg', possible_cow_area_mask)
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'contours_possible_cow_area_mask.jpg', image_contours_8)
+
 
 
 
