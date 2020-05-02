@@ -286,7 +286,7 @@ class ImageProcessor:
         return self.image        
     
 
-    def detectUnimporantArea(self, image, unimportantColorRanges, lowerBoundName, upperBoundName):
+    def detectUnimporantArea(self, image, unimportantColorRanges):
        
         """ 
        
@@ -316,13 +316,19 @@ class ImageProcessor:
         
         
         for unimportantColorRange in unimportantColorRanges:
-            
+            '''
             print(lowerBoundName + DELIMITER+ str(unimportantColorRange[lowerBoundName].obtainHsv())) 
             print(upperBoundName + DELIMITER + str(unimportantColorRange[upperBoundName].obtainHsv()))        
             
-            lowerBound = unimportantColorRange[lowerBoundName].obtainColor()
-            upperBound = unimportantColorRange[upperBoundName].obtainColor()
+            '''
 
+            print(unimportantColorRange.obtainColorRange())
+
+            lowerBound = unimportantColorRange.obtainLowerBound().obtainColor()
+            upperBound = unimportantColorRange.obtainUpperBound().obtainColor()  
+            
+  
+            
         return self.image
 
 

@@ -52,6 +52,7 @@ import ThresholdingType
 import ThresholdingConfiguration
 import ThresholdingMethod
 import HSV
+import ColorRange
 #==========================================================================
 # CONSTANTS
 #==========================================================================
@@ -203,10 +204,6 @@ C_SUBTRACTOR = 3
 ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
 
 
-## Color Range Configuration
-LOWER_BOUND_KEY_NAME = 'lowerBound'
-UPPER_BOUND_KEY_NAME = 'upperBound'
-
 # Unimportant Areas Configuration
 
 
@@ -218,17 +215,9 @@ UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
 LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
 UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
 
-# dictioniaries with key, value pairs
-LIGHT_COLOR_RANGE = {
-  LOWER_BOUND_KEY_NAME: LOWER_BOUND_LIGHT,
-  UPPER_BOUND_KEY_NAME: UPPER_BOUND_LIGHT,
-}
-
-FLOOR_COLOR_RANGE = {
-  LOWER_BOUND_KEY_NAME: LOWER_BOUND_FLOOR,
-  UPPER_BOUND_KEY_NAME: UPPER_BOUND_FLOOR,
-}
-
+# Color Ranges
+lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
+floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBound=UPPER_BOUND_FLOOR )
 
 
 # Important Areas Configuration
@@ -404,12 +393,10 @@ class ImageAnalysisController:
         # apply unimportant area detection configuration
         
         # Build a Tuple with the Color Ranges
-        unimportantColorRanges= (LIGHT_COLOR_RANGE, FLOOR_COLOR_RANGE )          
+        unimportantColorRanges= (lightColorRange, floorColorRange )          
         
         self.image = self.imageProcessor.detectUnimporantArea( image = self.image, 
-                                                              unimportantColorRanges = unimportantColorRanges, 
-                                                              lowerBoundName = LOWER_BOUND_KEY_NAME,
-                                                              upperBoundName = UPPER_BOUND_KEY_NAME)
+                                                              unimportantColorRanges = unimportantColorRanges)
 
         
         # apply adaptive thresholding configuration 
