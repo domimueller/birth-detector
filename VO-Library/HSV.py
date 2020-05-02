@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 #==========================================================================
-# BGR.py – DESCRIPTIONS
+# HSV.py – DESCRIPTIONS
 #==========================================================================
 
 '''
@@ -16,14 +16,13 @@
 
 import numpy as np
 
-
 #==========================================================================
 # CONSTANTS
 #==========================================================================
 
 
 # Configuration for Console Output
-TITLE = '############ BGR COLOR ############'
+TITLE = '' # at the moment, no title desired. 
 DELIMITER = '; '
 NEWLINE = '\n'
 
@@ -32,96 +31,93 @@ NEWLINE = '\n'
 # FUNCTIONS
 #==========================================================================
 
-class BGR:
+class HSV:
     
-   
     """
-    A class used to represent the BGR Color Space
+    A class used to represent the HSV Color Space
     -------      
         
     Attributes
     ----------
-    blue :  int {{OCL} blue < 256}
-        Blue color value
-    green : int {{OCL} green < 256}
-        green color value
-    red :  int {{OCL} red < 256}
-        red color value      
+    hue :  int {{OCL} hue < 361}
+        Hue value
+    saturation : int {{OCL} saturation < 101}
+        saturation value
+    value :  int {{OCL} value < 101}
+        value (brightness)   
         
     
-    Methods - see Descripton below
+    Methods- see Descripton below
     -------
-   obtainBlue(self)
-   obtainGreen(self)
-   obtainRed(self )
-   obtainBgr(self)
+   obtainHue(self)
+   obtainSaturation(self)
+   obtainValue(self )
+   obtainHsv(self)
    """    
 
+    def __init__(self, hue, saturation, value):
+        self.hue = hue
+        self.saturation = saturation
+        self.value = value
 
-    def __init__(self, blue, green, red):
-        self.blue = blue
-        self.green = green
-        self.red = red
-
-    def obtainBlue(self ):
+    def obtainHue(self ):
 
         """ 
-       
-        Returns the Blue value of a color
+   
+        Returns the Hue value of a color
         ----------        
               
         Returns: 
         ----------                
-        Blue value. 
+        Hue value. 
       
         """          
-        return self.blue
+        return self.hue
 
-    def obtainGreen(self, ):
-
+    def obtainSaturation(self ):
+      
         """ 
-       
-        Returns the green value of a color
+   
+        Returns the Saturation value of a color
         ----------        
               
         Returns: 
         ----------                
-        green value. 
+        Saturation value. 
       
-        """         
-        return self.green
+        """          
+        return self.saturation
 
-    def obtainRed(self ):
+    def obtainValue(self ):
         
         """ 
-       
-        Returns the red value of a color
+   
+        Returns the value (brightness) of a color
         ----------        
               
         Returns: 
         ----------                
-        red value. 
+        value (brightness) 
       
-        """         
-        return self.red
-    
+        """          
+        return self.value
+
     def obtainColor(self ):
         
         """ 
    
-        Returns values of the three BGR channels for further processing
+        Returns values of the three HSV channels for further processing
         ----------        
               
         Returns: 
         ----------                
-        color in BRG color space 
+        color in HSV color space 
       
         """      
         
-        return np.array([self.obtainBlue(),self.obtainGreen(),self.obtainRed()])    
+        return np.array([self.obtainHue(),self.obtainSaturation(),self.obtainValue()])
 
-
-    def obtainBgr(self, ):
+    def obtainHsv(self ):
         
         """ 
        
@@ -133,10 +129,9 @@ class BGR:
         color as string. 
       
         """ 
-        data = 'Blue Value: ' + str(self.obtainBlue())  + DELIMITER + 'Green Value: ' + str(self.obtainGreen())+ DELIMITER+ 'Red Value: ' + str(self.obtainRed()) 
+        data = 'Hue Value: ' + str(self.obtainHue())  + DELIMITER + 'Saturation Value: ' + str(self.obtainSaturation())+ DELIMITER+ 'Value (Brightness): ' + str(self.obtainValue()) 
         strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE      
         return strForReturn
     
         
         return strForReturn
-

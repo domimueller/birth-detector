@@ -51,7 +51,7 @@ import MimeType
 import ThresholdingType
 import ThresholdingConfiguration
 import ThresholdingMethod
-
+import HSV
 #==========================================================================
 # CONSTANTS
 #==========================================================================
@@ -202,6 +202,36 @@ C_SUBTRACTOR = 3
 ''' 
 ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
 
+
+## Color Range Configuration
+LOWER_BOUND_KEY_NAME = 'lowerBound'
+UPPER_BOUND_KEY_NAME = 'upperBound'
+
+# Unimportant Areas Configuration
+
+
+# light (HSV) Bounds
+LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
+UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
+                           
+#floor (HSV) 
+LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
+UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
+
+# dictioniaries with key, value pairs
+LIGHT_COLOR_RANGE = {
+  LOWER_BOUND_KEY_NAME: LOWER_BOUND_LIGHT,
+  UPPER_BOUND_KEY_NAME: UPPER_BOUND_LIGHT,
+}
+
+FLOOR_COLOR_RANGE = {
+  LOWER_BOUND_KEY_NAME: LOWER_BOUND_FLOOR,
+  UPPER_BOUND_KEY_NAME: UPPER_BOUND_FLOOR,
+}
+
+
+
+# Important Areas Configuration
 
 #==========================================================================
 # FUNCTIONS
@@ -371,6 +401,16 @@ class ImageAnalysisController:
         self.image = self.imageProcessor.filterImage(image = self.image, config = filterConfig )
        
         
+        # apply unimportant area detection configuration
+        
+        # Build a Tuple with the Color Ranges
+        unimportantColorRanges= (LIGHT_COLOR_RANGE, FLOOR_COLOR_RANGE )          
+        
+        self.image = self.imageProcessor.detectUnimporantArea( image = self.image, 
+                                                              unimportantColorRanges = unimportantColorRanges, 
+                                                              lowerBoundName = LOWER_BOUND_KEY_NAME,
+                                                              upperBoundName = UPPER_BOUND_KEY_NAME)
+
         
         # apply adaptive thresholding configuration 
         adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(

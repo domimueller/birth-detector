@@ -28,6 +28,7 @@ sys.path.append('../VO-Library')
 #==========================================================================
 # CONSTANTS
 #==========================================================================
+DELIMITER = ': '
 
 
 
@@ -58,7 +59,11 @@ class ImageProcessor:
     filterConfig : FilterConfiguration
          brings the data needed to apply a Filter to the Image. Most Important Filter: GaussianBlur
     threshConfig : ThresholdingConfiguration
-         brings the data needed to Binarize an Image based on a threshold.  
+         brings the data needed to Binarize an Image based on a threshold.
+    unimportantColorRange : HSV[1..*]
+         Color Ranges, that are likely not to be part of a cow.
+    importantColorRange : HSV[1..*]
+         Color Ranges, that are likel to be part of a cow.         
 
     Methods
     -------
@@ -66,6 +71,8 @@ class ImageProcessor:
     convertColorSpace(image, config)
     filterImage(self, image, config)
     segmentImage(self, image, config)
+    detectUnimporantArea(self, image, unimportantColorRange)
+    detectImporantArea(self, image, importantColorRange)
          See descriptions below.
     """ 
     
@@ -278,6 +285,77 @@ class ImageProcessor:
                
         return self.image        
     
+
+    def detectUnimporantArea(self, image, unimportantColorRanges, lowerBoundName, upperBoundName):
+       
+        """ 
+       
+        Detects unimportant Areas in the Image and returns adjusted Image.
+        -------              
+      
+        The Detection of unimportant Areas is based on Color Ranges, which are not likely
+        to represent a part of a cow. Therefore, they can be considered to be unimportant.
+        
+        -------              
+      
+        Parameters: 
+        -------                 
+        image (Image): Image to process. 
+        unimportantColorRange (HSV[1..*]): Color Range in HSV Color Model
+        
+
+        
+        Returns: 
+        -------              
+        adjusted Image 
+        
+        """    
+        self.image = image
+        self.unimportantColorRanges = unimportantColorRanges
+        #print(self.unimportantColorRange)
+        
+        
+        for unimportantColorRange in unimportantColorRanges:
+            
+            print(lowerBoundName + DELIMITER+ str(unimportantColorRange[lowerBoundName].obtainHsv())) 
+            print(upperBoundName + DELIMITER + str(unimportantColorRange[upperBoundName].obtainHsv()))        
+            
+            lowerBound = unimportantColorRange[lowerBoundName].obtainColor()
+            upperBound = unimportantColorRange[upperBoundName].obtainColor()
+
+        return self.image
+
+
+    def detectImporantArea(self, image, importantColorRange):
+       
+        """ 
+       
+        Detects important Areas in the Image and returns adjusted Image.
+        -------              
+      
+        The Detection ofnimportant Areas is based on Color Ranges, which are  likely
+        to represent a part of a cow. Therefore, they can be considered to be important.
+        
+        -------              
+      
+        Parameters: 
+        -------                 
+        image (Image): Image to process. 
+        importantColorRange (HSV[1..*]): Color Range in HSV Color Model
+        
+
+        
+        Returns: 
+        -------              
+        adjusted Image 
+        
+        """  
+        
+        self.image = image
+        self.filterConfig = importantColorRange
+
+        return self.image
+
 
 
 #==========================================================================

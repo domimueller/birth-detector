@@ -272,7 +272,8 @@ negative_masks = cv2.bitwise_or(mask_light,mask_floor, mask=None)
 negative_bg = cv2.bitwise_and(filtered,background_image, mask=negative_masks)
 
 possible_cow_area_mask = cv2.bitwise_not(negative_masks)
-contours_possible_cow_area_mask, hierarchy = cv2.findContours(possible_cow_area_mask, cv2.RETR_CCOMP , cv2.CHAIN_APPROX_SIMPLE )
+
+contours_negative_mask, hierarchy = cv2.findContours(negative_masks, cv2.RETR_LIST , cv2.CHAIN_APPROX_SIMPLE )
 
 possible_cow_area_mask_loaded = cv2.imread('C:/Users/domim/OneDrive/Desktop/bilder/aaa_possible_area_mask.jpg')
 
@@ -312,12 +313,46 @@ rect, thresholded = cv2.threshold(possible_cow_area , 40, 255, cv2.THRESH_BINARY
 
 
 
+original_copy = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+
+bigContures4 = []
+
+for contour in contours_negative_mask:
+    conturarea = int(cv2.contourArea(contour))
+    if conturarea > 500:
+        not_cow_area_approx = cv2.approxPolyDP(contour,15, False)
+        bigContures4.append(not_cow_area_approx)
+        
+    #print(conturarea)
+    #if conturarea > 20:
+    
+mask = np.ones(original_copy.shape[:2], dtype="uint8") * 255
+
+#draw_contour_outline(mask, bigContures4, (0, 0, 255), 2)
+cv2.drawContours(mask, bigContures4, -1, 0, -1)
+
+# https://www.pyimagesearch.com/2015/02/09/removing-contours-image-using-python-opencv/
+restricted_area = cv2.bitwise_and(original_copy, original_copy, mask=mask)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'rrrestricted_area1.jpg', restricted_area)
+
+
+restricted_area = cv2.cvtColor(restricted_area, cv2.COLOR_BGR2HSV) 
+#mask = cv2.inRange(restricted_area, cow_lower_HSV_darkskin , cow_upper_HSV_darkskin)
+mask = cv2.inRange(restricted_area, cow_lower_HSV_brightskin , cow_upper_HSV_brightskin)
+
+
+negative_mask = cv2.bitwise_not(mask)
+restricted_area_write = cv2.cvtColor(restricted_area, cv2.COLOR_HSV2BGR) 
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'rrrestricted_area.jpg', restricted_area_write)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'rrrrmask.jpg', negative_mask)
+
 #thresholded = cv2.Canny(grayscaled,20,55)
 # retr extrenal meist nicht gut.
 
-contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_CCOMP , cv2.CHAIN_APPROX_SIMPLE )
-contours2, hierarchy2 = cv2.findContours(thresholded, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-contours3, hierarchy3 = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+contours, hierarchy = cv2.findContours(negative_mask, cv2.RETR_CCOMP , cv2.CHAIN_APPROX_SIMPLE )
+contours2, hierarchy2 = cv2.findContours(negative_mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+contours3, hierarchy3 = cv2.findContours(negative_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 #cannycontoures, hierarchy4 = cv2.findContours(cannycontoures, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
 
@@ -338,6 +373,8 @@ image_contours_7 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
 image_contours_8 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
 
 
+
+
 # Draw the outline of all detected contours:
 
 draw_contour_outline(image_contours, contours, (0, 0,255 ), 2)
@@ -352,6 +389,8 @@ bigContures = []
 for contour in contours:
     conturarea = int(cv2.contourArea(contour))
     if conturarea > 4000:
+        contour = cv2.approxPolyDP(contour,15, False)
+
         bigContures.append(contour)
     #print(conturarea)
     #if conturarea > 20:
@@ -368,6 +407,8 @@ bigContures2 = []
 for contour in contours2:
     conturarea = int(cv2.contourArea(contour))
     if conturarea > 4000:
+        contour = cv2.approxPolyDP(contour,15, False)
+
         bigContures2.append(contour)
     #print(conturarea)
     #if conturarea > 20:
@@ -383,6 +424,7 @@ bigContures3 = []
 for contour in contours3:
     conturarea = int(cv2.contourArea(contour))
     if conturarea > 4000:
+        contour = cv2.approxPolyDP(contour,15, False)
         bigContures3.append(contour)
     #print(conturarea)
     #if conturarea > 20:
@@ -390,22 +432,6 @@ for contour in contours3:
 for bigContur in bigContures3:
     #print(bigContur)
     a=bigContur
-
-bigContures4 = []
-
-for contour in contours_possible_cow_area_mask:
-    conturarea = int(cv2.contourArea(contour))
-    if conturarea > 500:
-        possible_cow_area_approx = cv2.approxPolyDP(contour,50, True)
-        bigContures4.append(possible_cow_area_approx)
-        
-    #print(conturarea)
-    #if conturarea > 20:
-    
-for bigContur in bigContures4:
-    #print(bigContur)
-    a=bigContur
-
 
 
 
@@ -418,7 +444,6 @@ draw_contour_outline(image_contours_4, bigContures, (0, 0,255 ), 2)
 draw_contour_outline(image_contours_5, bigContures2, (0, 0, 255), 2)
 draw_contour_outline(image_contours_6, bigContures3, (0, 0, 255), 2)
 
-draw_contour_outline(image_contours_8, bigContures4, (0, 0, 255), 2)
 
 
 #draw_contour_outline(image_contours_7, bigContures4, (0, 0, 255), 2)
@@ -569,6 +594,7 @@ cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area.jpg', possible_cow_area)
 cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area_mask.jpg', possible_cow_area_mask)
 
 cv2.imwrite(OUTPUT_IMAGE_PATH + 'contours_possible_cow_area_mask.jpg', image_contours_8)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'deltion.jpg', restricted_area)
 
 
 
