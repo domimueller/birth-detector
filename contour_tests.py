@@ -8,7 +8,9 @@ import matplotlib.image as mpimg
 # input image
 INPUT_IMAGE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/normale/'
 INPUT_IMAGE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-INPUT_IMAGE_FILENAME= '1.jpg'
+INPUT_IMAGE_FILENAME= '1585691986.5171263-300x225.jpg'
+INPUT_IMAGE_FILENAME= '2.jpg'
+
 INPUT_IMAGE_PATH_FILENAME = INPUT_IMAGE_PATH + INPUT_IMAGE_FILENAME
 
 #output images
@@ -18,6 +20,11 @@ OUTPUT_IMAGE_PATH_FILENAME_1 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_1
 
 OUTPUT_IMAGE_FILENAME_2 = 'transformed2.jpg'
 OUTPUT_IMAGE_PATH_FILENAME_2 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_2
+
+
+OUTPUT_IMAGE_FILENAME_7 = 'transformed3.jpg'
+OUTPUT_IMAGE_PATH_FILENAME_7 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_7
+
 
 OUTPUT_IMAGE_FILENAME_ORIGINAL = 'tr_original.jpg'
 OUTPUT_IMAGE_PATH_FILENAME_3 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_ORIGINAL
@@ -34,13 +41,16 @@ OUTPUT_IMAGE_PATH_FILENAME_6 = OUTPUT_IMAGE_PATH + OUTPUT_IMAGE_FILENAME_FILTERE
 
 ## READ FILE ##
 original_image = cv2.imread(INPUT_IMAGE_PATH_FILENAME)
+background_image = np.zeros([original_image.shape[0],original_image.shape[1], 1], dtype=np.uint8)
+background_image = cv2.cvtColor(background_image, cv2.COLOR_GRAY2BGR )
+background_image[: ] = (0,0,255)
 
-def equalize_clahe_color_hsv(img):
+def equalize_clahe_color_hsv(img, cliplimit):
     """Equalize the image splitting it after conversion to HSV and applying CLAHE
     to the V channel and merging the channels and convert back to BGR
     """
 
-    cla = cv2.createCLAHE(clipLimit=4.0)
+    cla = cv2.createCLAHE(clipLimit=cliplimit)
     H, S, V = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     eq_V = cla.apply(V)
     eq_image = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)
@@ -171,32 +181,137 @@ hist_image_eq = hist_color_img(image_equalized_3_channels)
 hsv_equalized_image = equalize_hist_color_hsv(original_image)
 
 
+image_clahe_color_hsv = equalize_clahe_color_hsv(original_image, 400)
 
-image_clahe_color_hsv = equalize_clahe_color_hsv(original_image)
-image_clahe_color_hsv_added_60 = equalize_clahe_color_hsv(added_image_60)
-image_clahe_color_hsv_added_30 = equalize_clahe_color_hsv(added_image_30)
-image_clahe_color_hsv_added_15 = equalize_clahe_color_hsv(added_image_15)
-image_clahe_color_hsv_added_10 = equalize_clahe_color_hsv(added_image_10)
-image_clahe_color_hsv_added_5 = equalize_clahe_color_hsv(added_image_5)
+image_clahe_color_hsv_added_60 = equalize_clahe_color_hsv(added_image_60, 400)
+image_clahe_color_hsv_added_30 = equalize_clahe_color_hsv(added_image_30, 400)
+image_clahe_color_hsv_added_15 = equalize_clahe_color_hsv(added_image_15, 400)
+image_clahe_color_hsv_added_10 = equalize_clahe_color_hsv(added_image_10, 400)
+
+### best clahe
+image_clahe_color_hsv_added_5 = equalize_clahe_color_hsv(added_image_5, 400)
 hist_image_clahe_color_hsv_added_5 = hist_color_img(image_clahe_color_hsv_added_5)
 
-          
+## inRange for best clahe
+# define range of blue color in HSV
+
+'''
+Stallgang: RGB= 75, 45, 21
+Pfosten: RGB = 99, 63, 51
+Stroh: RGB = 222, 167, 77
+cow_RGB = np.uint8([[[227, 194, 89]]])
+cow_RGB2 =  = np.uint8([[[163, 89, 52]]])
+cow_RGB2 =  = np.uint8([[[163, 89, 52]]]) 
+'''
+cow_RGB = np.uint8([[[227, 194, 89]]])
+cow_RGB2 = np.uint8([[[163, 89, 52]]]) 
+cow_RGB3 = np.uint8([[[89, 56, 41]]]) 
+cow_RGB4 = np.uint8([[[34, 25, 20]]]) 
+
+
+print('RGB3' + str(cow_RGB3))
+floor_rgb = np.uint8([[[16, 15, 13]]])
+pole_rgb = np.uint([[[99, 63, 51]]])
+straw_rgb = np.uint([[[222, 167, 77]]])
+light_rgb = np.uint8([[[245, 249, 252]]])
+
+print('RGB: ' + str(cow_RGB))
+floor_HSV = cv2.cvtColor(floor_rgb,cv2.COLOR_RGB2HSV)
+print('fllo' + str(floor_HSV))
+
+cow_HSV =cv2.cvtColor(cow_RGB,cv2.COLOR_RGB2HSV)
+cow_HSV_2 =cv2.cvtColor(cow_RGB2,cv2.COLOR_RGB2HSV)
+cow_HSV_3 =cv2.cvtColor(cow_RGB3,cv2.COLOR_RGB2HSV)
+cow_HSV_3 =cv2.cvtColor(cow_RGB3,cv2.COLOR_RGB2HSV)
+
+dark_cow = cv2.cvtColor(cow_RGB4,cv2.COLOR_RGB2HSV)
+print('dark:')
+print(dark_cow )
+#floor_lower_range = 
+
+RANGE = 50
+
+##### COLORS BELONGING TO THE COW #####
+#Bright skin
+cow_upper_HSV_brightskin = np.array([73,205,139])
+cow_lower_HSV_brightskin = np.array([-47, 105, 39])
+
+#Dark Skin RANGES
+cow_upper_HSV_darkskin = np.array([31,135,64])
+cow_lower_HSV_darkskin = np.array([-19,75,15])
+
+##### COLORS NOT BELONGING TO THE COW #####
+
+#Light 
+lower_HSV_light = np.array([0,0,140])
+upper_HSV_light = np.array([360,100,255])
+
+#floor
+lower_HSV_floor = np.array([0,0,0])
+upper_HSV_floor = np.array([360,100,90])
+
+
+
+
+hsv = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV ) 
+equalized= equalize_clahe_color_hsv(hsv, 4.0)
+filtered = cv2.GaussianBlur(hsv, (9  ,9), 0)
+
+# Threshold the HSV image-_> inrange macht alles weiss, was in der Range ist und alles schwarz was ausserhalb ist
+#positives
+mask_darkskin = cv2.inRange(filtered, cow_lower_HSV_darkskin , cow_upper_HSV_darkskin)
+mask_brightskin = cv2.inRange(filtered, cow_lower_HSV_brightskin , cow_upper_HSV_brightskin)
+
+
+#negatives
+mask_light = cv2.inRange(filtered, lower_HSV_light , upper_HSV_light)
+mask_floor = cv2.inRange(filtered, lower_HSV_floor , upper_HSV_floor)
+
+#put negatives together
+negative_masks = cv2.bitwise_or(mask_light,mask_floor, mask=None)
+negative_bg = cv2.bitwise_and(filtered,background_image, mask=negative_masks)
+
+possible_cow_area_mask = cv2.bitwise_not(negative_masks)
+possible_cow_area = cv2.bitwise_and(filtered, filtered, mask=possible_cow_area_mask)
+
+possible_cow_area_bg = cv2.bitwise_and(filtered, filtered, mask=possible_cow_area_mask)
+
+not_cow_light = cv2.bitwise_and(filtered,background_image, mask=mask_light)
+not_cow_floor = cv2.bitwise_and(filtered,background_image, mask=mask_floor)
+
+# Bitwise-AND mask and original image --> das führt dazu, dass alles was nach inRange weiss war nun wieder die richtige Farbe hat und alles andere schwarz ist
+resulting_mask=cv2.bitwise_or(mask_darkskin,mask_brightskin, mask=None)
+resulting_image=cv2.bitwise_and(filtered,background_image, mask=resulting_mask)
+
+
+cannycontoures = cv2.Canny(original_image,10, 250)          
 # Equalize the image and calculate histogram:
 show_hist_with_matplotlib_rgb(hist_original, "color histogram", 1, ['b', 'g', 'r'])
 show_hist_with_matplotlib_rgb(hist_image_clahe_color_hsv_added_5, "color histogram equalized", 3, ['b', 'g', 'r'])
 
 
+grayscaled = cv2.cvtColor(image_clahe_color_hsv, cv2.COLOR_BGR2GRAY )
+grayscaled = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY ) 
+ 
+filtered = cv2.GaussianBlur(grayscaled, (9  ,9), 0)
 
-grayscaled = cv2.cvtColor(image_clahe_color_hsv_added_5, cv2.COLOR_BGR2GRAY ) 
-filtered = cv2.GaussianBlur(grayscaled, (5  ,5), cv2.BORDER_REFLECT_101)
 #thresholded = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 7, 3)
-#thresholded  = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 5, 3) 
-#rect, thresholded = cv2.threshold(filtered , 60, 255, cv2.THRESH_BINARY) 
-rect, thresholded  = cv2.threshold(filtered , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_TRIANGLE)
 
-contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
-contours2, hierarchy2 = cv2.findContours(thresholded, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
+# eher gut
+#thresholded  = cv2.adaptiveThreshold(filtered , 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 3) 
+rect, thresholded = cv2.threshold(possible_cow_area , 40, 255, cv2.THRESH_BINARY) 
+#rect, thresholded  = cv2.threshold(filtered , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_TRIANGLE)
 
+
+
+
+#thresholded = cv2.Canny(grayscaled,20,55)
+# retr extrenal meist nicht gut.
+
+contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_CCOMP , cv2.CHAIN_APPROX_SIMPLE )
+contours2, hierarchy2 = cv2.findContours(thresholded, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+contours3, hierarchy3 = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+#cannycontoures, hierarchy4 = cv2.findContours(cannycontoures, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
 
 # Show the number of detected contours for each call:
@@ -206,14 +321,20 @@ number_detected_contours2 = format(len(contours2))
 print("detected contours (RETR_LIST): '{}' ".format(len(contours)))
 print("detected contours (RETR_LIST): '{}' ".format(len(contours2)))
 # Copy image to show the results:
-image_contours = original_image.copy()
-image_contours_2 = original_image.copy()
-image_contours_3 = original_image.copy()
-image_contours_4 = original_image.copy()
+image_contours = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_2 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_3 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_4 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_5 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_6 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+image_contours_7 = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+
+
 # Draw the outline of all detected contours:
 
 draw_contour_outline(image_contours, contours, (0, 0,255 ), 2)
 draw_contour_outline(image_contours_2, contours2, (0, 0, 255), 2)
+draw_contour_outline(image_contours_3, contours3, (0, 0, 255), 2)
 
 
 
@@ -238,7 +359,7 @@ bigContures2 = []
 
 for contour in contours2:
     conturarea = int(cv2.contourArea(contour))
-    if conturarea > 1000:
+    if conturarea > 4000:
         bigContures2.append(contour)
     #print(conturarea)
     #if conturarea > 20:
@@ -248,11 +369,31 @@ for bigContur in bigContures2:
     a=bigContur
 
 
+"""Sort contours based on the size"""
+bigContures3 = []
+
+for contour in contours3:
+    conturarea = int(cv2.contourArea(contour))
+    if conturarea > 4000:
+        bigContures3.append(contour)
+    #print(conturarea)
+    #if conturarea > 20:
+    
+for bigContur in bigContures3:
+    #print(bigContur)
+    a=bigContur
+
+
+
+
 number_detected_contours3 = format(len(bigContures))
 number_detected_contours4 = format(len(bigContures2))
 
-draw_contour_outline(image_contours_3, bigContures, (0, 0,255 ), 2)
-draw_contour_outline(image_contours_4, bigContures2, (0, 0, 255), 2)
+draw_contour_outline(image_contours_4, bigContures, (0, 0,255 ), 2)
+draw_contour_outline(image_contours_5, bigContures2, (0, 0, 255), 2)
+draw_contour_outline(image_contours_6, bigContures3, (0, 0, 255), 2)
+
+#draw_contour_outline(image_contours_7, bigContures4, (0, 0, 255), 2)
 
 # Plot the image
 
@@ -264,7 +405,7 @@ draw_contour_outline(image_contours_4, bigContures2, (0, 0, 255), 2)
 
 ## DISPLAY IMAGE WITH MATLLIB ##
 # Create the dimensions of the figure and set title:
-
+'''
 fig = plt.figure(figsize=(20, 20))
 plt.suptitle("Find Conturs in Cow: Preprocessing Steps", fontsize=14, fontweight='bold')
 fig.patch.set_facecolor('silver')
@@ -313,7 +454,7 @@ fig.patch.set_facecolor('silver')
 
 ax = plt.subplot(1, 2, 1)
 plt.imshow(image_contours)
-plt.title('cv2.RETR_EXTERNAL: Number of Detected Contours: ' + number_detected_contours)
+plt.title('cv2.RETR_CCOMP: Number of Detected Contours: ' + number_detected_contours)
 plt.axis('off')
 
 
@@ -332,7 +473,7 @@ fig.patch.set_facecolor('silver')
 
 ax = plt.subplot(1, 2, 1)
 plt.imshow(image_contours_3)
-plt.title('cv2.RETR_EXTERNAL: Number of Detected Contours: ' + number_detected_contours3)
+plt.title('cv2.RETR_CCOMP: Number of Detected Contours: ' + number_detected_contours3)
 plt.axis('off')
 
 
@@ -343,32 +484,67 @@ plt.axis('off')
 plt.show()
 
 
-
+'''
 
 #SAVE THE IMAGE#
 
 cv2.imwrite(OUTPUT_IMAGE_PATH_FILENAME_1, image_contours)
 cv2.imwrite(OUTPUT_IMAGE_PATH_FILENAME_2, image_contours_2)
+cv2.imwrite(OUTPUT_IMAGE_PATH_FILENAME_7, image_contours_3)
+
 cv2.imwrite(OUTPUT_IMAGE_PATH_FILENAME_3, original_image)
 cv2.imwrite(OUTPUT_IMAGE_PATH_FILENAME_4, grayscaled)
 cv2.imwrite(OUTPUT_IMAGE_PATH_FILENAME_5, thresholded)
 
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'hsv_equalized_image.jpg', hsv_equalized_image)
-cv2.imwrite(OUTPUT_IMAGE_PATH + '3-channel-eq.jpg', image_equalized_3_channels)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'filtered.jpg', filtered)
 
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'image_clahe_color_on_original_hsv.jpg', image_clahe_color_hsv)
 cv2.imwrite(OUTPUT_IMAGE_PATH + 'original.jpg', original_image)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'added_60.jpg', added_image_60)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'added_30.jpg', added_image_30)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'added_15.jpg', added_image_15)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'image_clahe_color_on_added_60_hsv.jpg', image_clahe_color_hsv_added_60)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'image_clahe_color_on_added_30_hsv.jpg', image_clahe_color_hsv_added_30)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'image_clahe_color_on_added_15_hsv.jpg', image_clahe_color_hsv_added_15)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'image_clahe_color_on_added_10_hsv.jpg', image_clahe_color_hsv_added_10)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'image_clahe_color_on_added_5_hsv.jpg', image_clahe_color_hsv_added_5)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzz_best_clahe.jpg', image_clahe_color_hsv_added_5)
 
 
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'Big_Area_Contoures_EXTERNAL.jpg', image_contours_3)
-cv2.imwrite(OUTPUT_IMAGE_PATH + 'Big_Area_Contoures_RETR_LIST.jpg', image_contours_4)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzz_mask_darkskin.jpg', mask_darkskin)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzz_mask_brightskin.jpg', mask_brightskin)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzz_mask_light.jpg', mask_light)
+
+
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'cannycontoures.jpg', image_contours_7)
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzzzzz_resulting_mask.jpg', resulting_mask)
+
+
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'Big_area_RETR_CCOMP1.jpg', image_contours_4)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'Big_Area_RETR_LIST2.jpg', image_contours_5)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'Big_Area_RETR_External.jpg', image_contours_6)
+
+
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzzz_ts.jpg', background_image)
+not_cow_ligh =  cv2.cvtColor(not_cow_light, cv2.COLOR_HSV2BGR)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aa_notcow__light.jpg', not_cow_light)
+
+not_cow_floor= cv2.cvtColor(not_cow_floor, cv2.COLOR_HSV2BGR)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aa_notcow__floor.jpg', not_cow_floor)
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_negativ_masks.jpg', negative_masks)
+
+negative_bg= cv2.cvtColor(negative_bg, cv2.COLOR_HSV2BGR)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_negativ_bg.jpg', negative_bg)
+
+possible_cow_area= cv2.cvtColor(possible_cow_area, cv2.COLOR_HSV2BGR)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area.jpg', possible_cow_area)
+
+possible_cow_area_bg= cv2.cvtColor(possible_cow_area_bg, cv2.COLOR_HSV2BGR)
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area_bg.jpg', possible_cow_area_bg)
+
+
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'aaa_possible_area_mask.jpg', possible_cow_area_mask)
+
+
+
+
+
+resulting_image = cv2.cvtColor(resulting_image, cv2.COLOR_HSV2BGR )
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'zzzz_destruktiv.jpg', resulting_image)
+
 
