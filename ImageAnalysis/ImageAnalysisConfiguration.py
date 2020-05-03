@@ -16,42 +16,10 @@
 # IMPORT DECLARATIONS
 #==========================================================================
 
-## Import Classes for Functionality
-import numpy as np
-import cv2 
-
-
-import ImageReader 
-import TraitRecognitor
-import ScoreCalculator
-import ImageWriter
-import ImageProcessor
-import ContourFinder
-import ContourDrawer
-
 import sys
 sys.path.append('../VO-Library')
 
 ## Import Value Objects
-
-import AdaptiveThresholdingConfiguration
-import AdaptiveThresholdingType
-import ApproximationType
-import BGR
-import BrightenConfiguration
-import ColorSpaceConversion
-import ColorSpaceConversionType
-import ContourFinderConfiguration
-import EqualizingType
-import Filepath
-import FilterConfiguration
-import FilteringType
-import FinderType
-import KernelSize
-import MimeType
-import ThresholdingType
-import ThresholdingConfiguration
-import ThresholdingMethod
 import HSV
 import ColorRange
 
@@ -60,38 +28,31 @@ import ColorRange
 # CONSTANTS - CONFIGURATION OF THE IMAGE ANALYSIS CONTROLLER
 #==========================================================================
 
-#### INFORMATION AND CONFIGURATION FOR IMAGE READER ####
-#Filepath and Filename for the Image Reader
-
-READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '2'
+#============================================
+###### IMAGE READER CONFIGURATION ######
+#============================================
 
 #Mimetype Information for Image Reader 
 READER_MAJOR = 'image'
 READER_MINOR = 'jpeg'
 READER_EXTENSION = 'jpg' 
 
+#Filepath and Filename for the Image Reader
 
-#### INFORMATION AND CONFIGURATION FOR IMAGE WRITER ####
+READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
+READER_FILE_NAME = '2'
 
-# The Image Writer is capable of writing multiple Files of the same Mime Type
-# Limitation to one Mime Type per Executionn due to faster configuration
-
-#How to add further file writing: 
-    # 1. Add WRITER_FILE_PATH_* Constant
-    # 2. Add WRITER_FILE_NAME_* Constant
-    # 3. Build writerFilePath_* variable with dataType Filepath (below)
-    # 4. Add it to Tuple: writerFilepaths (below)
-
-# Prepare Key-Value-Pairs. 
-DICT_KEY_PATH = 'path'
-DICT_KEY_NAME = 'name'
+#============================================
+###### IMAGE WRITER CONFIGURATION ######
+#============================================
+   
+#Mimetype Information for Image Writer 
+WRITER_MAJOR = 'image'
+WRITER_MINOR = 'jpeg'
+WRITER_EXTENSION = 'jpg'
 
 # Prepare FilePaths to write . 
 WRITER_FILE_PATH_MAIN = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
-WRITER_FILE_PATH_1 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
-WRITER_FILE_PATH_2 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
-WRITER_FILE_PATH_3 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 
 # Prepare FileNames to write . 
 WRITER_FILE_NAME_BRIGHTENED = 'brightenedImage'
@@ -101,14 +62,15 @@ WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = 'unimportantAreaimage'
 WRITER_FILE_NAME_THRESHOLDED_IMAGE = 'thresholdedImage'
 
 
+#==========================================================================
+# INFORMATION AND CONFIGURATION FOR IMAGE PROCESSOR
+#==========================================================================
 
-#Mimetype Information for Image Writer 
-WRITER_MAJOR = 'image'
-WRITER_MINOR = 'jpeg'
-WRITER_EXTENSION = 'jpg'
 
-#### INFORMATION AND CONFIGURATION FOR IMAGE Processor ####
- 
+#============================================
+###### BRIGHTENING CONFIGURATION ######
+#============================================
+   
 # Brighten Configuration #
 BRIGHTENING_IMAGE = True
 BRIGHTENER_FACTOR = 60
@@ -146,10 +108,14 @@ ENUM_SELECT_CONVERTING_BGR2HSV = 2
 
 
 
-# Filter Configuration #
+#============================================
+###### FILTERING CONFIGURATION ######
+#============================================ 
+
 FILTERING_IMAGE = True
 KERNEL_WIDTH = 9
 KERNEL_LENGTH = 9
+
 ## Filtering Type
 '''
     Possible Values for  ENUM_SELECT_FILTERING:
@@ -160,7 +126,10 @@ KERNEL_LENGTH = 9
 ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR  
 
 
-# Thresholding Configuration #
+#============================================
+###### THRESHOLDING CONFIGURATION ######
+#============================================
+
 THRESHOLDING_IMAGE = True
 MAXIMUM_VALUE = 255 # value between 0 and 255 possible
 THRESHOLD = 40
@@ -193,9 +162,6 @@ ENUM_SELECT_METHOD = 1
 '''
 ENUM_SELECT_TYPE = 2
 
-
-
-
 #adaptive Thresholding Configuration
 BLOCK_SIZE = 11
 C_SUBTRACTOR = 3
@@ -210,8 +176,10 @@ C_SUBTRACTOR = 3
 ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
 
 
-# Unimportant Areas Configuration
 
+#============================================
+###### UNIMPORTANT AREAS CONFIGURATION ######
+#============================================
 
 # light (HSV) Bounds
 LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
@@ -230,11 +198,20 @@ UPPER_BOUND_fr = HSV.HSV(hue=360, saturation=200, value=90)
 lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
 floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBound=UPPER_BOUND_FLOOR )
 
+
+
+#============================================
+###### IMPORTANT AREAS CONFIGURATION ######
+#============================================
+
 # Important Areas Configuration
 
 
 
-## DRAWING
+#============================================
+###### DRAWING CONFIGURATION ######
+#============================================
+
 CIRCLE_DRAWING_MODE = 'CIRCLE'
 OUTLINE_DRAWING_MODE = 'OUTLINE'
 POINTS_DRAWING_MODE = 'POINTS'
