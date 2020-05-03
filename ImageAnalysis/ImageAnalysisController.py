@@ -203,15 +203,21 @@ class ImageAnalysisController:
         nothing will be returned. 
       
         """  
-
+        # set MimeType for files to be written
+        writerMimeType = MimeType.MimeType(major = config.WRITER_MAJOR, 
+                                           minor= config.WRITER_MINOR, 
+                                           extension=config.WRITER_EXTENSION)   
+        
+        
+        
         # image analysis will be performend on the processingImage which is a copy of the original image
         self.processingImage = self.image.copy()
         self.test = self.image.copy()
   
 
-        #========================
-        # Brightening
-        #========================   
+        #=====================================
+        ###### BRIGHTENING ######
+        #=====================================   
 
         # apply brightening configuration
         brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE, 
@@ -225,23 +231,19 @@ class ImageAnalysisController:
         self.image = self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
 
         
-        #========================
-        # Color Space Conversion
-        #========================        
-
-
-        # apply color space conversion configuration
-
-        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
-                                                              conversionType = config.ColorSpaceConversionType.ColorSpaceConversionType,           
-                                                              ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
+        #==================================
+        # write intermediate result to file
+        #==================================
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                           fileName = config.WRITER_FILE_NAME_BRIGHTENED,  
+                                           mimeType= writerMimeType)
         
-        self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.image ) 
 
-
-        #========================
-        # Filtering
-        #========================   
+        #=====================================
+        ###### FILTERING ######
+        #===================================== 
 
         # apply filtering configuration
         kernelSize = KernelSize.KernelSize(width = config.KERNEL_WIDTH, 
@@ -253,40 +255,79 @@ class ImageAnalysisController:
                                                               ENUM_SELECT = config.ENUM_SELECT_FILTERING)
         
         self.processingImage = self.imageProcessor.filterImage(image = self.processingImage, config = filterConfig )
-       
-        #===========================
-        # Unimportant Area Detection
-        #===========================
-          
-        # apply unimportant area detection configuration
         
+ 
+        #==================================
+        # write intermediate result to file
+        #==================================
+        
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                           fileName = config.WRITER_FILE_NAME_FILTERED,  
+                                           mimeType= writerMimeType)
+        
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )         
+       
+        
+        #====================================
+        ###### COLOR SPACE CONVERSION ######
+        #====================================      
+
+
+        # apply color space conversion configuration
+
+        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
+                                                              conversionType = config.ColorSpaceConversionType.ColorSpaceConversionType,           
+                                                              ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
+        
+        self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
+
+
+
+        #=====================================
+        ###### UNIMPORTANT AREA DETECTION ######
+        #=====================================
+                  
         # Build a Tuple with the Color Ranges. More ranges can be added
         unimportantColorRanges= ( config.floorColorRange, config.lightColorRange )          
         
-        ## self.processingImage is Binary Image!
+        ## self.processingImage (returned image) is Binary Image!
         self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage, 
                                                             unimportantColorRanges = unimportantColorRanges)
         
-        writerMimeType = MimeType.MimeType(major = config.WRITER_MAJOR, 
-                                           minor= config.WRITER_MINOR, 
-                                           extension=config.WRITER_EXTENSION)   
-        
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_1, 
-                                           fileName = config.WRITER_FILE_NAME_1,  
+        #==================================
+        # write intermediate result to file
+        #==================================
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                           fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK,  
                                            mimeType= writerMimeType)
         
         
         self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
-        self.controlContourFinder(self.processingImage )
         
-        #===========================
-        # Important Area Detection
-        #===========================
+        
+        ## call Contour Finder with the unimportant area mask as argument
+        contours, self.processingImage = self.controlContourFinder(self.processingImage )
+        self.processingImage = self.controlContourDrawer(contours=contours, drawingMode = config.CIRCLE_DRAWING_MODE)
+        
+        #==================================
+        # write intermediate result to file
+        #==================================
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                           fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE,  
+                                           mimeType= writerMimeType)
+        
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )        
+        
+        #=====================================
+        ###### Important Area Detection ######
+        #=====================================
                
 
-        #===========================
-        # Thresholding
-        #===========================
+        #=====================================
+        ###### Thresholding ######
+        #=====================================
            
         # apply adaptive thresholding configuration 
         adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(
@@ -308,6 +349,15 @@ class ImageAnalysisController:
         ## self.processingImage is Binary Image!
         self.processingImage = self.imageProcessor.segmentImage(image = self.processingImage, config = threshConfig )        
         
+        #==================================
+        # write intermediate result to file
+        #==================================
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                           fileName = config.WRITER_FILE_NAME_THRESHOLDED_IMAGE,  
+                                           mimeType= writerMimeType)
+        
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )        
        
     
 
@@ -336,12 +386,12 @@ class ImageAnalysisController:
         
         # self.processingImage needs to be a binary Image!
         contours, self.processingImage = self.contourFinder.findContours(self.processingImage, self.obtainImage())
- 
         
-        #jump to the next function
-        self.controlContourDrawer(contours)
-
-    def controlContourDrawer(self, contours ):
+        self.contourFinder.countContours(contours)
+       
+        return (contours, self.processingImage) 
+    
+    def controlContourDrawer(self, contours, drawingMode=config.OUTLINE_DRAWING_MODE ):
         
         """ 
        
@@ -363,14 +413,19 @@ class ImageAnalysisController:
       
         """  
         
-        # will need originalImage and processingImage
-        #testimage = cv2.cvtColor(self.processingImage, cv2.COLOR_HSV2BGR )            
-
-        self.contourDrawer.draw_contour_outline(self.obtainProcessingImage(), contours )
-                 
-
+        if drawingMode == 'OUTLINE':
+            self.processingImage = self.contourDrawer.drawContourOutline(self.obtainProcessingImage(), contours )
+        
+        elif drawingMode == 'POINTS':
+            self.processingImage = self.contourDrawer.drawContourPoints(self.obtainProcessingImage(), contours)
+        elif drawingMode == 'CIRCLE':        
+            self.processingImage = self.contourDrawer.fillCircle(self.obtainProcessingImage(), contours )
+            
         #jump to the next function
-        self.controlTraitRecognitor()        
+        self.controlTraitRecognitor()
+               
+        return self.processingImage
+        
         
     def controlTraitRecognitor(self ):
         

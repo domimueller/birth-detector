@@ -88,15 +88,17 @@ DICT_KEY_PATH = 'path'
 DICT_KEY_NAME = 'name'
 
 # Prepare FilePaths to write . 
+WRITER_FILE_PATH_MAIN = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 WRITER_FILE_PATH_1 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 WRITER_FILE_PATH_2 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 WRITER_FILE_PATH_3 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 
 # Prepare FileNames to write . 
-WRITER_FILE_NAME_1 = 'unimportantAreasMask'
-WRITER_FILE_NAME_2 = '2'
-WRITER_FILE_NAME_3 = '3'
-
+WRITER_FILE_NAME_BRIGHTENED = 'brightenedImage'
+WRITER_FILE_NAME_FILTERED = 'filteredImage'
+WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = 'unimportantAreaMask'
+WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = 'unimportantAreaimage'
+WRITER_FILE_NAME_THRESHOLDED_IMAGE = 'thresholdedImage'
 
 
 
@@ -229,3 +231,10 @@ lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBou
 floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBound=UPPER_BOUND_FLOOR )
 
 # Important Areas Configuration
+
+
+
+## DRAWING
+CIRCLE_DRAWING_MODE = 'CIRCLE'
+OUTLINE_DRAWING_MODE = 'OUTLINE'
+POINTS_DRAWING_MODE = 'POINTS'

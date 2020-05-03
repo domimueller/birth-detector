@@ -59,7 +59,7 @@ class ImageWriter:
     
         """ 
        
-        Writes a Tuple of Images to corresponding Files.
+        Writes an Image to corresponding Files.
         -------              
       
         This function is based on the library OpenCV and the corresponding function cv2.imwrite.
@@ -68,7 +68,7 @@ class ImageWriter:
         Parameters: 
         -------                 
         image (Image): Image to write
-        filePathAndNames (Tuple of Filepaths): Tuple of File Paths, File Names and corresponding Mime Types 
+        filePathAndNames : Tuple of File Paths, File Names and corresponding Mime Types 
         in order to identify the file. 
 
         
@@ -80,7 +80,7 @@ class ImageWriter:
         
         self.filePathAndName = filePathAndName 
         self.image = image 
-
+        
         cv2.imwrite(self.filePathAndName.obtainFileNameAndPath(), self.image)
 
 #==========================================================================

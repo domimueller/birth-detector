@@ -20,6 +20,12 @@ import numpy as np
 # CONSTANTS
 #==========================================================================
 
+MIN_AREA = 200
+# Configuration for Console Output
+TITLE = '############ NUMBER OF DETECTED CONTOURS ############'
+DELIMITER = '; '
+NEWLINE = '\n'
+
 
 #==========================================================================
 # FUNCTIONS
@@ -49,36 +55,96 @@ class ContourFinder:
 
     def findContours(self, processingImage, originalImage):
         
+        """ 
+       
+        Finds Contours in an Image.
+        -------              
+      
+        This function is based on the library OpenCV and the corresponding function cv2.findContours.
+        -------              
+      
+        Parameters: 
+        -------                 
+        processingImage (Image): Image to use for Contour Finding
+        originalImage (Image): Image to pass to filterContours() for Contour Drawing. 
+
+        
+        Returns: 
+        -------              
+        contours (Contour): contours found
+        processingImage (Image): Image for further processing
+        
+        """          
 
         contours, hierarchy = cv2.findContours(processingImage, cv2.RETR_LIST , cv2.CHAIN_APPROX_SIMPLE )
+        
         contours, processingImage = self.filterContours(contours, processingImage, originalImage)
+        
         return (contours, processingImage)
 
     def filterContours(self, contours, processingImage, originalImage ):
         
+        """ 
+       
+        Filters Contours of an Image.
+        -------              
+      
+        This function is based on the library OpenCV and the corresponding function cv2.contourArea.
+        -------              
+      
+        Parameters: 
+        -------                 
+        contours (Contour): contours found retrieved from findContours()
+        processingImage (Image): Image to use for Contour Filtering and Application
+        originalImage (Image): Image for Contour Drawing. 
+
+        
+        Returns: 
+        -------              
+        contours (Contour): contours found
+        processingImage (Image): Image for further processing
+        
+        """   
+                  
         filteredContours = []
         for contour in contours:
             
             conturArea = int(cv2.contourArea(contour))
             
-            # only contourArea > 200px considered to remove noise
-            if conturArea >200:
-                # draw minimal circle around contour
+            # only contourArea > MIN_AREA considered to remove noise
+            if conturArea > MIN_AREA:
                 
-                (x,y),radius = cv2.minEnclosingCircle(contour)
-                center = (int(x),int(y))
-                radius = int(radius)
-                # draw the circles in the originalImage, not the processing image (which is binary!).
-                cv2.circle(originalImage,center,radius,(0,0,0),-1)
+                filteredContours.append(contour)
                 
                 #this image will now be our processingImage                
                 processingImage = originalImage
                 
         return (filteredContours, processingImage)
 
-    def countAllContours(self, contours):
-        pass
+    def countContours(self, contours):
+        
+        """ 
+       
+        Counts number of detected contours.
+        -------              
+      
+        Counts number of detected contours, returns it and prints it to the console.
+        -------              
+      
+        Parameters: 
+        -------                 
+        contours (Contour): contours found retrieved from findContours()
+ 
 
-    def countRelevantContours(self, filteredContours):
-        pass
-
+        
+        Returns: 
+        -------              
+        contourAmount (int):  number of detected contours
+        
+        """          
+        contourAmount = format(len(contours))
+        
+        str = TITLE + NEWLINE + contourAmount  + NEWLINE
+        print(str)
+        
+        return contourAmount

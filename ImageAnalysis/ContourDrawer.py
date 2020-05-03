@@ -43,15 +43,16 @@ class ContourDrawer:
       
     Methods - See descriptions below.
     -------
-    draw_contour_outline(img, cnts, color, thickness=1)
-    draw_contour_points(img, cnts, color)    
+    drawContourOutline(img, cnts, color, thickness=1)
+    drawContourPoints(img, cnts, color) 
+    fillConjtour(self, image, contours ):
     """ 
     
         
     def __init__(self):
         pass
 
-    def draw_contour_outline(self, image, contours ):
+    def drawContourOutline(self, image, contours ):
     
         """ 
        
@@ -65,7 +66,6 @@ class ContourDrawer:
         -------                 
         image (Image): Image use for drawing
         contour: contours to draw 
-        color: color for drawing
         thickness: thickness of drawing lines. thickness = -1 means filling the contour with color
 
         
@@ -78,9 +78,10 @@ class ContourDrawer:
         for contour in contours:
             cv2.drawContours(image, [contour], 0, COLOR, THICKNESS)
         
+        return image
 
+    def drawContourPoints(self, image, contours):
 
-    def draw_contour_points(self, image, contours):
         """ 
        
         draws points around a contour.
@@ -94,7 +95,6 @@ class ContourDrawer:
         -------                 
         image (Image): Image use for drawing
         contour: contours to draw 
-        color: color for drawing
 
         
         Returns: 
@@ -111,9 +111,41 @@ class ContourDrawer:
                 p = tuple(p.reshape(1, -1)[0])
                        
                 if len(p) > 1:     
-                    cv2.circle(image, p , 2, COLOR, -1)
+                    cv2.circle(image, p , 2, COLOR, THICKNESS)
                 
         return image
+    
+    def fillCircle(self, image, contours):
+       
+        """ 
+       
+        creats minimal enclosing Circle and fills it with color.
+        -------              
+      
+        This function is based on the library OpenCV and the corresponding function cv2.minEnclosingCircle.
+        -------              
+      
+        Parameters:         -------              
+
+        -------                 
+        image (Image): Image use for drawing
+        contour: contours to draw 
+
+        
+        Returns: 
+        -------              
+        Image will be returned      
+        """                  
+        for contour in contours:    
+            # draw minimal circle around contour
+            (x,y),radius = cv2.minEnclosingCircle(contour)
+            center = (int(x),int(y))
+            radius = int(radius)
+            # draw the circles in the originalImage, not the processing image (which is binary!).
+            cv2.circle(image,center,radius,COLOR,THICKNESS)
+     
+        return  image
+    
 #==========================================================================
 # END
 #==========================================================================
