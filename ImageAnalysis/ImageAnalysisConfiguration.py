@@ -93,7 +93,7 @@ WRITER_FILE_PATH_2 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 WRITER_FILE_PATH_3 = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 
 # Prepare FileNames to write . 
-WRITER_FILE_NAME_1 = 'unimportantAreas'
+WRITER_FILE_NAME_1 = 'unimportantAreasMask'
 WRITER_FILE_NAME_2 = '2'
 WRITER_FILE_NAME_3 = '3'
 

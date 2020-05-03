@@ -265,7 +265,18 @@ class ImageAnalysisController:
         
         ## self.processingImage is Binary Image!
         self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage, 
-                                                              unimportantColorRanges = unimportantColorRanges)
+                                                            unimportantColorRanges = unimportantColorRanges)
+        
+        writerMimeType = MimeType.MimeType(major = config.WRITER_MAJOR, 
+                                           minor= config.WRITER_MINOR, 
+                                           extension=config.WRITER_EXTENSION)   
+        
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_1, 
+                                           fileName = config.WRITER_FILE_NAME_1,  
+                                           mimeType= writerMimeType)
+        
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
         self.controlContourFinder(self.processingImage )
         
         #===========================
@@ -297,11 +308,8 @@ class ImageAnalysisController:
         ## self.processingImage is Binary Image!
         self.processingImage = self.imageProcessor.segmentImage(image = self.processingImage, config = threshConfig )        
         
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/2.jpg', self.processingImage)
-        
        
-        
-
+    
 
     def controlContourFinder(self, processingImage ):
  
@@ -346,8 +354,7 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        processingImage: Image for analysis
-        originalImage: Image for displaying
+        contours: Contours derived from findContours()
 
         
         Returns: 
@@ -413,12 +420,12 @@ class ImageAnalysisController:
         
 
         #jump to the next function
-        self.controlImageWriter()
+        #self.controlImageWriter()
 
 
 
     
-    def controlImageWriter(self ):
+    def controlImageWriter(self, filepathAndName, image ):
         
         """ 
        
@@ -430,40 +437,19 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        no parameters. 
+        filepathAndName: filepathAndName
+            Location in Filesystem to write Image
+        image: Image
+            Image to write
 
         
         Returns: 
         -------              
         nothing will be returned. 
       
-        """  
+        """
         
-      
-        writerMimeType = MimeType.MimeType(major = config.WRITER_MAJOR, 
-                                           minor= config.WRITER_MINOR, 
-                                           extension=config.WRITER_EXTENSION)   
-        
-        writerFilepath_1 = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_1, 
-                                           fileName = config.WRITER_FILE_NAME_1,  
-                                           mimeType= writerMimeType)
-        
-        
-        writerFilepath_2 = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_2, 
-                                           fileName = config.WRITER_FILE_NAME_2,  
-                                           mimeType= writerMimeType) 
-        
-        
-        
-        writerFilepath_3= Filepath.Filepath(filePath = config.WRITER_FILE_PATH_3, 
-                                           fileName = config.WRITER_FILE_NAME_3,  
-                                           mimeType= writerMimeType)
-        
-        
-        # Build a Tuple with this writerFilepaths
-        writerFilepaths = (writerFilepath_1, writerFilepath_2, writerFilepath_3 )                                   
-        
-        self.imageWriter.writeImages( image = self.obtainProcessingImage(), filePathAndNames = writerFilepaths  ) 
+        self.imageWriter.writeImage( image = image, filePathAndName = filepathAndName  ) 
         
     def obtainImage(self ):
         

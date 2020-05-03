@@ -302,7 +302,7 @@ class ImageProcessor:
         return cummulated_irrelevant_areas
 
 
-    def detectImporantArea(self, image, importantColorRange):
+    def detectImporantArea(self, image, importantColorRanges):
        
         """ 
        
@@ -326,7 +326,7 @@ class ImageProcessor:
         adjusted Image 
         
         """  
-        self.filterConfig = importantColorRange
+        self.filterConfig = importantColorRanges
         
         #possible_cow_area_mask = cv2.bitwise_not(negative_masks)
 

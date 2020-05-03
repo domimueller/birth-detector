@@ -54,7 +54,7 @@ class ImageWriter:
         pass
 
 
-    def writeImages(self, image, filePathAndNames ):
+    def writeImage(self, image, filePathAndName ):
         
     
         """ 
@@ -78,11 +78,10 @@ class ImageWriter:
       
         """  
         
-        self.filePathAndName = filePathAndNames 
+        self.filePathAndName = filePathAndName 
         self.image = image 
-        
-        for filePathAndName in filePathAndNames:
-            cv2.imwrite(filePathAndName.obtainFileNameAndPath(), image)
+
+        cv2.imwrite(self.filePathAndName.obtainFileNameAndPath(), self.image)
 
 #==========================================================================
 # END

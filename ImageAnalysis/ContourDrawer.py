@@ -20,7 +20,8 @@ import numpy as np
 # CONSTANTS
 #==========================================================================
 
-
+COLOR =  (0, 0, 0)
+THICKNESS = -1
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -48,9 +49,7 @@ class ContourDrawer:
     
         
     def __init__(self):
-        
-        self.color = None
-        self.thickness = None
+        pass
 
     def draw_contour_outline(self, image, contours ):
     
@@ -75,14 +74,13 @@ class ContourDrawer:
         Nothing will be returned. 
       
         """
-        color =  (0, 0, 0)
-        thickness = -1
+
         for contour in contours:
-            cv2.drawContours(image, [contour], 0, color, thickness)
+            cv2.drawContours(image, [contour], 0, COLOR, THICKNESS)
         
 
 
-    def draw_contour_points(self, image, contours, color):
+    def draw_contour_points(self, image, contours):
         """ 
        
         draws points around a contour.
@@ -113,7 +111,7 @@ class ContourDrawer:
                 p = tuple(p.reshape(1, -1)[0])
                        
                 if len(p) > 1:     
-                    cv2.circle(image, p , 2, color, -1)
+                    cv2.circle(image, p , 2, COLOR, -1)
                 
         return image
 #==========================================================================
