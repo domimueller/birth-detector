@@ -68,6 +68,12 @@ def hist_color_img(img):
     
     return histr
 
+berichtimg = cv2.imread('C:/Users/domim/OneDrive/Desktop/bilder/bericht/1ausgangsbildBericht.jpg')
+orgimg = cv2.imread('C:/Users/domim/OneDrive/Desktop/bilder/seitlich/2.jpg')
+
+
+
+
 def equalize_hist_color(img):
     """Equalize the image splitting the image applying cv2.equalizeHist() to each channel and merging the results"""
 
@@ -85,11 +91,12 @@ def show_hist_with_matplotlib_rgb(hist, title, pos, color):
     ax = plt.subplot(1, 3, pos)
     # plt.title(title)
     plt.xlabel("bins")
-    plt.ylabel("number of pixels")
+    plt.ylabel("Anzahl Pixel")
     plt.xlim([0, 256])
-
+    plt.ylim([0, 200])
     for (h, c) in zip(hist, color):
         plt.plot(h, color=c)
+
 
 def equalize_hist_color_hsv(img):
     """Equalizes the image splitting it after HSV conversion and applying cv2.equalizeHist()
@@ -278,7 +285,7 @@ contours_negative_mask, hierarchy = cv2.findContours(negative_masks, cv2.RETR_LI
 possible_cow_area_mask_loaded = cv2.imread('C:/Users/domim/OneDrive/Desktop/bilder/aaa_possible_area_mask.jpg')
 
 filtered_bgr = cv2.cvtColor(filtered, cv2.COLOR_HSV2BGR ) 
-possible_cow_area = cv2.bitwise_and( original_image,possible_cow_area_mask_loaded)
+#possible_cow_area = cv2.bitwise_and( original_image,possible_cow_area_mask_loaded)
 
 
 #possible_cow_area_bg = cv2.bitwise_and(filtered, filtered, mask=possible_cow_area_mask)
@@ -293,9 +300,8 @@ resulting_image=cv2.bitwise_and(filtered,background_image, mask=resulting_mask)
 
 cannycontoures = cv2.Canny(original_image,10, 250)          
 # Equalize the image and calculate histogram:
-show_hist_with_matplotlib_rgb(hist_original, "color histogram", 1, ['b', 'g', 'r'])
-show_hist_with_matplotlib_rgb(hist_image_clahe_color_hsv_added_5, "color histogram equalized", 3, ['b', 'g', 'r'])
-
+show_hist_with_matplotlib_rgb(orgimg, "color histogram equalized", 1, ['r', 'g', 'b'])
+show_hist_with_matplotlib_rgb(berichtimg, "color histogram", 3, ['r', 'g', 'b'])
 
 grayscaled = cv2.cvtColor(image_clahe_color_hsv, cv2.COLOR_BGR2GRAY )
 grayscaled = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY ) 

@@ -150,9 +150,9 @@ class ImageProcessor:
            ## check if selected Equalizing Type = CLAHE. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_EQUALIZING in ImageAnalysisController.py
            if self.brightenConfig.obtainEqualizingType() == 'CLAHE':
-                cla = cv2.createCLAHE(clipLimit= self.brightenConfig.obtainClipLimit())
+                clahe = cv2.createCLAHE(clipLimit= self.brightenConfig.obtainClipLimit())
                 H, S, V = cv2.split(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
-                eq_V = cla.apply(V)
+                eq_V = clahe.apply(V)
                 image = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)            
         
         return image
@@ -236,6 +236,102 @@ class ImageProcessor:
                                       0)
         return image
 
+    def detectUnimporantArea(self, image, unimportantColorRanges):
+       
+        """ 
+       
+        Detects unimportant Areas in the Image and returns adjusted Image.
+        -------              
+      
+        The Detection of unimportant Areas is based on Color Ranges, which are not likely
+        to represent a part of a cow. Therefore, they can be considered to be unimportant.
+        
+        -------              
+      
+        Parameters: 
+        -------                 
+        image (Image): Image to process. 
+        unimportantColorRange (HSV[1..*]): Color Range in HSV Color Model
+        
+
+        
+        Returns: 
+        -------              
+        adjusted Image 
+        
+        """    
+        
+        self.unimportantColorRanges = unimportantColorRanges
+        
+       
+        i=0
+        irrelevant_areas = []
+        
+        for unimportantColorRange in unimportantColorRanges:
+            i=i+1
+
+            ### Binarize the HSV image ###
+            # inRange() converts any color inside the Range to white. 
+            # Anything outside the range will be converted to black
+            # this means, that the detected irrelevant regions will be white 
+            
+            lowerBound = unimportantColorRange.obtainLowerBound().obtainColor()
+            upperBound = unimportantColorRange.obtainUpperBound().obtainColor()
+
+            irrelevant_area_mask= cv2.inRange(image, lowerBound , upperBound)
+            
+            
+            #append all the irrelevant areas as a binary image to a list
+            irrelevant_areas.append(irrelevant_area_mask)
+        
+        
+        cummulated_irrelevant_areas = np.zeros([image.shape[0],image.shape[1], 1], dtype=np.uint8)
+        
+        # go through the list with the irrelevant areas and peforme bitwise_or on this images
+        for irrelevant_area in irrelevant_areas:
+           
+            #put the irrelevant areas together    
+            cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )
+
+        
+        
+ 
+    
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR )            
+        
+        return cummulated_irrelevant_areas
+
+
+    def detectImporantArea(self, image, importantColorRange):
+       
+        """ 
+       
+        Detects important Areas in the Image and returns adjusted Image.
+        -------              
+      
+        The Detection ofnimportant Areas is based on Color Ranges, which are  likely
+        to represent a part of a cow. Therefore, they can be considered to be important.
+        
+        -------              
+      
+        Parameters: 
+        -------                 
+        image (Image): Image to process. 
+        importantColorRange (HSV[1..*]): Color Range in HSV Color Model
+        
+
+        
+        Returns: 
+        -------              
+        adjusted Image 
+        
+        """  
+        self.filterConfig = importantColorRange
+        
+        #possible_cow_area_mask = cv2.bitwise_not(negative_masks)
+
+        return image
+
     def segmentImage(self, image, config):
 
         """ 
@@ -304,125 +400,7 @@ class ImageProcessor:
         return image        
     
 
-    def detectUnimporantArea(self, image, unimportantColorRanges):
-       
-        """ 
-       
-        Detects unimportant Areas in the Image and returns adjusted Image.
-        -------              
-      
-        The Detection of unimportant Areas is based on Color Ranges, which are not likely
-        to represent a part of a cow. Therefore, they can be considered to be unimportant.
-        
-        -------              
-      
-        Parameters: 
-        -------                 
-        image (Image): Image to process. 
-        unimportantColorRange (HSV[1..*]): Color Range in HSV Color Model
-        
 
-        
-        Returns: 
-        -------              
-        adjusted Image 
-        
-        """    
-        
-        self.unimportantColorRanges = unimportantColorRanges
-        
-       
-        i=0
-        irrelevant_areas = []
-        
-        for unimportantColorRange in unimportantColorRanges:
-            i=i+1
-
-            ### Binarize the HSV image ###
-            # inRange() converts any color inside the Range to white. 
-            # Anything outside the range will be converted to black
-            # this means, that the detected irrelevant regions will be white 
-            
-            lowerBound = unimportantColorRange.obtainLowerBound().obtainColor()
-            upperBound = unimportantColorRange.obtainUpperBound().obtainColor()
-
-            irrelevant_area_mask= cv2.inRange(image, lowerBound , upperBound)
-            
-            name = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/single_irrelevant_area_mask' +str(i) +'.jpg' 
-            cv2.imwrite(name, irrelevant_area_mask)
-            
-            #append all the irrelevant areas as a binary image to a list
-            irrelevant_areas.append(irrelevant_area_mask)
-        
-        
-        cummulated_irrelevant_areas = np.zeros([image.shape[0],image.shape[1], 1], dtype=np.uint8)
-        
-        # go through the list with the irrelevant areas and peforme bitwise_or on this images
-        for irrelevant_area in irrelevant_areas:
-            #put the irrelevant areas together    
-
-            cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )
-
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/finale_cummulated.jpg', cummulated_irrelevant_areas)
-        
-        
-
-        contours_negative_mask, hierarchy = cv2.findContours(cummulated_irrelevant_areas, cv2.RETR_LIST , cv2.CHAIN_APPROX_SIMPLE )
-        
-        bigContures4 = []
-        
-        for contour in contours_negative_mask:
-            conturarea = int(cv2.contourArea(contour))
-            if conturarea > 500:
-                not_cow_area_approx = cv2.approxPolyDP(contour,55, True)
-                #not_cow_area_approx = contour
-                bigContures4.append(not_cow_area_approx)
-                
-        #mask1 = np.ones(processing_image.shape[:2], dtype="uint8") * 255
-        #mask2 = cv2.bitwise_not(cummulated_irrelevant_areas)
-        #draw_contour_outline(mask, bigContures4, (0, 0, 255), 2)
-
-               
-        #cv2.drawContours(image, bigContures4, -1, 0, -1)    
-        #cv2.drawContours(mask2, bigContures4, -1, 0, -1)    
-        
-            
-        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR )            
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/final_result1.jpg', image)
-
-        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR ) 
-        return image
-
-
-    def detectImporantArea(self, image, importantColorRange):
-       
-        """ 
-       
-        Detects important Areas in the Image and returns adjusted Image.
-        -------              
-      
-        The Detection ofnimportant Areas is based on Color Ranges, which are  likely
-        to represent a part of a cow. Therefore, they can be considered to be important.
-        
-        -------              
-      
-        Parameters: 
-        -------                 
-        image (Image): Image to process. 
-        importantColorRange (HSV[1..*]): Color Range in HSV Color Model
-        
-
-        
-        Returns: 
-        -------              
-        adjusted Image 
-        
-        """  
-        self.filterConfig = importantColorRange
-        
-        #possible_cow_area_mask = cv2.bitwise_not(negative_masks)
-
-        return image
 
 
 

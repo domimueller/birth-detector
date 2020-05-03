@@ -75,8 +75,8 @@ class ContourDrawer:
         Nothing will be returned. 
       
         """
-        color =  (0, 0, 255)
-        thickness = 1
+        color =  (0, 0, 0)
+        thickness = -1
         for contour in contours:
             cv2.drawContours(image, [contour], 0, color, thickness)
         
@@ -91,7 +91,8 @@ class ContourDrawer:
         This function is based on the library OpenCV and the corresponding function cv2.circle.
         -------              
       
-        Parameters: 
+        Parameters:         -------              
+
         -------                 
         image (Image): Image use for drawing
         contour: contours to draw 

@@ -47,21 +47,34 @@ class ContourFinder:
     def __init__(self):
         self.finderConfig = None
 
-    def findContours(self, processingImage):
+    def findContours(self, processingImage, originalImage):
         
-        processingImage = cv2.cvtColor(processingImage, cv2.COLOR_BGR2GRAY)            
 
         contours, hierarchy = cv2.findContours(processingImage, cv2.RETR_LIST , cv2.CHAIN_APPROX_SIMPLE )
-        return contours
-    
-    def filterContours(self, contours ):
-        filteredcontours = []
+        contours, processingImage = self.filterContours(contours, processingImage, originalImage)
+        return (contours, processingImage)
+
+    def filterContours(self, contours, processingImage, originalImage ):
+        
+        filteredContours = []
         for contour in contours:
-            conturarea = int(cv2.contourArea(contour))
-            if conturarea > 500:
-                approx = cv2.approxPolyDP(contour,55, True)
-                #not_cow_area_approx = contour
-                filteredcontours.append(approx)
+            
+            conturArea = int(cv2.contourArea(contour))
+            
+            # only contourArea > 200px considered to remove noise
+            if conturArea >200:
+                # draw minimal circle around contour
+                
+                (x,y),radius = cv2.minEnclosingCircle(contour)
+                center = (int(x),int(y))
+                radius = int(radius)
+                # draw the circles in the originalImage, not the processing image (which is binary!).
+                cv2.circle(originalImage,center,radius,(0,0,0),-1)
+                
+                #this image will now be our processingImage                
+                processingImage = originalImage
+                
+        return (filteredContours, processingImage)
 
     def countAllContours(self, contours):
         pass

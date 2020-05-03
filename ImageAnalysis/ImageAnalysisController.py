@@ -54,175 +54,16 @@ import ThresholdingConfiguration
 import ThresholdingMethod
 import HSV
 import ColorRange
+import ImageAnalysisConfiguration as config
+
+
 #==========================================================================
-# CONSTANTS
+# CONSTANTS 
 #==========================================================================
 
-#### INFORMATION AND CONFIGURATION FOR IMAGE READER ####
-#Filepath and Filename for the Image Reader
-
-READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '2'
-
-#Mimetype Information for Image Reader 
-READER_MAJOR = 'image'
-READER_MINOR = 'jpeg'
-READER_EXTENSION = 'jpg' 
-
-
-#### INFORMATION AND CONFIGURATION FOR IMAGE WRITER ####
-
-# The Image Writer is capable of writing multiple Files of the same Mime Type
-# Limitation to one Mime Type per Executionn due to faster configuration
-
-#How to add further file writing: 
-    # 1. Add WRITER_FILE_PATH_* Constant
-    # 2. Add WRITER_FILE_NAME_* Constant
-    # 3. Build writerFilePath_* variable with dataType Filepath (below)
-    # 4. Add it to Tuple: writerFilepaths (below)
-
-# Prepare Key-Value-Pairs. 
-DICT_KEY_PATH = 'path'
-DICT_KEY_NAME = 'name'
-
-# Prepare FilePaths to write . 
-WRITER_FILE_PATH_1 = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
-WRITER_FILE_PATH_2 = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
-WRITER_FILE_PATH_3 = 'C:/Users/domim/OneDrive/Desktop/bilder/neu/'
-
-# Prepare FileNames to write . 
-WRITER_FILE_NAME_1 = '1'
-WRITER_FILE_NAME_2 = '2'
-WRITER_FILE_NAME_3 = '3'
-
-
-
-
-#Mimetype Information for Image Writer 
-WRITER_MAJOR = 'image'
-WRITER_MINOR = 'jpeg'
-WRITER_EXTENSION = 'jpg'
-
-#### INFORMATION AND CONFIGURATION FOR IMAGE Processor ####
- 
-# Brighten Configuration #
-BRIGHTENING_IMAGE = True
-BRIGHTENER_FACTOR = 60
-EQUALIZING_IMAGE = True
-CLIP_LIMIT = 4.0
-
-## Equalizing Type
-'''
-    Possible Values for  ENUM_SELECT_EQUALIZING:
-    - 1 corresponds to CLAHE
-
-    Any other Values are not allowed and end up with an error message. 
-'''
-ENUM_SELECT_EQUALIZING = 1 #CLAHE
-
-
-
-# Color Space Conversion Configuration #
-CONVERTING_IMAGE = True
-## Converting Type
-'''
-    Possible Values for  ENUM_SELECT_FILTERING:
-    - 1 corresponds to COLOR_BGR2GRAY  
-    - 2 corresponds to COLOR_BGR2HSV 
-    - 3 corresponds to COLOR_HSV2BGR
-    - 4 corresponds to COLOR_GRAY2BGR 
-    - 5 corresponds to COLOR_BGR2YUV 
-    - 6 corresponds to COLOR_YUV2BGR 
-
-    Any other Values are not allowed and end up with an error message. 
-'''
-ENUM_SELECT_CONVERTING_BGR2GRAY = 1 #COLOR_BGR2GRAY
-ENUM_SELECT_CONVERTING_BGR2HSV = 2
-
-
-
-
-# Filter Configuration #
-FILTERING_IMAGE = True
-KERNEL_WIDTH = 9
-KERNEL_LENGTH = 9
-## Filtering Type
-'''
-    Possible Values for  ENUM_SELECT_FILTERING:
-    - 1 corresponds to GAUSSIANBLUR
-
-    Any other Values are not allowed and end up with an error message. 
-'''
-ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR  
-
-
-# Thresholding Configuration #
-THRESHOLDING_IMAGE = True
-MAXIMUM_VALUE = 255 # value between 0 and 255 possible
-THRESHOLD = 40
-
-## Thresholding Method Enumeration
-'''
-    Possible Values for  ENUM_SELECT_METHOD:
-    - 1 corresponds to THRESHOLD
-    - 2 corresponds to ADAPTIVE_THRESHOLD
-    
-
-    Any other Values are not allowed and end up with an error message. 
-'''
-ENUM_SELECT_METHOD = 1
-
- 
-# Thresholding Type Enumeration
-'''
-    Possible Values for  ENUM_SELECT_TYPE:
-    - 1 corresponds to THRESH_BINARY
-    - 2 corresponds to THRESH_BINARY_INV
-    - 3 corresponds to THRESH_TRUNC
-    - 4 corresponds to THRESH_TOZERO
-    - 5 corresponds to THRESH_TOZERO_INV
-    - 6 corresponds to THRESH_BINARY_AND_THRESH_OTSU 
-    - 7 corresponds to THRESH_BINARY_AND_THRESH_TRIANGLE
-    
-
-    Any other Values are not allowed and end up with an error message. 
-'''
-ENUM_SELECT_TYPE = 1 
-
-
-
-
-#adaptive Thresholding Configuration
-BLOCK_SIZE = 11
-C_SUBTRACTOR = 3
-
-'''
-    Possible Values for  ENUM_SELECT_ADAPTIVE_THRESHOLDING:
-    - 1 corresponds to ADAPTIVE_THRESH_MEAN_C
-    - 2 corresponds to ADAPTIVE_THRESH_GAUSSIAN_C     
-
-    Any other Values are not allowed and end up with an error message. 
-''' 
-ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
-
-
-# Unimportant Areas Configuration
-
-
-# light (HSV) Bounds
-LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
-UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
-                           
-#floor (HSV) 
-LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
-UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
-
-# Color Ranges
-lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
-floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBound=UPPER_BOUND_FLOOR )
-
-
-# Important Areas Configuration
+# The Configuration of the Image Analysis Controller is sourced in a 
+# separate file name ImageAnalysisConfiguration.py 
+# see: ImageAnalysisConfiguration as config
 
 #==========================================================================
 # FUNCTIONS
@@ -328,13 +169,13 @@ class ImageAnalysisController:
         """  
         
         
-        readerMimeType = MimeType.MimeType(major = READER_MAJOR, 
-                                           minor= READER_MINOR, 
-                                           extension=READER_EXTENSION)   
+        readerMimeType = MimeType.MimeType(major = config.READER_MAJOR, 
+                                           minor= config.READER_MINOR, 
+                                           extension= config.READER_EXTENSION)   
         
-        readerFilepath = Filepath.Filepath(filePath = READER_FILE_PATH, 
-                                           fileName = READER_FILE_NAME,  
-                                           mimeType=readerMimeType)
+        readerFilepath = Filepath.Filepath(filePath = config.READER_FILE_PATH, 
+                                           fileName = config.READER_FILE_NAME,  
+                                           mimeType= readerMimeType)
         
         self.image = self.imageReader.readImage( filePathAndName = readerFilepath ) 
         
@@ -368,71 +209,99 @@ class ImageAnalysisController:
         self.test = self.image.copy()
   
 
+        #========================
+        # Brightening
+        #========================   
+
         # apply brightening configuration
-        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = BRIGHTENING_IMAGE, 
-                                                    brightenerFactor = BRIGHTENER_FACTOR, 
-                                                    equalizingImage = EQUALIZING_IMAGE, 
-                                                    clipLimit = CLIP_LIMIT , 
-                                                    equalizingType = EqualizingType.EqualizingType, 
-                                                    ENUM_SELECT = ENUM_SELECT_EQUALIZING)
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE, 
+                                                    brightenerFactor = config.BRIGHTENER_FACTOR, 
+                                                    equalizingImage = config.EQUALIZING_IMAGE, 
+                                                    clipLimit = config.CLIP_LIMIT , 
+                                                    equalizingType = config.EqualizingType.EqualizingType, 
+                                                    ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
 
         # improve brightness and contrast of original image to facilitate export for report
         self.image = self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
+
         
-        
+        #========================
+        # Color Space Conversion
+        #========================        
+
+
         # apply color space conversion configuration
 
-        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = CONVERTING_IMAGE, 
-                                                              conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
-                                                              ENUM_SELECT = ENUM_SELECT_CONVERTING_BGR2HSV)
+        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
+                                                              conversionType = config.ColorSpaceConversionType.ColorSpaceConversionType,           
+                                                              ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
         
         self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
 
 
+        #========================
+        # Filtering
+        #========================   
+
         # apply filtering configuration
-        kernelSize = KernelSize.KernelSize(width = KERNEL_WIDTH, 
-                                           length = KERNEL_LENGTH)  
+        kernelSize = KernelSize.KernelSize(width = config.KERNEL_WIDTH, 
+                                           length = config.KERNEL_LENGTH)  
          
-        filterConfig = FilterConfiguration.FilterConfiguration(filteringImage = FILTERING_IMAGE, 
+        filterConfig = FilterConfiguration.FilterConfiguration(filteringImage = config.FILTERING_IMAGE, 
                                                               kernelSize = kernelSize,
                                                               filteringType = FilteringType.FilteringType,           
-                                                              ENUM_SELECT = ENUM_SELECT_FILTERING)
+                                                              ENUM_SELECT = config.ENUM_SELECT_FILTERING)
         
         self.processingImage = self.imageProcessor.filterImage(image = self.processingImage, config = filterConfig )
        
-        
+        #===========================
+        # Unimportant Area Detection
+        #===========================
+          
         # apply unimportant area detection configuration
         
-        # Build a Tuple with the Color Ranges
-        unimportantColorRanges= ( floorColorRange, lightColorRange )          
+        # Build a Tuple with the Color Ranges. More ranges can be added
+        unimportantColorRanges= ( config.floorColorRange, config.lightColorRange )          
         
-
+        ## self.processingImage is Binary Image!
         self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage, 
                                                               unimportantColorRanges = unimportantColorRanges)
         self.controlContourFinder(self.processingImage )
+        
+        #===========================
+        # Important Area Detection
+        #===========================
+               
+
+        #===========================
+        # Thresholding
+        #===========================
            
         # apply adaptive thresholding configuration 
         adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(
                                             thresholdingType= AdaptiveThresholdingType.AdaptiveThresholdingType,
-                                            ENUM_SELECT = ENUM_SELECT_ADAPTIVE_THRESHOLDING,
-                                            blockSize = BLOCK_SIZE, 
-                                            cSubtractor = C_SUBTRACTOR)      
+                                            ENUM_SELECT = config.ENUM_SELECT_ADAPTIVE_THRESHOLDING,
+                                            blockSize = config.BLOCK_SIZE, 
+                                            cSubtractor = config.C_SUBTRACTOR)      
         # put all together 
         threshConfig = ThresholdingConfiguration.ThresholdingConfiguration(
-                        thresholdingImage = THRESHOLDING_IMAGE,
-                        threshold = THRESHOLD,
+                        thresholdingImage = config.THRESHOLDING_IMAGE,
+                        threshold = config.THRESHOLD,
                         thresholdingMethod = ThresholdingMethod.ThresholdingMethod,
-                        ENUM_SELECT_METHOD = ENUM_SELECT_METHOD,
+                        ENUM_SELECT_METHOD = config.ENUM_SELECT_METHOD,
                         thresholdingType = ThresholdingType.ThresholdingType,
-                        ENUM_SELECT_TYPE = ENUM_SELECT_TYPE,
+                        ENUM_SELECT_TYPE = config.ENUM_SELECT_TYPE,
                         adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration,
-                        maximumValue = MAXIMUM_VALUE)
+                        maximumValue = config.MAXIMUM_VALUE)
         
+        ## self.processingImage is Binary Image!
         self.processingImage = self.imageProcessor.segmentImage(image = self.processingImage, config = threshConfig )        
         
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/2.jpg', self.processingImage)
         
-        #jump to the next function
-        self.controlContourFinder(self.processingImage)
+       
+        
+
 
     def controlContourFinder(self, processingImage ):
  
@@ -448,7 +317,7 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        processingImage: Image for analysis
+        processingImage: Image for analysis (Binary Image!)
         
         Returns: 
         -------              
@@ -456,12 +325,13 @@ class ImageAnalysisController:
       
         """  
         self.processingImage = processingImage
-
-        contours = self.contourFinder.findContours(self.processingImage)
+        
+        # self.processingImage needs to be a binary Image!
+        contours, self.processingImage = self.contourFinder.findContours(self.processingImage, self.obtainImage())
+ 
         
         #jump to the next function
         self.controlContourDrawer(contours)
-
 
     def controlContourDrawer(self, contours ):
         
@@ -489,9 +359,8 @@ class ImageAnalysisController:
         # will need originalImage and processingImage
         #testimage = cv2.cvtColor(self.processingImage, cv2.COLOR_HSV2BGR )            
 
-        drawer = self.contourDrawer
-        drawer.draw_contour_outline(self.obtainImage(), contours )
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/itworks.jpg', self.obtainImage())
+        self.contourDrawer.draw_contour_outline(self.obtainProcessingImage(), contours )
+                 
 
         #jump to the next function
         self.controlTraitRecognitor()        
@@ -547,6 +416,7 @@ class ImageAnalysisController:
         self.controlImageWriter()
 
 
+
     
     def controlImageWriter(self ):
         
@@ -570,30 +440,30 @@ class ImageAnalysisController:
         """  
         
       
-        writerMimeType = MimeType.MimeType(major = WRITER_MAJOR, 
-                                           minor= WRITER_MINOR, 
-                                           extension=WRITER_EXTENSION)   
+        writerMimeType = MimeType.MimeType(major = config.WRITER_MAJOR, 
+                                           minor= config.WRITER_MINOR, 
+                                           extension=config.WRITER_EXTENSION)   
         
-        writerFilepath_1 = Filepath.Filepath(filePath = WRITER_FILE_PATH_1, 
-                                           fileName = WRITER_FILE_NAME_1,  
-                                           mimeType=writerMimeType)
-        
-        
-        writerFilepath_2 = Filepath.Filepath(filePath = WRITER_FILE_PATH_2, 
-                                           fileName = WRITER_FILE_NAME_2,  
-                                           mimeType=writerMimeType) 
+        writerFilepath_1 = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_1, 
+                                           fileName = config.WRITER_FILE_NAME_1,  
+                                           mimeType= writerMimeType)
         
         
+        writerFilepath_2 = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_2, 
+                                           fileName = config.WRITER_FILE_NAME_2,  
+                                           mimeType= writerMimeType) 
         
-        writerFilepath_3= Filepath.Filepath(filePath = WRITER_FILE_PATH_3, 
-                                           fileName = WRITER_FILE_NAME_3,  
-                                           mimeType=writerMimeType)
+        
+        
+        writerFilepath_3= Filepath.Filepath(filePath = config.WRITER_FILE_PATH_3, 
+                                           fileName = config.WRITER_FILE_NAME_3,  
+                                           mimeType= writerMimeType)
         
         
         # Build a Tuple with this writerFilepaths
         writerFilepaths = (writerFilepath_1, writerFilepath_2, writerFilepath_3 )                                   
         
-        self.imageWriter.writeImages( image = self.obtainImage(), filePathAndNames = writerFilepaths  ) 
+        self.imageWriter.writeImages( image = self.obtainProcessingImage(), filePathAndNames = writerFilepaths  ) 
         
     def obtainImage(self ):
         
