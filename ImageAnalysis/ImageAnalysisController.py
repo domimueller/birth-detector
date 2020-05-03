@@ -18,6 +18,7 @@
 
 ## Import Classes for Functionality
 import numpy as np
+import cv2 
 
 
 import ImageReader 
@@ -61,7 +62,7 @@ import ColorRange
 #Filepath and Filename for the Image Reader
 
 READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '1'
+READER_FILE_NAME = '2'
 
 #Mimetype Information for Image Reader 
 READER_MAJOR = 'image'
@@ -135,7 +136,8 @@ CONVERTING_IMAGE = True
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_CONVERTING = 1 #COLOR_BGR2GRAY
+ENUM_SELECT_CONVERTING_BGR2GRAY = 1 #COLOR_BGR2GRAY
+ENUM_SELECT_CONVERTING_BGR2HSV = 2
 
 
 
@@ -168,7 +170,7 @@ THRESHOLD = 40
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_METHOD = 2
+ENUM_SELECT_METHOD = 1
 
  
 # Thresholding Type Enumeration
@@ -268,19 +270,22 @@ class ImageAnalysisController:
     contourDrawer : ContourDrawer
          brings the data and functionality of the ContourDrawer.         
     imageWriter : ImageWriter
-         brings the data and functionality of the ImageWriter.         
-
+         brings the data and functionality of the ImageWriter.
+    image : Image
+         always refers to the Image for displaying purpose
+    processingImage : Image
+         the image for processing and performing analysis
     Methods - see Descriptons below
     -------
    controlImageReader(self )
    controlImageProcessor(self )   
-   controlContourFinder(self )
+   controlContourFinder(self, processingImage )
    controlContourDrawer(self ) 
    controlTraitRecognitor(self ) 
    controlScoreCalculator(self )
    controlImageWriter(self )
    obtainImage(self )
-        
+   obtainProcessingImage(self )    
         
     '''
     
@@ -295,6 +300,8 @@ class ImageAnalysisController:
         self.contourFinder = contourFinder
         self.contourDrawer = contourDrawer
         self.image = None
+        self.Processingimage = None
+        
         
         #jump to the first function
         self.controlImageReader()
@@ -356,8 +363,11 @@ class ImageAnalysisController:
       
         """  
 
+        # image analysis will be performend on the processingImage which is a copy of the original image
+        self.processingImage = self.image.copy()
+        self.test = self.image.copy()
+  
 
-        
         # apply brightening configuration
         brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = BRIGHTENING_IMAGE, 
                                                     brightenerFactor = BRIGHTENER_FACTOR, 
@@ -366,16 +376,17 @@ class ImageAnalysisController:
                                                     equalizingType = EqualizingType.EqualizingType, 
                                                     ENUM_SELECT = ENUM_SELECT_EQUALIZING)
 
-
+        # improve brightness and contrast of original image to facilitate export for report
         self.image = self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
-
+        
+        
         # apply color space conversion configuration
 
         colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = CONVERTING_IMAGE, 
                                                               conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
-                                                              ENUM_SELECT = ENUM_SELECT_CONVERTING)
+                                                              ENUM_SELECT = ENUM_SELECT_CONVERTING_BGR2HSV)
         
-        self.image = self.imageProcessor.convertColorSpace(image = self.image, config = colorspaceConvertConfig )
+        self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
 
 
         # apply filtering configuration
@@ -387,18 +398,19 @@ class ImageAnalysisController:
                                                               filteringType = FilteringType.FilteringType,           
                                                               ENUM_SELECT = ENUM_SELECT_FILTERING)
         
-        self.image = self.imageProcessor.filterImage(image = self.image, config = filterConfig )
+        self.processingImage = self.imageProcessor.filterImage(image = self.processingImage, config = filterConfig )
        
         
         # apply unimportant area detection configuration
         
         # Build a Tuple with the Color Ranges
-        unimportantColorRanges= (lightColorRange, floorColorRange )          
+        unimportantColorRanges= ( floorColorRange, lightColorRange )          
         
-        self.image = self.imageProcessor.detectUnimporantArea( image = self.image, 
-                                                              unimportantColorRanges = unimportantColorRanges)
 
-        
+        self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage, 
+                                                              unimportantColorRanges = unimportantColorRanges)
+        self.controlContourFinder(self.processingImage )
+           
         # apply adaptive thresholding configuration 
         adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(
                                             thresholdingType= AdaptiveThresholdingType.AdaptiveThresholdingType,
@@ -416,13 +428,13 @@ class ImageAnalysisController:
                         adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration,
                         maximumValue = MAXIMUM_VALUE)
         
-        self.image = self.imageProcessor.segmentImage(image = self.image, config = threshConfig )        
+        self.processingImage = self.imageProcessor.segmentImage(image = self.processingImage, config = threshConfig )        
         
         
         #jump to the next function
-        self.controlContourFinder()
+        self.controlContourFinder(self.processingImage)
 
-    def controlContourFinder(self ):
+    def controlContourFinder(self, processingImage ):
  
         """ 
        
@@ -436,20 +448,22 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        no parameters. 
-
+        processingImage: Image for analysis
         
         Returns: 
         -------              
         nothing will be returned.
       
         """  
+        self.processingImage = processingImage
 
+        contours = self.contourFinder.findContours(self.processingImage)
         
         #jump to the next function
-        self.controlContourDrawer()
+        self.controlContourDrawer(contours)
 
-    def controlContourDrawer(self ):
+
+    def controlContourDrawer(self, contours ):
         
         """ 
        
@@ -462,7 +476,8 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        no parameters. 
+        processingImage: Image for analysis
+        originalImage: Image for displaying
 
         
         Returns: 
@@ -471,7 +486,13 @@ class ImageAnalysisController:
       
         """  
         
-    
+        # will need originalImage and processingImage
+        #testimage = cv2.cvtColor(self.processingImage, cv2.COLOR_HSV2BGR )            
+
+        drawer = self.contourDrawer
+        drawer.draw_contour_outline(self.obtainImage(), contours )
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/itworks.jpg', self.obtainImage())
+
         #jump to the next function
         self.controlTraitRecognitor()        
         
@@ -572,7 +593,7 @@ class ImageAnalysisController:
         # Build a Tuple with this writerFilepaths
         writerFilepaths = (writerFilepath_1, writerFilepath_2, writerFilepath_3 )                                   
         
-        self.image = self.imageWriter.writeImages( image = self.obtainImage(), filePathAndNames = writerFilepaths  ) 
+        self.imageWriter.writeImages( image = self.obtainImage(), filePathAndNames = writerFilepaths  ) 
         
     def obtainImage(self ):
         
@@ -597,7 +618,30 @@ class ImageAnalysisController:
         
         return self.image
     
+    def obtainProcessingImage(self ):
+        
+        """ 
+       
+        Obtains the Image for Processing and Analysis.
+        -------              
+      
+        This function facilitates to obtain the Processing Image Attribute. It does not provide any further Business Logic.
+        -------                 
+      
+        Parameters: 
+        -------                 
+        no parameters. 
+
+        
+        Returns: 
+        -------              
+        Image for further processing. 
+      
+        """  
+        
+        return self.processingImage
     
+     
 #==========================================================================
 # MAIN
 #==========================================================================

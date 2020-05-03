@@ -313,7 +313,8 @@ rect, thresholded = cv2.threshold(possible_cow_area , 40, 255, cv2.THRESH_BINARY
 
 
 
-original_copy = equalize_clahe_color_hsv(added_image_5, 4.0).copy()
+original_copy = equalize_clahe_color_hsv(added_image_10, 4.0).copy()
+cv2.imwrite(OUTPUT_IMAGE_PATH + 'ausgangsbild_bericht.jpg', original_copy)
 
 bigContures4 = []
 

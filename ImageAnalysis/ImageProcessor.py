@@ -20,9 +20,15 @@
 import cv2 
 import numpy as np
 
+import ImageWriter
+import ContourDrawer
+import ContourFinder
+import ImageAnalysisController
+
 import sys
 sys.path.append('../VO-Library')
-
+import ColorSpaceConversion
+import ColorSpaceConversionType
 
 
 #==========================================================================
@@ -31,6 +37,23 @@ sys.path.append('../VO-Library')
 DELIMITER = ': '
 
 
+# Color Space Conversion Configuration #
+CONVERTING_IMAGE = True
+## Converting Type
+'''
+    Possible Values for  ENUM_SELECT_FILTERING:
+    - 1 corresponds to COLOR_BGR2GRAY  
+    - 2 corresponds to COLOR_BGR2HSV 
+    - 3 corresponds to COLOR_HSV2BGR
+    - 4 corresponds to COLOR_GRAY2BGR 
+    - 5 corresponds to COLOR_BGR2YUV 
+    - 6 corresponds to COLOR_YUV2BGR 
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+ENUM_SELECT_CONVERTING_BGR2GRAY = 1 #COLOR_BGR2GRAY
+ENUM_SELECT_CONVERTING_BGR2HSV = 2
+ENUM_SELECT_CONVERTING_GRAY2BGR = 4
 
 #==========================================================================
 # FUNCTIONS
@@ -77,7 +100,6 @@ class ImageProcessor:
     """ 
     
     def __init__(self):
-        self.image = None
         self.reader = None
         self.brightenConfig = None
         self.colorspaceConvertConfig = None
@@ -112,15 +134,14 @@ class ImageProcessor:
       
         """  
         
-        self.image = image
         self.brightenConfig = config
         
         print(self.brightenConfig.obtainBrightenConfiguration())
         
         ## check if Brightening is desired and then perform the brightening based on the Brightener Factor
         if self.brightenConfig.obtainBrighteningImage()== True: 
-            M = np.ones(self.image.shape, dtype="uint8")*self.brightenConfig.obtainBrightenerFactor()  
-            self.image = cv2.add(self.image, M)
+            M = np.ones(image.shape, dtype="uint8")*self.brightenConfig.obtainBrightenerFactor()  
+            image = cv2.add(image, M)
        
         
         ## check if Equalizing is desired and then perform the equalizing based on the desired Method
@@ -130,11 +151,11 @@ class ImageProcessor:
            # done by enumeration Config variable ENUM_SELECT_EQUALIZING in ImageAnalysisController.py
            if self.brightenConfig.obtainEqualizingType() == 'CLAHE':
                 cla = cv2.createCLAHE(clipLimit= self.brightenConfig.obtainClipLimit())
-                H, S, V = cv2.split(cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV))
+                H, S, V = cv2.split(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
                 eq_V = cla.apply(V)
-                self.image = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)            
+                image = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)            
         
-        return self.image
+        return image
    
     def convertColorSpace(self, image, config):
 
@@ -161,7 +182,6 @@ class ImageProcessor:
         New Image will be returned  
       
         """          
-        self.image = image
         self.colorspaceConvertConfig = config
      
         print(self.colorspaceConvertConfig.obtainColorSpaceConversion())
@@ -171,9 +191,9 @@ class ImageProcessor:
                       
            # pass the value given by enumeration to the Function cv2.cvtColor() 
            conversionParameter = 'cv2.' + self.colorspaceConvertConfig.obtainConversionType()
-           self.image = cv2.cvtColor(self.image, eval(conversionParameter))
+           image = cv2.cvtColor(image, eval(conversionParameter))
         
-        return self.image
+        return image
 
     def filterImage(self, image, config):
        
@@ -201,7 +221,6 @@ class ImageProcessor:
         Nothing will be returned 
         
         """    
-        self.image = image
         self.filterConfig = config
      
         print(self.filterConfig.obtainFilterConfiguration())
@@ -212,10 +231,10 @@ class ImageProcessor:
            ## check if selected Filtering Type = GAUSSIANBLUR. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_FILTERING in ImageAnalysisController.py
            if self.filterConfig.obtainFilteringType() == 'GAUSSIANBLUR':        
-               self.image = cv2.GaussianBlur(self.image, 
+               image = cv2.GaussianBlur(image, 
                                       (self.filterConfig.kernelSize.obtainKernelWidth(), self.filterConfig.kernelSize.obtainKernelLength()), 
                                       0)
-        return self.image
+        return image
 
     def segmentImage(self, image, config):
 
@@ -248,7 +267,6 @@ class ImageProcessor:
         """   
         
         self.threshConfig = config
-        self.image = image        
         print(self.threshConfig.obtainThresholdingConfiguration())
         
         ## check if Thresholding is desired and then perform the threshilding based on the desired Method
@@ -259,7 +277,7 @@ class ImageProcessor:
            
            if self.threshConfig.obtainThresholdingMethod() == 'THRESHOLD':    
                type_parameter = 'cv2.' + str(self.threshConfig.obtainThresholdingType())
-               rect, self.image = cv2.threshold(self.image , 
+               rect, image = cv2.threshold(image , 
                                                 self.threshConfig.obtainThreshold(), 
                                                 self.threshConfig.obtainMaximumValue(), 
                                                 eval(type_parameter))
@@ -276,14 +294,14 @@ class ImageProcessor:
                adaptive_type_parameter = 'cv2.' + str(self.threshConfig.adaptiveThresholdingConfiguration.obtainThresholdingType())
 
                
-               self.image = cv2.adaptiveThreshold(self.image, 
+               image = cv2.adaptiveThreshold(image, 
                                                          self.threshConfig.obtainMaximumValue(), 
                                                          eval(adaptive_type_parameter),
                                                          eval(thresholding_type_parameter),
                                                          self.threshConfig.adaptiveThresholdingConfiguration.obtainBlockSize(),
                                                          self.threshConfig.adaptiveThresholdingConfiguration.obtainCSubtractor())               
                
-        return self.image        
+        return image        
     
 
     def detectUnimporantArea(self, image, unimportantColorRanges):
@@ -310,26 +328,70 @@ class ImageProcessor:
         adjusted Image 
         
         """    
-        self.image = image
-        self.unimportantColorRanges = unimportantColorRanges
-        #print(self.unimportantColorRange)
         
+        self.unimportantColorRanges = unimportantColorRanges
+        
+       
+        i=0
+        irrelevant_areas = []
         
         for unimportantColorRange in unimportantColorRanges:
-            '''
-            print(lowerBoundName + DELIMITER+ str(unimportantColorRange[lowerBoundName].obtainHsv())) 
-            print(upperBoundName + DELIMITER + str(unimportantColorRange[upperBoundName].obtainHsv()))        
+            i=i+1
+
+            ### Binarize the HSV image ###
+            # inRange() converts any color inside the Range to white. 
+            # Anything outside the range will be converted to black
+            # this means, that the detected irrelevant regions will be white 
             
-            '''
-
-            print(unimportantColorRange.obtainColorRange())
-
             lowerBound = unimportantColorRange.obtainLowerBound().obtainColor()
-            upperBound = unimportantColorRange.obtainUpperBound().obtainColor()  
+            upperBound = unimportantColorRange.obtainUpperBound().obtainColor()
+
+            irrelevant_area_mask= cv2.inRange(image, lowerBound , upperBound)
             
-  
+            name = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/single_irrelevant_area_mask' +str(i) +'.jpg' 
+            cv2.imwrite(name, irrelevant_area_mask)
             
-        return self.image
+            #append all the irrelevant areas as a binary image to a list
+            irrelevant_areas.append(irrelevant_area_mask)
+        
+        
+        cummulated_irrelevant_areas = np.zeros([image.shape[0],image.shape[1], 1], dtype=np.uint8)
+        
+        # go through the list with the irrelevant areas and peforme bitwise_or on this images
+        for irrelevant_area in irrelevant_areas:
+            #put the irrelevant areas together    
+
+            cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )
+
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/finale_cummulated.jpg', cummulated_irrelevant_areas)
+        
+        
+
+        contours_negative_mask, hierarchy = cv2.findContours(cummulated_irrelevant_areas, cv2.RETR_LIST , cv2.CHAIN_APPROX_SIMPLE )
+        
+        bigContures4 = []
+        
+        for contour in contours_negative_mask:
+            conturarea = int(cv2.contourArea(contour))
+            if conturarea > 500:
+                not_cow_area_approx = cv2.approxPolyDP(contour,55, True)
+                #not_cow_area_approx = contour
+                bigContures4.append(not_cow_area_approx)
+                
+        #mask1 = np.ones(processing_image.shape[:2], dtype="uint8") * 255
+        #mask2 = cv2.bitwise_not(cummulated_irrelevant_areas)
+        #draw_contour_outline(mask, bigContures4, (0, 0, 255), 2)
+
+               
+        #cv2.drawContours(image, bigContures4, -1, 0, -1)    
+        #cv2.drawContours(mask2, bigContures4, -1, 0, -1)    
+        
+            
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR )            
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/final_result1.jpg', image)
+
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR ) 
+        return image
 
 
     def detectImporantArea(self, image, importantColorRange):
@@ -356,11 +418,11 @@ class ImageProcessor:
         adjusted Image 
         
         """  
-        
-        self.image = image
         self.filterConfig = importantColorRange
+        
+        #possible_cow_area_mask = cv2.bitwise_not(negative_masks)
 
-        return self.image
+        return image
 
 
 
