@@ -1,3 +1,12 @@
+
+
+
+#==========================================================================
+# THIS FILE ONLY EXISTS FOR EXPERIMENT TESTING AND EXECUTION.
+# THE FILE WILL BE REMOVED LATER ON
+#==========================================================================
+
+
 import numpy as np
 import cv2 
 import matplotlib.pyplot as plt 
