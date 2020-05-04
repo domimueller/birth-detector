@@ -372,23 +372,18 @@ class ImageProcessor:
            ## check if selected Thresholding Method = THRESHOLD. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py
     
-           print(self.threshConfig.obtainThresholdingMethod())
-           print(ImageAnalysisConfiguration.SIMPLE_THRESHOLD_NAME)
-           if self.threshConfig.obtainThresholdingMethod() == True:  
-               print('asdlnmasldmlsapd')
 
-               type_parameter = str(self.threshConfig.obtainThresholdingType())
+           if self.threshConfig.obtainThresholdingMethod() == ImageAnalysisConfiguration.SIMPLE_THRESHOLD_NAME:  
 
-               rect, image = cv2.threshold(image , 
+               rect, image = cv2.threshold(image, 
                                                 self.threshConfig.obtainThreshold(), 
-                                                self.threshConfig.obtainMaximumValue(), 
-                                                type_parameter)
+                                                self.threshConfig.obtainMaximumValue(),
+                                                eval(self.threshConfig.obtainThresholdingType()))
                
                
-            ## check if selected Thresholding Method = ADAPTIVE_THRESHOLD. Enumeration Selection 
+           ## check if selected Thresholding Method = ADAPTIVE_THRESHOLD. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py              
            elif self.threshConfig.obtainThresholdingMethod() == ImageAnalysisConfiguration.ADAPTIVE_THRESHOLD_NAME:  
-               print('okidokiu')
 
                print(self.threshConfig.adaptiveThresholdingConfiguration.obtainAdaptiveThresholdingConfiguration())
                thresholding_type_parameter = str(self.threshConfig.obtainThresholdingType())

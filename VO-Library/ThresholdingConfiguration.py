@@ -26,6 +26,15 @@ DELIMITER = '; '
 NEWLINE = '\n'
 CV = 'cv2.'
 ACTIVATION_MESSAGE = ' ACTIVATED'
+
+# the + sign is not stored in enumeration. therefore, if OTSU or TRIANGLE is selected, return the correct parameter
+OTSU_TYPE_ENUM_NAME = 'cv2.THRESH_BINARY_AND_THRESH_OTSU'
+OTSU_TYPE_PARAM_NAME = 'cv2.THRESH_BINARY+cv2.THRESH_OTSU'
+
+TRIANGLE_TYPE_ENUM_NAME = 'cv2.THRESH_BINARY_AND_THRESH_TRIANGLE'
+TRIANGLE_TYPE_PARAM_NAME = 'cv2.THRESH_BINARY+cv2.THRESH_TRIANGLE'
+
+
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -145,7 +154,15 @@ class ThresholdingConfiguration:
         thresholdingType_enum_selection = self.thresholdingType(self.ENUM_SELECT_TYPE)
         thresholdingType_name = thresholdingType_enum_selection.name
         thresholdingType = CV + thresholdingType_name
-        return thresholdingType    
+        
+        
+        # the + sign is not stored in enumeration. therefore, if OTSU or TRIANGLE is selected, return the correct parameter
+        if thresholdingType == OTSU_TYPE_ENUM_NAME:
+                thresholdingType  = OTSU_TYPE_PARAM_NAME
+
+        if thresholdingType == TRIANGLE_TYPE_ENUM_NAME:
+                thresholdingType  = TRIANGLE_TYPE_PARAM_NAME                
+        return thresholdingType 
 
     def obtainMaximumValue(self ):
         

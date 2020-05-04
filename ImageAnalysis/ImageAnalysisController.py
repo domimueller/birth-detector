@@ -366,12 +366,17 @@ class ImageAnalysisController:
         
         # remove again
         segmenentingImage = cv2.cvtColor(segmenentingImage, cv2.COLOR_BGR2GRAY)
+        
+
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/1.jpg', segmenentingImage)
 
         ## self.processingImage is Binary (returned Image)!
         segmenentingImage = self.imageProcessor.segmentImage(image = segmenentingImage, config = threshConfig )
+        
+        ## that works!
+        #rect, segmenentingImage = cv2.threshold(segmenentingImage , 40, 255, cv2.THRESH_BINARY) 
+       
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/2.jpg', segmenentingImage)
-
         #==================================
         # write intermediate result to file
         #==================================

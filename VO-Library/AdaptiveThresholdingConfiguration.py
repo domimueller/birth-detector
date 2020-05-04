@@ -28,7 +28,7 @@ sys.path.append('../VO-Library')
 TITLE = '############ ADAPTIVE THRESHOLDING CONFIGURATION ############'
 DELIMITER = '; '
 NEWLINE = '\n'
-
+CV = 'cv2.'
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -82,8 +82,9 @@ class AdaptiveThresholdingConfiguration:
           
         thresholdingType_enum_selection = self.thresholdingType(self.ENUM_SELECT)
         thresholdingType_name = thresholdingType_enum_selection.name
+        thresholdingType = CV + thresholdingType_name
 
-        return thresholdingType_name
+        return thresholdingType
 
     def obtainBlockSize(self ):
        

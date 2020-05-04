@@ -149,7 +149,7 @@ THRESHOLD = 40
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_METHOD = 1
+ENUM_SELECT_METHOD = 2
 
  
 # Thresholding Type Enumeration
@@ -164,9 +164,10 @@ ENUM_SELECT_METHOD = 1
     - 7 corresponds to THRESH_BINARY_AND_THRESH_TRIANGLE
     
 
-    Any other Values are not allowed and end up with an error message. 
+    Any other Values are not allowed and end up with an error message.
+    PLEASE NOTE: For adaptive Thresholding only THRESH_BINARY and THRESH_BINARY_INV are available
 '''
-ENUM_SELECT_TYPE = 4
+ENUM_SELECT_TYPE = 2
 
 #adaptive Thresholding Configuration
 BLOCK_SIZE = 11
