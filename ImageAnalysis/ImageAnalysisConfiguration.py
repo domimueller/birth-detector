@@ -62,7 +62,7 @@ WRITER_FILE_NAME_FILTERED = '2_filteredImage'
 WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = '3_unimportantAreaMask'
 WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4_unimportantAreaimage'
 WRITER_FILE_NAME_THRESHOLDED_MASK = '5_thresholdedMask'
-WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_thresholdedImage'
+WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_ContoursAfterThresholding'
 
 
 #==========================================================================
@@ -77,7 +77,7 @@ WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_thresholdedImage'
 # Brighten Configuration #
 BRIGHTENING_IMAGE = True
 BRIGHTENER_FACTOR = 60
-EQUALIZING_IMAGE = True
+EQUALIZING_IMAGE = False
 CLIP_LIMIT = 4.0
 
 ## Equalizing Type
@@ -138,7 +138,7 @@ ADAPTIVE_THRESHOLD_NAME = 'cv2.ADAPTIVE_THRESHOLD'
 
 THRESHOLDING_IMAGE = True
 MAXIMUM_VALUE = 255 # value between 0 and 255 possible
-THRESHOLD = 40
+THRESHOLD =80
 
 ## Thresholding Method Enumeration
 '''
@@ -214,6 +214,8 @@ floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBou
 #============================================
 
 MIN_AREA = 200
+MIN_AREA_BIG = 2000
+
 DELETE_CIRCLES_TRUE = True
 DELETE_CIRCLES_FALSE = False
 
@@ -246,7 +248,7 @@ ENUM_SELECT_APPROX = 1
     Any other Values are not allowed and end up with an error message. 
 '''
     
-ENUM_SELECT_FINDER = 1
+ENUM_SELECT_FINDER = 3
 
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######

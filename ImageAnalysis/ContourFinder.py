@@ -21,7 +21,7 @@ import numpy as np
 #==========================================================================
 
 # Configuration for Console Output
-TITLE = '############ NUMBER OF DETECTED CONTOURS ############'
+TITLE = 'NUMBER OF DETECTED CONTOURS: '
 DELIMITER = '; '
 NEWLINE = '\n'
 
@@ -76,7 +76,8 @@ class ContourFinder:
         processingImage (Image): Image for further processing
         
         """          
-        print()
+        print(finderConfig.obtainContourFinderConfiguration())
+
         contours, hierarchy = cv2.findContours(processingImage, eval(finderConfig.obtainFinderType()) , eval(finderConfig.obtainApproxType()) )
         
         contours, processingImage = self.filterContours(contours, processingImage, originalImage, finderConfig)
@@ -130,9 +131,9 @@ class ContourFinder:
                 ecc = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
                 #print(ecc)
                 
-                if ecc > 1:
+                if ecc > 0.7:
                     i=i+1
-                   
+                    print(ecc)
                     filteredContours.append(contour)
                 
             
@@ -166,7 +167,7 @@ class ContourFinder:
         """          
         contourAmount = format(len(contours))
         
-        str = TITLE + NEWLINE + contourAmount  + NEWLINE
+        str = TITLE + contourAmount  + NEWLINE
         print(str)
         
         return contourAmount

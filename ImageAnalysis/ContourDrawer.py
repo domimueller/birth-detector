@@ -73,7 +73,6 @@ class ContourDrawer:
         Nothing will be returned. 
       
         """
-
         for contour in contours:
             cv2.drawContours(image, [contour], 0, color, thickness)
         
@@ -100,7 +99,7 @@ class ContourDrawer:
         -------              
         Image will be returned      
         """    
-       
+      
         for contour in contours:
 
             squeeze = np.squeeze(contour)
@@ -134,7 +133,8 @@ class ContourDrawer:
         Returns: 
         -------              
         Image will be returned      
-        """                  
+        """        
+          
         for contour in contours:    
             # draw minimal circle around contour
             (x,y),radius = cv2.minEnclosingCircle(contour)

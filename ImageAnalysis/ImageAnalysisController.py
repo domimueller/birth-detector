@@ -215,7 +215,6 @@ class ImageAnalysisController:
         self.processingImage = self.image.copy()
         segmenentingImage = self.image.copy()
 
-
         #=====================================
         ###### BRIGHTENING ######
         #=====================================   
@@ -288,11 +287,11 @@ class ImageAnalysisController:
         #=====================================
         ###### UNIMPORTANT AREA DETECTION ######
         #=====================================
-                  
         # Build a Tuple with the Color Ranges. More ranges can be added
         unimportantColorRanges= ( config.floorColorRange, config.lightColorRange )          
         
         ## self.processingImage (returned image) is Binary Image!
+        
         self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage, 
                                                             unimportantColorRanges = unimportantColorRanges)
         
@@ -317,13 +316,15 @@ class ImageAnalysisController:
         
         ## call Contour Finder with the unimportant area mask as argument
         contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
+        
         self.processingImage = self.controlContourDrawer(contours=contours, 
                                                          drawingMode = config.CIRCLE_DRAWING_MODE, 
                                                          color =config.BLACK.obtainDrawingColor(), 
-                                                         thickness=config.THICKNESS_BOLD)
+                                                         thickness=config.THICKNESS_FILL)
+        
 
+                        
 
-      
         #==================================
         # write intermediate result to file
         #==================================
@@ -361,22 +362,21 @@ class ImageAnalysisController:
                         maximumValue = config.MAXIMUM_VALUE)
       
         
-        self.processingImage = cv2.bitwise_not( self.processingImage) 
-        self.processingImage = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/HSV.jpg',  self.processingImage)        
+        self.processingImage = cv2.cvtColor(self.processingImage, cv2.COLOR_BGR2GRAY)        
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/processingImageBeforeSegmentation.jpg',  self.processingImage)
+        
         
         # remove again
-        segmenentingImage = cv2.cvtColor(segmenentingImage, cv2.COLOR_BGR2GRAY)
+        segmenentingImage = self.processingImage
         
 
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/1.jpg', segmenentingImage)
 
         ## self.processingImage is Binary (returned Image)!
-        segmenentingImage = self.imageProcessor.segmentImage(image = segmenentingImage, config = threshConfig )
+        segmenentingImage = self.imageProcessor.segmentImage(image =  segmenentingImage, config = threshConfig )
         
-        ## that works!
-        #rect, segmenentingImage = cv2.threshold(segmenentingImage , 40, 255, cv2.THRESH_BINARY) 
        
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/2.jpg', segmenentingImage)
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/processingImageAfterSegmentation.jpg',  segmenentingImage)
         #==================================
         # write intermediate result to file
         #==================================
@@ -401,10 +401,12 @@ class ImageAnalysisController:
 
         ## call Contour Finder with the segmentation result as argument
         contours, segmenentingImage= self.controlContourFinder(segmenentingImage, finderConfig )
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/processingImageAfterFinder.jpg',  segmenentingImage)
+        
         segmenentingImage = self.controlContourDrawer(contours=contours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_THIN)
+                                                         thickness=config.THICKNESS_FILL)
         
         #==================================
         # write intermediate result to file
@@ -417,11 +419,12 @@ class ImageAnalysisController:
         self.controlImageWriter( filepathAndName=writerFilepath, image= segmenentingImage )  
         
         
-    
+
        
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzContourAfterSegmenting.jpg', segmenentingImage)       
     
 
-    def controlContourFinder(self, processingImage, finderConfig ):
+    def controlContourFinder(self, processingImage,  finderConfig ):
  
         """ 
        
@@ -478,17 +481,17 @@ class ImageAnalysisController:
         """  
         
         if drawingMode == config.OUTLINE_DRAWING_MODE:
-            self.processingImage = self.contourDrawer.drawContourOutline(self.obtainProcessingImage(), contours, color, thickness )
+            image = self.contourDrawer.drawContourOutline(self.obtainProcessingImage(), contours, color, thickness )
         
         elif drawingMode == config.POINTS_DRAWING_MODE:
-            self.processingImage = self.contourDrawer.drawContourPoints(self.obtainProcessingImage(), contours, color, thickness)
+            image = self.contourDrawer.drawContourPoints(self.obtainProcessingImage(), contours, color, thickness)
         elif drawingMode == config.CIRCLE_DRAWING_MODE:        
-            self.processingImage = self.contourDrawer.fillCircle(self.obtainProcessingImage(), contours, color, thickness )
+            image = self.contourDrawer.fillCircle(self.obtainProcessingImage(), contours, color, thickness )
             
         #jump to the next function
         self.controlTraitRecognitor()
                
-        return self.processingImage
+        return image
         
         
     def controlTraitRecognitor(self ):

@@ -294,12 +294,7 @@ class ImageProcessor:
             #put the irrelevant areas together    
             cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )
 
-        
-        
- 
-    
-        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR )            
-        
+
         return cummulated_irrelevant_areas
 
 
