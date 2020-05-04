@@ -1,27 +1,166 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
+#==========================================================================
+# ContourFinderConfiguration.py – DESCRIPTIONS
+#==========================================================================
+
+'''
+@author: Dominique Müller <Dominique Müller <dominiquepeter.mueller@students.bfh.ch>
+'''
+
+
+#==========================================================================
+# IMPORT DECLARATIONS
+#==========================================================================
+
+
+
+#==========================================================================
+# CONSTANTS
+#==========================================================================
+
+
+# Configuration for Console Output
+TITLE = '############ CONTOUR FINDER CONFIGURATION ############'
+DELIMITER = '; '
+NEWLINE = '\n'
+CV = 'cv2.'
+
+
+#==========================================================================
+# FUNCTIONS
+#==========================================================================
 class ContourFinderConfiguration:
-    def __init__(self):
-        self.approxType = None
-        self.ENUM_SELECT_APPROX = None
-        self.finderType = None
-        self.ENUM_SELECT_FINDER = None
-        self.minArea = None
-        self.approximationPrecision = None
+
+    """
+    A class used to represent the the Configruation needed to Segment and Binarize Images applying
+    the Thresholding Technique
+
+
+    -------
+        Attributes
+    ----------
+
+    approxType: <<Enumeration>> ApproximationType
+        Enumeration with Approximation Types
+    ENUM_SELECT_APPROX : int
+        Selection of Approximation Type. 
+    minArea: int
+        min area for contour to be considered
+    finderType: <<Enumeration>> FinderType
+        Enumeration with Finder Type        
+    ENUM_SELECT_FINDER : int
+        Selection of Finder Type.                 
+    deleteCircles: Boolean        
+        whether perfect circles should be considered or not 
+
+        
+        
+
+    
+    Methods - see Descripton below
+    -------
+   obtainApproxType(self)
+   obtainFinderType(self, )
+   obtainMinArea(self)
+   obtainDeleteCircles(self)
+   obtainContourFinderConfiguration(self)
+       
+        
+   """    
+    
+    def __init__(self, approxType, ENUM_SELECT_APPROX, finderType, ENUM_SELECT_FINDER, minArea,  deleteCircles):
+        self.approxType = approxType
+        self.ENUM_SELECT_APPROX = ENUM_SELECT_APPROX
+        self.finderType = finderType
+        self.ENUM_SELECT_FINDER = ENUM_SELECT_FINDER
+        self.deleteCircles = deleteCircles
+        self.minArea = minArea
+
 
     def obtainApproxType(self, ):
-        pass
+        
+        """    
+        Returns whether the desired Contour Approximation Type
+        ----------        
+              
+        Returns: 
+        ----------                
+        desired Approximation Type 
+      
+        """            
+         
+        approxType_enum_selection = self.approxType(self.ENUM_SELECT_APPROX)
+        approxType_name = approxType_enum_selection.name
+        approxType = CV + approxType_name
+        return approxType 
 
     def obtainFinderType(self, ):
-        pass
+        
+        """    
+        Returns whether the desired Finder Type
+        ----------        
+              
+        Returns: 
+        ----------                
+        desired Finder Type 
+      
+        """          
+        
+        finderType_enum_selection = self.finderType(self.ENUM_SELECT_FINDER)
+        finderType_name = finderType_enum_selection.name
+        finderType = CV + finderType_name 
+        return finderType 
+
 
     def obtainMinArea(self, ):
-        pass
+    
+        """    
+        Returns min Area of a Contour in order to be considered
+        ----------        
+              
+        Returns: 
+        ----------                
+        min Area of a Contour 
+      
+        """        
+        return int(self.minArea)
 
-    def obtainApproximationPrecision(self, ):
-        pass
+
+    def obtainDeleteCircles(self, ):
+        
+        """    
+        Returns whether perfect circles should be considered or not
+        ----------        
+              
+        Returns: 
+        ----------                
+        Consideration of perfect circles or not 
+      
+        """              
+       
+        
+        return self.deleteCircles
+
 
     def obtainContourFinderConfiguration(self, ):
+        """ 
+       
+        Returns the Contour Finder as a string representation
+        ----------        
+              
+        Returns: 
+        ----------                
+        Contour Finder as string. 
+      
+        """ 
+        data = 'Approximation Type: ' + str(self.obtainApproxType())  + DELIMITER + 'Contour Finder Type: ' + str(self.obtainFinderType())+ DELIMITER + 'Contour Min Area: ' + str(self.obtainMinArea ())+ DELIMITER + 'Circle Deletion: ' + str(self.obtainDeleteCircles())  
+        strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE      
+        return strForReturn
+    
+                
+        
         pass
+
 

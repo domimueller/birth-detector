@@ -120,6 +120,24 @@ class BGR:
         
         return np.array([self.obtainBlue(),self.obtainGreen(),self.obtainRed()])    
 
+    
+    def obtainDrawingColor(self ):
+        
+        """ 
+   
+        Returns values of the three BGR channels for further drawing. Makes sure
+        that the function drawContours() is capable of understanding the color format.
+        ----------        
+              
+        Returns: 
+        ----------                
+        color in BRG color space 
+      
+        """      
+        
+        return (self.obtainBlue(),self.obtainGreen(),self.obtainRed())    
+
+
 
     def obtainBgr(self, ):
         

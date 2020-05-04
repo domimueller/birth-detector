@@ -21,7 +21,9 @@ sys.path.append('../VO-Library')
 
 ## Import Value Objects
 import HSV
+import BGR
 import ColorRange
+
 
 
 #==========================================================================
@@ -55,11 +57,12 @@ WRITER_EXTENSION = 'jpg'
 WRITER_FILE_PATH_MAIN = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 
 # Prepare FileNames to write . 
-WRITER_FILE_NAME_BRIGHTENED = 'brightenedImage'
-WRITER_FILE_NAME_FILTERED = 'filteredImage'
-WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = 'unimportantAreaMask'
-WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = 'unimportantAreaimage'
-WRITER_FILE_NAME_THRESHOLDED_IMAGE = 'thresholdedImage'
+WRITER_FILE_NAME_BRIGHTENED = '1_brightenedImage'
+WRITER_FILE_NAME_FILTERED = '2_filteredImage'
+WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = '3_unimportantAreaMask'
+WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4_unimportantAreaimage'
+WRITER_FILE_NAME_THRESHOLDED_MASK = '5_thresholdedMask'
+WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_thresholdedImage'
 
 
 #==========================================================================
@@ -111,7 +114,7 @@ ENUM_SELECT_CONVERTING_BGR2HSV = 2
 #============================================
 ###### FILTERING CONFIGURATION ######
 #============================================ 
-
+FILTER_NAME = 'GAUSSIANBLUR'
 FILTERING_IMAGE = True
 KERNEL_WIDTH = 9
 KERNEL_LENGTH = 9
@@ -130,6 +133,9 @@ ENUM_SELECT_FILTERING = 1 #GAUSSIANBLUR
 ###### THRESHOLDING CONFIGURATION ######
 #============================================
 
+SIMPLE_THRESHOLD_NAME = 'cv2.THRESHOLD'
+ADAPTIVE_THRESHOLD_NAME = 'cv2.ADAPTIVE_THRESHOLD'
+
 THRESHOLDING_IMAGE = True
 MAXIMUM_VALUE = 255 # value between 0 and 255 possible
 THRESHOLD = 40
@@ -137,8 +143,8 @@ THRESHOLD = 40
 ## Thresholding Method Enumeration
 '''
     Possible Values for  ENUM_SELECT_METHOD:
-    - 1 corresponds to THRESHOLD
-    - 2 corresponds to ADAPTIVE_THRESHOLD
+    - 1 corresponds to cv2.THRESHOLD
+    - 2 corresponds to cv2.ADAPTIVE_THRESHOLD
     
 
     Any other Values are not allowed and end up with an error message. 
@@ -160,7 +166,7 @@ ENUM_SELECT_METHOD = 1
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_TYPE = 2
+ENUM_SELECT_TYPE = 4
 
 #adaptive Thresholding Configuration
 BLOCK_SIZE = 11
@@ -189,10 +195,6 @@ UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
 LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
 UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
 
-#freestyle (HSV) 
-LOWER_BOUND_fr= HSV.HSV(hue=0, saturation=0, value=-100) 
-UPPER_BOUND_fr = HSV.HSV(hue=360, saturation=200, value=90)
-
 
 # Color Ranges
 lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
@@ -206,12 +208,60 @@ floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBou
 
 # Important Areas Configuration
 
+#============================================
+###### CONTOUR FINDER CONFIGURATION ######
+#============================================
 
+MIN_AREA = 200
+DELETE_CIRCLES_TRUE = True
+DELETE_CIRCLES_FALSE = False
+
+
+
+'''
+    Possible Values for  ENUM_SELECT_APPROX:
+    - 1 corresponds to CHAIN_APPROX_NONE
+    - 2 corresponds to CHAIN_APPROX_SIMPLE
+    - 3 corresponds to CHAIN_APPROX_TC89_L1
+    - 4 corresponds to CHAIN_APPROX_TC89_KCOS
+
+    
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+    
+ENUM_SELECT_APPROX = 1
+
+'''
+    Possible Values for  ENUM_SELECT_FINDER:
+    - 1 corresponds to RETR_EXTERNAL
+    - 2 corresponds to RETR_LIST
+    - 3 corresponds to RETR_CCOMP
+    - 4 corresponds to RETR_TREE
+    - 5 corresponds to RETR_FLOODFILL
+
+        = 1
+
+    Any other Values are not allowed and end up with an error message. 
+'''
+    
+ENUM_SELECT_FINDER = 1
 
 #============================================
-###### DRAWING CONFIGURATION ######
+###### CONTOUR DRAWER CONFIGURATION ######
 #============================================
 
 CIRCLE_DRAWING_MODE = 'CIRCLE'
 OUTLINE_DRAWING_MODE = 'OUTLINE'
 POINTS_DRAWING_MODE = 'POINTS'
+
+THICKNESS_BOLD = 10
+THICKNESS_FILL = -1
+THICKNESS_THIN = 2
+
+RED = BGR.BGR(blue=0, green=0, red=250)
+BLUE= BGR.BGR(blue=255, green=0, red=0)
+GREEN= BGR.BGR(blue=0, green=255, red=0)
+BLACK= BGR.BGR(blue=0, green=0, red=0)
+
+

@@ -20,11 +20,11 @@ import numpy as np
 # CONSTANTS
 #==========================================================================
 
-MIN_AREA = 200
 # Configuration for Console Output
 TITLE = '############ NUMBER OF DETECTED CONTOURS ############'
 DELIMITER = '; '
 NEWLINE = '\n'
+
 
 
 #==========================================================================
@@ -53,7 +53,7 @@ class ContourFinder:
     def __init__(self):
         self.finderConfig = None
 
-    def findContours(self, processingImage, originalImage):
+    def findContours(self, processingImage, originalImage, finderConfig):
         
         """ 
        
@@ -66,7 +66,8 @@ class ContourFinder:
         Parameters: 
         -------                 
         processingImage (Image): Image to use for Contour Finding
-        originalImage (Image): Image to pass to filterContours() for Contour Drawing. 
+        originalImage (Image): Image to pass to filterContours() for Contour Drawing.
+        finderConfig: (ContourFinderConfiguration)
 
         
         Returns: 
@@ -75,14 +76,14 @@ class ContourFinder:
         processingImage (Image): Image for further processing
         
         """          
-
-        contours, hierarchy = cv2.findContours(processingImage, cv2.RETR_LIST , cv2.CHAIN_APPROX_SIMPLE )
+        print()
+        contours, hierarchy = cv2.findContours(processingImage, eval(finderConfig.obtainFinderType()) , eval(finderConfig.obtainApproxType()) )
         
-        contours, processingImage = self.filterContours(contours, processingImage, originalImage)
+        contours, processingImage = self.filterContours(contours, processingImage, originalImage, finderConfig)
         
         return (contours, processingImage)
 
-    def filterContours(self, contours, processingImage, originalImage ):
+    def filterContours(self, contours, processingImage, originalImage, finderConfig ):
         
         """ 
        
@@ -97,6 +98,7 @@ class ContourFinder:
         contours (Contour): contours found retrieved from findContours()
         processingImage (Image): Image to use for Contour Filtering and Application
         originalImage (Image): Image for Contour Drawing. 
+        finderConfig (FinderConfig): Configuration for Conour finder and Filtering
 
         
         Returns: 
@@ -104,20 +106,40 @@ class ContourFinder:
         contours (Contour): contours found
         processingImage (Image): Image for further processing
         
-        """   
-                  
+        """  
+        i=0
         filteredContours = []
         for contour in contours:
             
-            conturArea = int(cv2.contourArea(contour))
+            conturArea = cv2.contourArea(contour)
             
-            # only contourArea > MIN_AREA considered to remove noise
-            if conturArea > MIN_AREA:
+            # if circles dont have to be ignored, check for minArea and then add contour to the list conturArea >= minArea
+            if finderConfig.obtainDeleteCircles() == False and conturArea >= finderConfig.obtainMinArea():
                 
                 filteredContours.append(contour)
+
+            
+            # if circles have to be ignored, only add them to the list if contour is no circle and conturArea >= minArea 
+            if finderConfig.obtainDeleteCircles() == True and conturArea >= finderConfig.obtainMinArea():
+                print(finderConfig.obtainDeleteCircles())
                 
-                #this image will now be our processingImage                
-                processingImage = originalImage
+                # Calculate image moments of the detected contour
+                moments = cv2.moments(contour)
+                a1 = (moments['mu20'] + moments['mu02']) / 2
+                a2 = np.sqrt(4 * moments['mu11'] ** 2 + (moments['mu20'] - moments['mu02']) ** 2) / 2
+                ecc = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
+                print(ecc)
+                
+                if ecc > 1:
+                    i=i+1
+                   
+                    filteredContours.append(contour)
+                
+            
+            print('amount of contours with eccentricity <= 1 ' +str(i))
+            
+            #this image will now be our processingImage                
+            processingImage = originalImage
                 
         return (filteredContours, processingImage)
 

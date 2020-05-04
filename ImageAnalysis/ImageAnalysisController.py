@@ -54,6 +54,7 @@ import ThresholdingConfiguration
 import ThresholdingMethod
 import HSV
 import ColorRange
+import ContourFinderConfiguration 
 import ImageAnalysisConfiguration as config
 
 
@@ -212,8 +213,8 @@ class ImageAnalysisController:
         
         # image analysis will be performend on the processingImage which is a copy of the original image
         self.processingImage = self.image.copy()
-        self.test = self.image.copy()
-  
+        segmenentingImage = self.image.copy()
+
 
         #=====================================
         ###### BRIGHTENING ######
@@ -224,7 +225,7 @@ class ImageAnalysisController:
                                                     brightenerFactor = config.BRIGHTENER_FACTOR, 
                                                     equalizingImage = config.EQUALIZING_IMAGE, 
                                                     clipLimit = config.CLIP_LIMIT , 
-                                                    equalizingType = config.EqualizingType.EqualizingType, 
+                                                    equalizingType = EqualizingType.EqualizingType, 
                                                     ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
 
         # improve brightness and contrast of original image to facilitate export for report
@@ -277,7 +278,7 @@ class ImageAnalysisController:
         # apply color space conversion configuration
 
         colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
-                                                              conversionType = config.ColorSpaceConversionType.ColorSpaceConversionType,           
+                                                              conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
                                                               ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
         
         self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
@@ -304,12 +305,25 @@ class ImageAnalysisController:
         
         
         self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
-        
+ 
+        ## configurate the ContourFinder
+        finderConfig = ContourFinderConfiguration.ContourFinderConfiguration(
+                        approxType = ApproximationType.ApproximationType,
+                        ENUM_SELECT_APPROX = config.ENUM_SELECT_APPROX,
+                        finderType = FinderType.FinderType,
+                        ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
+                        minArea = config.MIN_AREA,
+                        deleteCircles = config.DELETE_CIRCLES_FALSE)       
         
         ## call Contour Finder with the unimportant area mask as argument
-        contours, self.processingImage = self.controlContourFinder(self.processingImage )
-        self.processingImage = self.controlContourDrawer(contours=contours, drawingMode = config.CIRCLE_DRAWING_MODE)
-        
+        contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
+        self.processingImage = self.controlContourDrawer(contours=contours, 
+                                                         drawingMode = config.CIRCLE_DRAWING_MODE, 
+                                                         color =config.BLACK.obtainDrawingColor(), 
+                                                         thickness=config.THICKNESS_BOLD)
+
+
+      
         #==================================
         # write intermediate result to file
         #==================================
@@ -345,9 +359,47 @@ class ImageAnalysisController:
                         ENUM_SELECT_TYPE = config.ENUM_SELECT_TYPE,
                         adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration,
                         maximumValue = config.MAXIMUM_VALUE)
+      
         
-        ## self.processingImage is Binary Image!
-        self.processingImage = self.imageProcessor.segmentImage(image = self.processingImage, config = threshConfig )        
+        self.processingImage = cv2.bitwise_not( self.processingImage) 
+        self.processingImage = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        
+        # remove again
+        segmenentingImage = cv2.cvtColor(segmenentingImage, cv2.COLOR_BGR2GRAY)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/1.jpg', segmenentingImage)
+
+        ## self.processingImage is Binary (returned Image)!
+        segmenentingImage = self.imageProcessor.segmentImage(image = segmenentingImage, config = threshConfig )
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/2.jpg', segmenentingImage)
+
+        #==================================
+        # write intermediate result to file
+        #==================================
+        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                           fileName = config.WRITER_FILE_NAME_THRESHOLDED_MASK,  
+                                           mimeType= writerMimeType)
+        
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= segmenentingImage )  
+        
+        
+
+        ## configurate the ContourFinder
+        finderConfig = ContourFinderConfiguration.ContourFinderConfiguration(
+                        approxType = ApproximationType.ApproximationType,
+                        ENUM_SELECT_APPROX = config.ENUM_SELECT_APPROX,
+                        finderType = FinderType.FinderType,
+                        ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
+                        minArea = config.MIN_AREA,
+                        deleteCircles = config.DELETE_CIRCLES_TRUE)       
+        
+
+        ## call Contour Finder with the segmentation result as argument
+        contours, segmenentingImage= self.controlContourFinder(segmenentingImage, finderConfig )
+        segmenentingImage = self.controlContourDrawer(contours=contours, 
+                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
+                                                         color=config.RED.obtainDrawingColor(),
+                                                         thickness=config.THICKNESS_THIN)
         
         #==================================
         # write intermediate result to file
@@ -357,11 +409,14 @@ class ImageAnalysisController:
                                            mimeType= writerMimeType)
         
         
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= segmenentingImage )  
+        
+        
+    
        
     
 
-    def controlContourFinder(self, processingImage ):
+    def controlContourFinder(self, processingImage, finderConfig ):
  
         """ 
        
@@ -376,22 +431,24 @@ class ImageAnalysisController:
         Parameters: 
         -------                 
         processingImage: Image for analysis (Binary Image!)
+        finderConfig: ContourFinderConfiguration
         
         Returns: 
-        -------              
-        nothing will be returned.
+        contours : Contours
+        processingImage : Image
       
         """  
-        self.processingImage = processingImage
+        self.processingImage = processingImage        
+
         
         # self.processingImage needs to be a binary Image!
-        contours, self.processingImage = self.contourFinder.findContours(self.processingImage, self.obtainImage())
+        contours, self.processingImage = self.contourFinder.findContours(self.processingImage, self.obtainImage(), finderConfig)
         
         self.contourFinder.countContours(contours)
        
         return (contours, self.processingImage) 
     
-    def controlContourDrawer(self, contours, drawingMode=config.OUTLINE_DRAWING_MODE ):
+    def controlContourDrawer(self, contours, drawingMode, color, thickness ):
         
         """ 
        
@@ -409,17 +466,19 @@ class ImageAnalysisController:
         
         Returns: 
         -------              
-        nothing will be returned.
-      
+        processingImage : Image
+        
+        
+
         """  
         
-        if drawingMode == 'OUTLINE':
-            self.processingImage = self.contourDrawer.drawContourOutline(self.obtainProcessingImage(), contours )
+        if drawingMode == config.OUTLINE_DRAWING_MODE:
+            self.processingImage = self.contourDrawer.drawContourOutline(self.obtainProcessingImage(), contours, color, thickness )
         
-        elif drawingMode == 'POINTS':
-            self.processingImage = self.contourDrawer.drawContourPoints(self.obtainProcessingImage(), contours)
-        elif drawingMode == 'CIRCLE':        
-            self.processingImage = self.contourDrawer.fillCircle(self.obtainProcessingImage(), contours )
+        elif drawingMode == config.POINTS_DRAWING_MODE:
+            self.processingImage = self.contourDrawer.drawContourPoints(self.obtainProcessingImage(), contours, color, thickness)
+        elif drawingMode == config.CIRCLE_DRAWING_MODE:        
+            self.processingImage = self.contourDrawer.fillCircle(self.obtainProcessingImage(), contours, color, thickness )
             
         #jump to the next function
         self.controlTraitRecognitor()

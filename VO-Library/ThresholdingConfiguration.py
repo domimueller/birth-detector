@@ -24,7 +24,7 @@
 TITLE = '############ OVERALL THRESHOLDING CONFIGURATION ############'
 DELIMITER = '; '
 NEWLINE = '\n'
-
+CV = 'cv2.'
 ACTIVATION_MESSAGE = ' ACTIVATED'
 #==========================================================================
 # FUNCTIONS
@@ -127,8 +127,8 @@ class ThresholdingConfiguration:
         
         thresholdingMethod_enum_selection = self.thresholdingMethod(self.ENUM_SELECT_METHOD)
         thresholdingMethod_name = thresholdingMethod_enum_selection.name
-        
-        return thresholdingMethod_name
+        thresholdingMethod = CV + thresholdingMethod_name
+        return thresholdingMethod
     
     def obtainThresholdingType(self ):
 
@@ -144,8 +144,8 @@ class ThresholdingConfiguration:
           
         thresholdingType_enum_selection = self.thresholdingType(self.ENUM_SELECT_TYPE)
         thresholdingType_name = thresholdingType_enum_selection.name
-
-        return thresholdingType_name    
+        thresholdingType = CV + thresholdingType_name
+        return thresholdingType    
 
     def obtainMaximumValue(self ):
         

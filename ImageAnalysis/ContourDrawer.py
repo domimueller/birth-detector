@@ -20,8 +20,7 @@ import numpy as np
 # CONSTANTS
 #==========================================================================
 
-COLOR =  (0, 0, 0)
-THICKNESS = -1
+
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -52,7 +51,7 @@ class ContourDrawer:
     def __init__(self):
         pass
 
-    def drawContourOutline(self, image, contours ):
+    def drawContourOutline(self, image, contours, color, thickness ):
     
         """ 
        
@@ -76,11 +75,11 @@ class ContourDrawer:
         """
 
         for contour in contours:
-            cv2.drawContours(image, [contour], 0, COLOR, THICKNESS)
+            cv2.drawContours(image, [contour], 0, color, thickness)
         
         return image
 
-    def drawContourPoints(self, image, contours):
+    def drawContourPoints(self, image, contours, color, thickness):
 
         """ 
        
@@ -111,11 +110,11 @@ class ContourDrawer:
                 p = tuple(p.reshape(1, -1)[0])
                        
                 if len(p) > 1:     
-                    cv2.circle(image, p , 2, COLOR, THICKNESS)
+                    cv2.circle(image, p , 2, color, thickness)
                 
         return image
     
-    def fillCircle(self, image, contours):
+    def fillCircle(self, image, contours, color, thickness):
        
         """ 
        
@@ -142,7 +141,7 @@ class ContourDrawer:
             center = (int(x),int(y))
             radius = int(radius)
             # draw the circles in the originalImage, not the processing image (which is binary!).
-            cv2.circle(image,center,radius,COLOR,THICKNESS)
+            cv2.circle(image,center,radius,color,thickness)
      
         return  image
     
