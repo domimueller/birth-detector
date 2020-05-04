@@ -122,23 +122,19 @@ class ContourFinder:
             
             # if circles have to be ignored, only add them to the list if contour is no circle and conturArea >= minArea 
             if finderConfig.obtainDeleteCircles() == True and conturArea >= finderConfig.obtainMinArea():
-                #print(finderConfig.obtainDeleteCircles())
                 
                 # Calculate image moments of the detected contour
                 moments = cv2.moments(contour)
                 a1 = (moments['mu20'] + moments['mu02']) / 2
                 a2 = np.sqrt(4 * moments['mu11'] ** 2 + (moments['mu20'] - moments['mu02']) ** 2) / 2
                 ecc = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
-                #print(ecc)
-                
-                if ecc > 0.7:
+                print(ecc)
+                               
+                if ecc > 0.7 :
                     i=i+1
-                    print(ecc)
                     filteredContours.append(contour)
                 
-            
-            #print('amount of contours with eccentricity <= 1 ' +str(i))
-            
+                
             #this image will now be our processingImage                
             processingImage = originalImage
                 

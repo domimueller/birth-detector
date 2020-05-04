@@ -291,7 +291,6 @@ class ImageAnalysisController:
         unimportantColorRanges= ( config.floorColorRange, config.lightColorRange )          
         
         ## self.processingImage (returned image) is Binary Image!
-        
         self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage, 
                                                             unimportantColorRanges = unimportantColorRanges)
         
@@ -362,12 +361,9 @@ class ImageAnalysisController:
                         maximumValue = config.MAXIMUM_VALUE)
       
         
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/HSV.jpg',  self.processingImage)        
         self.processingImage = cv2.cvtColor(self.processingImage, cv2.COLOR_BGR2GRAY)        
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/processingImageBeforeSegmentation.jpg',  self.processingImage)
         
         
-        # remove again
         segmenentingImage = self.processingImage
         
 
@@ -376,7 +372,6 @@ class ImageAnalysisController:
         segmenentingImage = self.imageProcessor.segmentImage(image =  segmenentingImage, config = threshConfig )
         
        
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/processingImageAfterSegmentation.jpg',  segmenentingImage)
         #==================================
         # write intermediate result to file
         #==================================
@@ -401,8 +396,7 @@ class ImageAnalysisController:
 
         ## call Contour Finder with the segmentation result as argument
         contours, segmenentingImage= self.controlContourFinder(segmenentingImage, finderConfig )
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/processingImageAfterFinder.jpg',  segmenentingImage)
-        
+
         segmenentingImage = self.controlContourDrawer(contours=contours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
@@ -418,11 +412,7 @@ class ImageAnalysisController:
         
         self.controlImageWriter( filepathAndName=writerFilepath, image= segmenentingImage )  
         
-        
-
-       
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzContourAfterSegmenting.jpg', segmenentingImage)       
-    
+            
 
     def controlContourFinder(self, processingImage,  finderConfig ):
  

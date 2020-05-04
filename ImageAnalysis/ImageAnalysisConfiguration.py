@@ -138,7 +138,7 @@ ADAPTIVE_THRESHOLD_NAME = 'cv2.ADAPTIVE_THRESHOLD'
 
 THRESHOLDING_IMAGE = True
 MAXIMUM_VALUE = 255 # value between 0 and 255 possible
-THRESHOLD =80
+THRESHOLD =90
 
 ## Thresholding Method Enumeration
 '''
@@ -149,7 +149,7 @@ THRESHOLD =80
 
     Any other Values are not allowed and end up with an error message. 
 '''
-ENUM_SELECT_METHOD = 2
+ENUM_SELECT_METHOD = 1
 
  
 # Thresholding Type Enumeration
@@ -167,7 +167,7 @@ ENUM_SELECT_METHOD = 2
     Any other Values are not allowed and end up with an error message.
     PLEASE NOTE: For adaptive Thresholding only THRESH_BINARY and THRESH_BINARY_INV are available
 '''
-ENUM_SELECT_TYPE = 2
+ENUM_SELECT_TYPE = 1
 
 #adaptive Thresholding Configuration
 BLOCK_SIZE = 11
@@ -213,7 +213,7 @@ floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBou
 ###### CONTOUR FINDER CONFIGURATION ######
 #============================================
 
-MIN_AREA = 200
+MIN_AREA = 1250
 MIN_AREA_BIG = 2000
 
 DELETE_CIRCLES_TRUE = True
@@ -233,7 +233,7 @@ DELETE_CIRCLES_FALSE = False
     Any other Values are not allowed and end up with an error message. 
 '''
     
-ENUM_SELECT_APPROX = 1
+ENUM_SELECT_APPROX = 3
 
 '''
     Possible Values for  ENUM_SELECT_FINDER:
@@ -248,7 +248,7 @@ ENUM_SELECT_APPROX = 1
     Any other Values are not allowed and end up with an error message. 
 '''
     
-ENUM_SELECT_FINDER = 3
+ENUM_SELECT_FINDER = 2
 
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######
