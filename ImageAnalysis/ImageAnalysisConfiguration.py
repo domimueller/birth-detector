@@ -219,6 +219,8 @@ MIN_AREA_BIG = 2000
 DELETE_CIRCLES_TRUE = True
 DELETE_CIRCLES_FALSE = False
 
+FILTER_BY_ANGLE_TRUE = True
+FILTER_BY_ANGLE_FALSE = False
 
 
 '''
@@ -233,7 +235,7 @@ DELETE_CIRCLES_FALSE = False
     Any other Values are not allowed and end up with an error message. 
 '''
     
-ENUM_SELECT_APPROX = 3
+ENUM_SELECT_APPROX = 1
 
 '''
     Possible Values for  ENUM_SELECT_FINDER:

@@ -54,6 +54,8 @@ class ContourFinderConfiguration:
         Selection of Finder Type.                 
     deleteCircles: Boolean        
         whether perfect circles should be considered or not 
+    filterbyAngle: Boolean        
+        whether Filtering the Contours by Angle is desired or not 
 
         
         
@@ -65,18 +67,20 @@ class ContourFinderConfiguration:
    obtainFinderType(self, )
    obtainMinArea(self)
    obtainDeleteCircles(self)
+   obtainFilterbyAngle(self)
    obtainContourFinderConfiguration(self)
        
         
    """    
     
-    def __init__(self, approxType, ENUM_SELECT_APPROX, finderType, ENUM_SELECT_FINDER, minArea,  deleteCircles):
+    def __init__(self, approxType, ENUM_SELECT_APPROX, finderType, ENUM_SELECT_FINDER, minArea,  deleteCircles, filterbyAngle):
         self.approxType = approxType
         self.ENUM_SELECT_APPROX = ENUM_SELECT_APPROX
         self.finderType = finderType
         self.ENUM_SELECT_FINDER = ENUM_SELECT_FINDER
         self.deleteCircles = deleteCircles
         self.minArea = minArea
+        self.filterbyAngle = filterbyAngle
 
 
     def obtainApproxType(self, ):
@@ -131,18 +135,35 @@ class ContourFinderConfiguration:
     def obtainDeleteCircles(self, ):
         
         """    
-        Returns whether perfect circles should be considered or not
+        Returns whether circles should be considered or not
         ----------        
               
         Returns: 
         ----------                
-        Consideration of perfect circles or not 
+        Consideration of circles or not 
       
         """              
        
         
         return self.deleteCircles
 
+
+    def obtainFilterbyAngle(self, ):
+        
+        """    
+        Returns whether Filtering by Angles is desired or not
+        ----------        
+              
+        Returns: 
+        ----------                
+        Consideration of Angle Filtering or not
+      
+        """              
+       
+        
+        return self.filterbyAngle
+
+   
 
     def obtainContourFinderConfiguration(self, ):
         """ 
@@ -155,7 +176,7 @@ class ContourFinderConfiguration:
         Contour Finder as string. 
       
         """ 
-        data = 'Approximation Type: ' + str(self.obtainApproxType())  + DELIMITER + 'Contour Finder Type: ' + str(self.obtainFinderType())+ DELIMITER + 'Contour Min Area: ' + str(self.obtainMinArea ())+ DELIMITER + 'Circle Deletion: ' + str(self.obtainDeleteCircles())  
+        data = 'Approximation Type: ' + str(self.obtainApproxType())  + DELIMITER + 'Contour Finder Type: ' + str(self.obtainFinderType())+ DELIMITER + 'Contour Min Area: ' + str(self.obtainMinArea ())+ DELIMITER + 'Circle Deletion: ' + str(self.obtainDeleteCircles()) + DELIMITER+ 'Filter by Angle: ' + str(self.obtainFilterbyAngle()) 
         strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE      
         return strForReturn
     

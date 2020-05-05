@@ -34,6 +34,7 @@ import ImageAnalysisConfiguration
 
 #==========================================================================
 # CONSTANTS
+
 #==========================================================================
 DELIMITER = ': '
 
@@ -263,8 +264,7 @@ class ImageProcessor:
         """    
         
         self.unimportantColorRanges = unimportantColorRanges
-        
-       
+
         i=0
         irrelevant_areas = []
         
@@ -280,7 +280,7 @@ class ImageProcessor:
             upperBound = unimportantColorRange.obtainUpperBound().obtainColor()
 
             irrelevant_area_mask= cv2.inRange(image, lowerBound , upperBound)
-            
+
             
             #append all the irrelevant areas as a binary image to a list
             irrelevant_areas.append(irrelevant_area_mask)

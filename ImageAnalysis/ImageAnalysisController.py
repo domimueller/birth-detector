@@ -145,9 +145,8 @@ class ImageAnalysisController:
         self.Processingimage = None
         
         
-        #jump to the first function
         self.controlImageReader()
-
+        self.controlImageProcessor()
     def controlImageReader(self ):
 
         """ 
@@ -180,8 +179,7 @@ class ImageAnalysisController:
         
         self.image = self.imageReader.readImage( filePathAndName = readerFilepath ) 
         
-        #jump to the next function
-        self.controlImageProcessor()
+        return self.image
         
     def controlImageProcessor(self ):
        
@@ -228,9 +226,9 @@ class ImageAnalysisController:
                                                     ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
 
         # improve brightness and contrast of original image to facilitate export for report
-        self.image = self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
+        self.image= self.imageProcessor.brightenImage(image = self.image, config = brightenConfig )
 
-        
+
         #==================================
         # write intermediate result to file
         #==================================
@@ -239,7 +237,7 @@ class ImageAnalysisController:
                                            mimeType= writerMimeType)
         
         
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.image ) 
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
 
         #=====================================
         ###### FILTERING ######
@@ -311,7 +309,8 @@ class ImageAnalysisController:
                         finderType = FinderType.FinderType,
                         ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
                         minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_FALSE)       
+                        deleteCircles = config.DELETE_CIRCLES_FALSE,
+                        filterbyAngle = config.FILTER_BY_ANGLE_FALSE)       
         
         ## call Contour Finder with the unimportant area mask as argument
         contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
@@ -391,7 +390,9 @@ class ImageAnalysisController:
                         finderType = FinderType.FinderType,
                         ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
                         minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_TRUE)       
+                        deleteCircles = config.DELETE_CIRCLES_TRUE,
+                        filterbyAngle = config.FILTER_BY_ANGLE_TRUE)       
+       
         
 
         ## call Contour Finder with the segmentation result as argument
@@ -400,7 +401,7 @@ class ImageAnalysisController:
         segmenentingImage = self.controlContourDrawer(contours=contours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_FILL)
+                                                         thickness=config.THICKNESS_THIN)
         
         #==================================
         # write intermediate result to file
@@ -437,12 +438,17 @@ class ImageAnalysisController:
       
         """  
         self.processingImage = processingImage        
-
         
-        # self.processingImage needs to be a binary Image!
+
         contours, self.processingImage = self.contourFinder.findContours(self.processingImage, self.obtainImage(), finderConfig)
         
+       
+        if finderConfig.obtainFilterbyAngle() == config.FILTER_BY_ANGLE_TRUE:
+            self.image = self.controlImageReader()
+            contours, image= self.contourFinder.contourAngleFiltering(contours, self.obtainImage(), finderConfig)        
+        
         self.contourFinder.countContours(contours)
+
        
         return (contours, self.processingImage) 
     
