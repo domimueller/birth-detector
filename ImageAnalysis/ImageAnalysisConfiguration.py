@@ -250,7 +250,18 @@ ENUM_SELECT_APPROX = 1
     Any other Values are not allowed and end up with an error message. 
 '''
     
-ENUM_SELECT_FINDER = 2
+ENUM_SELECT_FINDER = 1
+
+
+#configuration for angle filtering
+LIGHT_BULB_ANGLE_EXPECTION= 90
+MIN_LEG_ANGLE_EXPECTION= 0
+MAX_LEG_ANGLE_EXPECTION= 20
+SCALE = 0.75
+ROUNDNESS_THRESHOLD = 0.7
+
+
+
 
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######

@@ -16,7 +16,7 @@
 import cv2 
 import numpy as np
 import ImageAnalysisConfiguration
-
+import math
 #==========================================================================
 # CONSTANTS
 #==========================================================================
@@ -28,15 +28,9 @@ NEWLINE = '\n'
 
 ERROR_MSG = 'PAY ATTENTION! MORE THAN 1 CONTURE DETECTED AS LIGHT CONTUR'
 
-ROUNDNESS_THRESHOLD = 0.7
 
-
-LIGHT_BULB_ANGLE_EXPECTION= 90
-MIN_LEG_ANGLE_EXPECTION= 0
-MAX_LEG_ANGLE_EXPECTION= 20
-
-
-SCALE = 0.5
+ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
+ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
 
 #==========================================================================
 # FUNCTIONS
@@ -119,7 +113,6 @@ class ContourFinder:
         processingImage (Image): Image for further processing
         
         """  
-        i=0
         filteredContours = []
         for contour in contours:
             
@@ -129,7 +122,6 @@ class ContourFinder:
             if finderConfig.obtainDeleteCircles() == False and conturArea >= finderConfig.obtainMinArea():
                 
                 filteredContours.append(contour)
-
             
             # if circles have to be ignored, only add them to the list if contour is no circle and conturArea >= minArea 
             if finderConfig.obtainDeleteCircles() == True and conturArea >= finderConfig.obtainMinArea():
@@ -140,11 +132,10 @@ class ContourFinder:
                 # determine eccentricity according to the book "Mastering OpenCV 4 with Python" written by Alberto Fernández Villán 
                 a1 = (moments['mu20'] + moments['mu02']) / 2
                 a2 = np.sqrt(4 * moments['mu11'] ** 2 + (moments['mu20'] - moments['mu02']) ** 2) / 2
-                ecc = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
+                eccentricity  = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
                 
                                
-                if ecc > ROUNDNESS_THRESHOLD:
-                    i=i+1
+                if eccentricity  > ImageAnalysisConfiguration.ROUNDNESS_THRESHOLD:
                     filteredContours.append(contour)
             
             
@@ -163,7 +154,6 @@ class ContourFinder:
         image = originalImage
         
 
-   
         # generate mask to show where in the image the light is situated
         lowerBound = ImageAnalysisConfiguration.LOWER_BOUND_LIGHT.obtainColor()
         upperBound = ImageAnalysisConfiguration.UPPER_BOUND_LIGHT.obtainColor()
@@ -173,12 +163,10 @@ class ContourFinder:
         
         #derive contours from mask of lightning 
         lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
-        cv2.drawContours(image, lightBulbContours, 0, (0, 0, 255), -1)        
        
         
         image = cv2.cvtColor(originalImage, cv2.COLOR_HSV2BGR)
 
-        print('Measured Angle')
         
         # filter contours from lightning mask by area size        
         for contour in lightBulbContours:
@@ -188,37 +176,32 @@ class ContourFinder:
 
                 filteredlightBulbsByArea.append(contour)             
        
-        print(int(len(filteredlightBulbsByArea)))
 
         for lightBulb in filteredlightBulbsByArea:
-               
-                ## contour Approximation to a Polynon
-                peri = cv2.arcLength(lightBulb, True)
-                contourApprox = cv2.approxPolyDP(lightBulb, 0.004 * peri, True)
-                filteredlightBulbsByAngle.append(contourApprox)             
-               
+                             
                 #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-                (x,y),(MA,ma),angle = cv2.fitEllipse(contourApprox)          
+                (x,y),(MA,ma),angle = cv2.fitEllipse(lightBulb) 
                 
                 if int(len(filteredlightBulbsByArea)) == 1:
                     angle = angle
-                    print(angle)
+                    print('Gemessener Winkel Lampe: ' + str(angle))
                 else:
                     angle = angle + angle
                     print(ERROR_MSG)
-  
 
-        #cv2.drawContours(originalImage, contours, 0, (0, 0, 255), -1)        
-
-        
-        
         # rotate the image using the light bulb as reference.
+
+        print('Vermutung des Winkels der Lampe')
+        print(ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION)
+        rotationAngle =angle-ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
+        print('Berechneter Winkel zur verschiebung des Bilds')
+        print(rotationAngle)
+        #rotationAngle = 45
         (h, w) = originalImage.shape[:2]     
-        imageCenter = (w / 2, h / 2)
-        rotationAngle = angle-LIGHT_BULB_ANGLE_EXPECTION
-        M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, SCALE)
+        imageCenter = (w / 2, h / 2)       
+        M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, ImageAnalysisConfiguration.SCALE)
         rotatedImage = cv2.warpAffine(originalImage, M, (h, w))
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.jpg', rotatedImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.png', rotatedImage)
         
         #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
     
@@ -238,13 +221,12 @@ class ContourFinder:
             #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
             (x,y),(MA,ma),angle = cv2.fitEllipse(contourApprox)          
             
-            adjustedAngle = angle - LIGHT_BULB_ANGLE_EXPECTION 
-            print(adjustedAngle)
-            if adjustedAngle > MIN_LEG_ANGLE_EXPECTION and adjustedAngle < MAX_LEG_ANGLE_EXPECTION:
+            adjustedAngle = angle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION 
+            minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
+            maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
+
+            if adjustedAngle > minLegAngle and adjustedAngle < maxLegAngle:
                 filteredByAngle.append(contour)
-        print('ok')        
-        print(len(filteredByAngle))   
-        print(len(contours))        
 
         return (filteredByAngle, lightBulb)
 
