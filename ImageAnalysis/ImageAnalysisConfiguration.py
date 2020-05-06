@@ -63,6 +63,8 @@ WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = '3_unimportantAreaMask'
 WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4_unimportantAreaimage'
 WRITER_FILE_NAME_THRESHOLDED_MASK = '5_thresholdedMask'
 WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_ContoursAfterThresholding'
+WRITER_FILE_NAME_ANALYSED_IMAGE = '7_ContoursAfterTraitRecognition'
+WRITER_FILE_NAME_ANALYSED_IMAGE = '99_AngleAdjustmentDemonstration'
 
 
 #==========================================================================
@@ -75,9 +77,15 @@ WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_ContoursAfterThresholding'
 #============================================
    
 # Brighten Configuration #
-BRIGHTENING_IMAGE = True
+# PAY ATTENTION: FOR inRange() FUNCTION, IT IS CHANGING RESULTS HEAVILY AFTER BRIGHTENING
+# THEREFORE, BRIGHTENING SHOULD BE DEACTIVATED BEFORE PERFORMING inRange(). 
+# This influences many parts of the Application. Tresholding results are better after brightening.
+
+BRIGHTENING_IMAGE_TRUE = True
+BRIGHTENING_IMAGE_FALSE = False
 BRIGHTENER_FACTOR = 60
-EQUALIZING_IMAGE = False
+EQUALIZING_IMAGE_TRUE = True
+EQUALIZING_IMAGE_FALSE = False
 CLIP_LIMIT = 4.0
 
 ## Equalizing Type
@@ -281,3 +289,9 @@ GREEN= BGR.BGR(blue=0, green=255, red=0)
 BLACK= BGR.BGR(blue=0, green=0, red=0)
 
 
+#============================================
+###### TRAIT RECOGNITOR CONFIGURATION ######
+#============================================
+
+CONTOUR_NAME_STANDING = 'standingContours'
+CONTOUR_NAME_LATERAL_LYING = 'lateralLyingContours'

@@ -16,7 +16,7 @@
 import cv2 
 import numpy as np
 import ImageAnalysisConfiguration
-import math
+
 #==========================================================================
 # CONSTANTS
 #==========================================================================
@@ -146,89 +146,6 @@ class ContourFinder:
             
         return (filteredContours, processingImage)
 
-    def contourAngleFiltering(self, contours, originalImage, finderConfig ):
-        filteredByAngle = []
-        lightBulbContours = []
-        filteredlightBulbsByArea = []
-        filteredlightBulbsByAngle = []
-        image = originalImage
-        
-
-        # generate mask to show where in the image the light is situated
-        lowerBound = ImageAnalysisConfiguration.LOWER_BOUND_LIGHT.obtainColor()
-        upperBound = ImageAnalysisConfiguration.UPPER_BOUND_LIGHT.obtainColor()
-        image = cv2.cvtColor(originalImage, cv2.COLOR_BGR2HSV)
-        
-        lightBulb = cv2.inRange(image, lowerBound , upperBound)
-        
-        #derive contours from mask of lightning 
-        lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
-       
-        
-        image = cv2.cvtColor(originalImage, cv2.COLOR_HSV2BGR)
-
-        
-        # filter contours from lightning mask by area size        
-        for contour in lightBulbContours:
-            conturArea = cv2.contourArea(contour)
-            
-            if conturArea >= finderConfig.obtainMinArea():
-
-                filteredlightBulbsByArea.append(contour)             
-       
-
-        for lightBulb in filteredlightBulbsByArea:
-                             
-                #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-                (x,y),(MA,ma),angle = cv2.fitEllipse(lightBulb) 
-                
-                if int(len(filteredlightBulbsByArea)) == 1:
-                    angle = angle
-                    print('Gemessener Winkel Lampe: ' + str(angle))
-                else:
-                    angle = angle + angle
-                    print(ERROR_MSG)
-
-        # rotate the image using the light bulb as reference.
-
-        print('Vermutung des Winkels der Lampe')
-        print(ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION)
-        rotationAngle =angle-ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
-        print('Berechneter Winkel zur verschiebung des Bilds')
-        print(rotationAngle)
-        #rotationAngle = 45
-        (h, w) = originalImage.shape[:2]     
-        imageCenter = (w / 2, h / 2)       
-        M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, ImageAnalysisConfiguration.SCALE)
-        rotatedImage = cv2.warpAffine(originalImage, M, (h, w))
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.png', rotatedImage)
-        
-        #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
-    
-        print('Adjusted Measured Angle')
-        print(rotationAngle)
-        
-        print('Adjusted Calculated Angle')
-
-        filteredByAngle = []
-        for contour in contours:
-          
-            
-            ## contour Approximation to a Polynon
-            peri = cv2.arcLength(contour, True)
-            contourApprox = cv2.approxPolyDP(contour, 0.004 * peri, True)
-           
-            #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-            (x,y),(MA,ma),angle = cv2.fitEllipse(contourApprox)          
-            
-            adjustedAngle = angle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION 
-            minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
-            maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
-
-            if adjustedAngle > minLegAngle and adjustedAngle < maxLegAngle:
-                filteredByAngle.append(contour)
-
-        return (filteredByAngle, lightBulb)
 
     def countContours(self, contours):
         

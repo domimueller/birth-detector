@@ -34,8 +34,21 @@ import ImageAnalysisConfiguration
 
 #==========================================================================
 # CONSTANTS
+#==========================================================================
 
-#=
+# Configuration for Console Output
+TITLE = 'NUMBER OF DETECTED CONTOURS: '
+DELIMITER = '; '
+NEWLINE = '\n'
+
+ERROR_MSG = 'PAY ATTENTION! MORE THAN 1 CONTURE DETECTED AS LIGHT CONTUR'
+
+
+ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
+ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
+
+
+
 class TraitRecognitor:
     
     """
@@ -64,8 +77,10 @@ class TraitRecognitor:
         self.standingCowIsDetected = None
         self.lateralLyingCowIsDetected = None
         
+        # funtion execution
 
-    def detectStandingCow(self, contours):
+
+    def detectStandingCow(self, contours, image,  finderConfig):
         
         """ 
        
@@ -85,9 +100,10 @@ class TraitRecognitor:
         contours which are the foundation of the decision
         """              
         
-        pass
+        
+       
 
-    def detectLateralLyingClow(self, contours):
+    def detectLateralLyingClow(self, contours, originalImage,  finderConfig ):
         
         """ 
        
@@ -106,14 +122,14 @@ class TraitRecognitor:
         Returns: 
         -------              
         contours which are the foundation of the decision
-        """           
-    def contourAngleFiltering(self, contours, originalImage, finderConfig ):
+        """          
+        
         filteredByAngle = []
         lightBulbContours = []
         filteredlightBulbsByArea = []
         filteredlightBulbsByAngle = []
         image = originalImage
-        
+        angle = 0
 
         # generate mask to show where in the image the light is situated
         lowerBound = ImageAnalysisConfiguration.LOWER_BOUND_LIGHT.obtainColor()
@@ -121,6 +137,7 @@ class TraitRecognitor:
         image = cv2.cvtColor(originalImage, cv2.COLOR_BGR2HSV)
         
         lightBulb = cv2.inRange(image, lowerBound , upperBound)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/masks.jpg', lightBulb)
         
         #derive contours from mask of lightning 
         lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
@@ -162,7 +179,10 @@ class TraitRecognitor:
         imageCenter = (w / 2, h / 2)       
         M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, ImageAnalysisConfiguration.SCALE)
         rotatedImage = cv2.warpAffine(originalImage, M, (h, w))
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.png', rotatedImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.jpg', rotatedImage)
+ 
+        
+
         
         #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
     
@@ -185,12 +205,17 @@ class TraitRecognitor:
             adjustedAngle = angle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION 
             minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
             maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
-
+            
+   
             if adjustedAngle > minLegAngle and adjustedAngle < maxLegAngle:
                 filteredByAngle.append(contour)
+    
+        print(len(contours))
+           
+        print(len(filteredByAngle))
 
-        return (filteredByAngle, lightBulb)        
-        print('asd')
+        return (filteredByAngle)         
+
 
     def obtainStandingCowIsDetected(self ):
         
