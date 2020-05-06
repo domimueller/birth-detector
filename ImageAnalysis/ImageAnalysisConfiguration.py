@@ -64,7 +64,7 @@ WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4_unimportantAreaimage'
 WRITER_FILE_NAME_THRESHOLDED_MASK = '5_thresholdedMask'
 WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_ContoursAfterThresholding'
 WRITER_FILE_NAME_ANALYSED_IMAGE = '7_ContoursAfterTraitRecognition'
-WRITER_FILE_NAME_ANALYSED_IMAGE = '99_AngleAdjustmentDemonstration'
+WRITER_FILE_NAME_ANGLE_DEMO = '99_AngleAdjustmentDemonstration'
 
 
 #==========================================================================
