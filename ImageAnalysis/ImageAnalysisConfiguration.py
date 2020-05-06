@@ -266,10 +266,13 @@ LIGHT_BULB_ANGLE_EXPECTION= 90
 MIN_LEG_ANGLE_EXPECTION= 0
 MAX_LEG_ANGLE_EXPECTION= 20
 SCALE = 0.75
+
+
+## configuration for shape analysis
 ROUNDNESS_THRESHOLD = 0.7
-
-
-
+## extent max später auf 0.4 stellen
+EXTENT_MAX = 0.4
+ASPECT_RATIO_MIN = 0
 
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######

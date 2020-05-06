@@ -67,7 +67,14 @@ import ImageAnalysisConfiguration as config
 # see: ImageAnalysisConfiguration as config
 
 
-ERROR_MSG_NO_CONTOURS = 'It appears, that no contours could be found.'
+TRAIT_RECOGNITOR_TITLE = '############ RESULT OF THE TRAIT RECOGNITOR ############'
+NEWLINE = '\n'
+
+INFORMATION_MSG_NO_COW = 'NO COW DETECTED IN THIS IMAGE. '
+INFORMATION_MSG_LATERAL_LYING_COW= 'IT APPEARS, THAT THE COW IS IN LATERAL LYING POSITION. CHECK THE CAMERA!'
+ERROR_MSG_NO_STANDING_CONTOURS = 'IT APPEARS, THAT THE COW IS STANDING. PLEASE STAY PATIENT AND HANG ON!'
+
+
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -414,7 +421,7 @@ class ImageAnalysisController:
         segmenentingImage = self.controlContourDrawer(contours=contours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_THIN)
+                                                         thickness=config.THICKNESS_FILL)
         
         #==================================
         # write intermediate result to file
@@ -429,30 +436,66 @@ class ImageAnalysisController:
         #=====================================
         ###### Trait Recognition ######
         #=====================================
-        analysisImage = self.obtainImage().copy()
-        lateralLyingContours, standingContours  = self.controlTraitRecognitor(contours, analysisImage,  finderConfig)
-        
-        
 
-        if standingContours is None:
-            print(ERROR_MSG_NO_CONTOURS)
-        else:
-            self.img = self.controlContourDrawer(contours =standingContours, 
-                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
-                                                         color=config.GREEN.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_THIN)
-            
-        if lateralLyingContours is None:
-            print(ERROR_MSG_NO_CONTOURS)
-        else:
-            self.img = self.controlContourDrawer(contours =lateralLyingContours, 
+
+
+
+
+        analysisImage = self.obtainImage().copy()
+
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE_TRUE, 
+                                                    brightenerFactor = config.BRIGHTENER_FACTOR, 
+                                                    equalizingImage = config.EQUALIZING_IMAGE_TRUE, 
+                                                    clipLimit = config.CLIP_LIMIT , 
+                                                    equalizingType = EqualizingType.EqualizingType, 
+                                                    ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
+
+        # improve brightness and contrast of original image to facilitate export for report
+        analysisImage= self.imageProcessor.brightenImage(image = self.obtainImage(), config = brightenConfig )
+
+
+        
+        lateralLyingContours, standingContours, analysedImage  = self.controlTraitRecognitor(contours, analysisImage,  finderConfig)
+        print(NEWLINE+NEWLINE )
+        print(TRAIT_RECOGNITOR_TITLE)
+
+        # if typical Conours for standing and lying apprear, print the msg that lateral lying is detected.
+        # It is better, if the farmer checks the camera and sees that the cow is no in an imminent birth position than
+        # the farmer is beeing kept in the opinion that no action is needed.
+        if standingContours is not None or lateralLyingContours is not None:
+          
+ 
+
+             if standingContours is not None and lateralLyingContours is not None:   
+                print(INFORMATION_MSG_LATERAL_LYING_COW)  
+                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_THIN)
+                                                         thickness=config.THICKNESS_FILL)             
+             if standingContours is None and lateralLyingContours is not None:
+                print(INFORMATION_MSG_LATERAL_LYING_COW)  
+                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
+                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
+                                                         color=config.RED.obtainDrawingColor(),
+                                                         thickness=config.THICKNESS_FILL)          
+                     
+            
+
+             if standingContours is not None and lateralLyingContours is  None:  
+                print(ERROR_MSG_NO_STANDING_CONTOURS)
+
+                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
+                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
+                                                         color=config.RED.obtainDrawingColor(),
+                                                         thickness=config.THICKNESS_FILL)
          
         
-                 
-        
+
+        else:
+            print(INFORMATION_MSG_NO_COW)
+            
+
+
         
         #==================================
         # write intermediate result to file
@@ -462,7 +505,7 @@ class ImageAnalysisController:
                                            mimeType= writerMimeType)
         
         
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.img )                       
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )                       
 
     def controlContourFinder(self, image,  finderConfig ):
  
@@ -569,11 +612,11 @@ class ImageAnalysisController:
       
         """  
             
-        lateralLyingContours = self.traitRecognitor.detectLateralLyingClow(contours, image,  finderConfig)
+        lateralLyingContours, originalImage = self.traitRecognitor.detectLateralLyingClow(contours, image,  finderConfig)
         standingContours = self.traitRecognitor.detectStandingCow(contours, image,  finderConfig)
 
        
-        return (lateralLyingContours, standingContours)
+        return (lateralLyingContours, standingContours, originalImage)
     
         #jump to the next function
         self.controlScoreCalculator()

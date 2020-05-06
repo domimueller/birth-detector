@@ -31,7 +31,6 @@ import ColorSpaceConversion
 import ColorSpaceConversionType
 import ImageAnalysisConfiguration 
 
-
 #==========================================================================
 # CONSTANTS
 #==========================================================================
@@ -41,12 +40,16 @@ TITLE = 'NUMBER OF DETECTED CONTOURS: '
 DELIMITER = '; '
 NEWLINE = '\n'
 
-ERROR_MSG = 'PAY ATTENTION! MORE THAN 1 CONTURE DETECTED AS LIGHT CONTUR'
+WARNING_MSG = 'PAY ATTENTION! MORE THAN 1 CONTURE DETECTED AS LIGHT CONTUR'
 
+MEASURED_LIGHT_BULB_ANGLE_TITLE = 'MEASURED ANGLE OF THE LIGHT BULB: '
+EXPECTED_LIGHT_BULB_REAL_LIFE_ANGLE_TITLE = 'EXPECTED ANGLE OF THE LIGHT BULB IN REAL LIFE: '
 
-ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
-ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
-
+ANGLE_ANALYSIS_TITLE = '############ Angle Analysis ############'
+NEWLINE = '\n' 
+ADJUSTED_ROTATION_ANGLE_TITILE = 'IMAGE ROTATION ANGLE: '
+ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT: '
+MIN_ECCENTRICITY = 0.9
 
 
 class TraitRecognitor:
@@ -127,9 +130,11 @@ class TraitRecognitor:
         filteredByAngle = []
         lightBulbContours = []
         filteredlightBulbsByArea = []
-        filteredlightBulbsByAngle = []
+        lateralLyingContours = []
         image = originalImage
         angle = 0
+
+        print(ANGLE_ANALYSIS_TITLE + NEWLINE + NEWLINE)
 
         # generate mask to show where in the image the light is situated
         lowerBound = ImageAnalysisConfiguration.LOWER_BOUND_LIGHT.obtainColor()
@@ -141,8 +146,7 @@ class TraitRecognitor:
         
         #derive contours from mask of lightning 
         lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
-       
-        
+            
         image = cv2.cvtColor(originalImage, cv2.COLOR_HSV2BGR)
 
         
@@ -162,19 +166,18 @@ class TraitRecognitor:
                 
                 if int(len(filteredlightBulbsByArea)) == 1:
                     angle = angle
-                    print('Gemessener Winkel Lampe: ' + str(angle))
+                    print(MEASURED_LIGHT_BULB_ANGLE_TITLE + str(angle))
                 else:
                     angle = angle + angle
-                    print(ERROR_MSG)
+                    print(WARNING_MSG)
 
         # rotate the image using the light bulb as reference.
-
-        print('Vermutung des Winkels der Lampe')
-        print(ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION)
+         
+        print(EXPECTED_LIGHT_BULB_REAL_LIFE_ANGLE_TITLE + str(ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION))
+        
         rotationAngle =angle-ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
-        print('Berechneter Winkel zur verschiebung des Bilds')
-        print(rotationAngle)
-        #rotationAngle = 45
+        print(ADJUSTED_ROTATION_ANGLE_TITILE + str(rotationAngle))
+
         (h, w) = originalImage.shape[:2]     
         imageCenter = (w / 2, h / 2)       
         M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, ImageAnalysisConfiguration.SCALE)
@@ -182,14 +185,8 @@ class TraitRecognitor:
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.jpg', rotatedImage)
  
         
-
-        
         #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
     
-        print('Adjusted Measured Angle')
-        print(rotationAngle)
-        
-        print('Adjusted Calculated Angle')
 
         filteredByAngle = []
         for contour in contours:
@@ -205,18 +202,58 @@ class TraitRecognitor:
             adjustedAngle = angle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION 
             minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
             maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
-            
+            print(adjustedAngle)    
    
             if adjustedAngle > minLegAngle and adjustedAngle < maxLegAngle:
                 filteredByAngle.append(contour)
-    
-        print(len(contours))
-           
         print(len(filteredByAngle))
 
-        return (filteredByAngle)         
+        minAreaRect_image = originalImage.copy()
+        i = 0      
+        for contour in contours:
+            i = i+1
+            #### ASPECT RATIO COMPUTATION #### 
+            
+            # calculate the rectangle with minimal area around the contour
+            rotated_rect = cv2.minAreaRect(contour)
+            box = cv2.boxPoints(rotated_rect)
+            box = np.int0(box)
+            cv2.polylines(minAreaRect_image, [box], True, (	0,0,0), 5)
+            
+            # compute the bounding box of the contour and use the
+			# bounding box to compute the aspect ratio           
+            x,y,w,h = cv2.boundingRect(contour )
+            aspectRatio = float(w)/h  
+            
+            
+            #### EXTEND COMPUTATION ####
+            contourArea = cv2.contourArea(contour)
+            rectArea = w*h
+            extent = float(contourArea)/rectArea
+            print('################' +str(i)+'##########################')
+            print(contourArea)
+            print(rectArea)
+            print(extent)
+            print(aspectRatio)
+            #### FILTER THE CONTOURS BASED ON ASPECT RATIO AND EXTEND ####
+            aspectRatioMin = ImageAnalysisConfiguration.ASPECT_RATIO_MIN
+            extentMax = ImageAnalysisConfiguration.EXTENT_MAX
+
+            if aspectRatio > aspectRatioMin and extent < extentMax:
+                lateralLyingContours.append(contour)
 
 
+        # draw the minArea Rectangles in the Image and write it
+        
+        #draw all the contours in the image
+        originalImage = cv2.drawContours(minAreaRect_image, contours, -1, (	120, 200, 120), -1)
+
+        #draw only the filtered contours in the image
+        originalImage = cv2.drawContours(minAreaRect_image, lateralLyingContours, -1, (	0, 0,255), -1)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/filtered.jpg', minAreaRect_image)
+ 
+        return (lateralLyingContours, minAreaRect_image)         
+       
     def obtainStandingCowIsDetected(self ):
         
 
