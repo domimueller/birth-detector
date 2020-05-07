@@ -51,7 +51,9 @@ ADJUSTED_ROTATION_ANGLE_TITILE = 'IMAGE ROTATION ANGLE: '
 ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT: '
 MIN_ECCENTRICITY = 0.9
 
+DEGREE_MODULO = 360
 
+ANGLE_INVERTER = -1
 class TraitRecognitor:
     
     """
@@ -131,8 +133,10 @@ class TraitRecognitor:
         lightBulbContours = []
         filteredlightBulbsByArea = []
         lateralLyingContours = []
+        negimg = originalImage.copy()
         image = originalImage
-        angle = 0
+
+        lightBulbAngle = 0
 
         print(ANGLE_ANALYSIS_TITLE + NEWLINE + NEWLINE)
 
@@ -164,53 +168,105 @@ class TraitRecognitor:
                 #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
                 (x,y),(MA,ma),angle = cv2.fitEllipse(lightBulb) 
                 
+                # uncomment to see how the ellipse looks like
+                #img = cv2.ellipse(originalImage.copy(),(int(x),int(y)),(int(MA),int(ma)),0,0,360,(0,0,0),2) 
+                
+                
                 if int(len(filteredlightBulbsByArea)) == 1:
-                    angle = angle
+                    lightBulbAngle = angle
                     print(MEASURED_LIGHT_BULB_ANGLE_TITLE + str(angle))
+                                      
+
+           
+                    #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
                 else:
-                    angle = angle + angle
+                    lightBulbAngle = lightBulbAngle + angle
                     print(WARNING_MSG)
 
         # rotate the image using the light bulb as reference.
          
         print(EXPECTED_LIGHT_BULB_REAL_LIFE_ANGLE_TITLE + str(ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION))
         
-        rotationAngle =angle-ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
+        rotationAngle =lightBulbAngle-ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
+        
         print(ADJUSTED_ROTATION_ANGLE_TITILE + str(rotationAngle))
 
         (h, w) = originalImage.shape[:2]     
         imageCenter = (w / 2, h / 2)       
-        M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, ImageAnalysisConfiguration.SCALE)
+        M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, 0.25)
         rotatedImage = cv2.warpAffine(originalImage, M, (h, w))
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.jpg', rotatedImage)
  
         
         #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
-    
-
+        
         filteredByAngle = []
+        adjustedAngleNegative = 0
+
         for contour in contours:
           
-            
+
             ## contour Approximation to a Polynon
             peri = cv2.arcLength(contour, True)
             contourApprox = cv2.approxPolyDP(contour, 0.004 * peri, True)
            
             #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-            (x,y),(MA,ma),angle = cv2.fitEllipse(contourApprox)          
+            (x,y),(MA,ma),contourAngle = cv2.fitEllipse(contourApprox)
+            #cv2.ellipse(negimg,(int(x),int(y)),(int(MA),int(ma)),1,1,360,(0,0,0),2)
             
-            adjustedAngle = angle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION 
+            # positive rotation values means counter-clockwise!
+            
+            positivRotationAngle = lightBulbAngle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
+            negativeRotationAngle = lightBulbAngle - (ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION*-1)
+            
+            positiveAdjustedAngle = (contourAngle -positivRotationAngle) % DEGREE_MODULO 
+            negativeAdjustedAngle = (negativeRotationAngle + contourAngle) % DEGREE_MODULO 
+
             minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
             maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
-            print(adjustedAngle)    
-   
-            if adjustedAngle > minLegAngle and adjustedAngle < maxLegAngle:
-                filteredByAngle.append(contour)
-        print(len(filteredByAngle))
+            
+            if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
+                print('Winkel im positiven Bereich')
 
-        minAreaRect_image = originalImage.copy()
+                print(contourAngle)
+                print('bereinigter Winkel')
+                print(positiveAdjustedAngle)
+                filteredByAngle.append(contour)
+                continue
+                        
+        
+            ## angle analysis for legs directing from right to left
+            elif adjustedAngleNegative > minLegAngle and adjustedAngleNegative < maxLegAngle:
+
+                print('Winkel im negativen Bereich')
+                print(contourAngle)
+                print('bereinigter Winkel')
+                print(negativeAdjustedAngle)
+                
+                maxLegAngle = minLegAngle*(-1)
+                minLegAngle =  maxLegAngle*(-1)
+                    #filteredByAngle.append(contour)
+            else:
+                    pass
+                    #print('nicht im Bereich')
+                    #print(contourAngle)
+
+            ## angle analysis for legs directing from left to right
+
+        minAreaRect_image = negimg        
+        (h, w) = negimg.shape[:2]     
+        imageCenter = (w / 2, h / 2)       
+        M = cv2.getRotationMatrix2D(imageCenter, negativeRotationAngle, ImageAnalysisConfiguration.SCALE)
+        negimg = cv2.warpAffine(negimg, M, (h, w))
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox2.jpg', negimg)
+ 
+        print('Endresultat')
+        print(len(filteredByAngle))
+        
         i = 0      
-        for contour in contours:
+        
+        
+        for contour in filteredByAngle:
             i = i+1
             #### ASPECT RATIO COMPUTATION #### 
             
@@ -219,6 +275,8 @@ class TraitRecognitor:
             box = cv2.boxPoints(rotated_rect)
             box = np.int0(box)
             cv2.polylines(minAreaRect_image, [box], True, (	0,0,0), 5)
+
+            
             
             # compute the bounding box of the contour and use the
 			# bounding box to compute the aspect ratio           
@@ -230,11 +288,13 @@ class TraitRecognitor:
             contourArea = cv2.contourArea(contour)
             rectArea = w*h
             extent = float(contourArea)/rectArea
+            '''
             print('################' +str(i)+'##########################')
             print(contourArea)
             print(rectArea)
             print(extent)
             print(aspectRatio)
+           '''
             #### FILTER THE CONTOURS BASED ON ASPECT RATIO AND EXTEND ####
             aspectRatioMin = ImageAnalysisConfiguration.ASPECT_RATIO_MIN
             extentMax = ImageAnalysisConfiguration.EXTENT_MAX
@@ -249,9 +309,10 @@ class TraitRecognitor:
         originalImage = cv2.drawContours(minAreaRect_image, contours, -1, (	120, 200, 120), -1)
 
         #draw only the filtered contours in the image
+        
         originalImage = cv2.drawContours(minAreaRect_image, lateralLyingContours, -1, (	0, 0,255), -1)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/filtered.jpg', minAreaRect_image)
- 
+
         return (lateralLyingContours, minAreaRect_image)         
        
     def obtainStandingCowIsDetected(self ):
