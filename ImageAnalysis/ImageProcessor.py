@@ -88,7 +88,8 @@ class ImageProcessor:
     unimportantColorRange : HSV[1..*]
          Color Ranges, that are likely not to be part of a cow.
     importantColorRange : HSV[1..*]
-         Color Ranges, that are likel to be part of a cow.         
+         Color Ranges, that are likel to be part of a cow.  
+     
 
     Methods
     -------
@@ -293,7 +294,8 @@ class ImageProcessor:
            
             #put the irrelevant areas together    
             cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )
-
+    
+       
 
         return cummulated_irrelevant_areas
 

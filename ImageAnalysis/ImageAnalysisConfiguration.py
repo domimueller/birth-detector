@@ -30,6 +30,14 @@ import ColorRange
 # CONSTANTS - CONFIGURATION OF THE IMAGE ANALYSIS CONTROLLER
 #==========================================================================
 
+#### IMPORTANT! #####
+
+# provideUnimportantColorRange  defines, whether you already know, which areas of the image can be considered
+# to be unimportant. Knowing that, the Image Analysis will provide better results. If you do not do not have 
+# this knowledge, the corresponding variable needs to set to False.
+provideUnimportantColorRange = True
+
+
 #============================================
 ###### IMAGE READER CONFIGURATION ######
 #============================================
@@ -196,6 +204,7 @@ ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
 ###### UNIMPORTANT AREAS CONFIGURATION ######
 #============================================
 
+
 # light (HSV) Bounds
 LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
 UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
@@ -263,17 +272,15 @@ ENUM_SELECT_FINDER = 1
 
 #configuration for angle filtering
 LIGHT_BULB_ANGLE_EXPECTION= 90
-MIN_LEG_ANGLE_EXPECTION= 75
-MAX_LEG_ANGLE_EXPECTION= 105
+MIN_LEG_ANGLE_EXPECTION= 70
+MAX_LEG_ANGLE_EXPECTION= 110
 SCALE = 0.75
 
 
 ## configuration for shape analysis
 ROUNDNESS_THRESHOLD = 0.7
-## extent max später auf 0.4 stellen
-EXTENT_MAX = 0.35
-ASPECT_RATIO_MIN = 0
-
+EXTENT_MAX = 0.4
+ASPECT_RATIO_MIN = 1.5
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######
 #============================================

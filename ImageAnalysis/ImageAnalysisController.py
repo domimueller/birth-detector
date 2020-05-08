@@ -155,7 +155,7 @@ class ImageAnalysisController:
         
         
         self.controlImageReader()
-        self.controlImageProcessor()
+        self.controlImageProcessor( provideUnimportantColorRange = config.provideUnimportantColorRange)
         
     def controlImageReader(self ):
 
@@ -191,7 +191,7 @@ class ImageAnalysisController:
         
         return self.image
         
-    def controlImageProcessor(self ):
+    def controlImageProcessor(self, provideUnimportantColorRange ):
        
         """ 
        
@@ -204,8 +204,8 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        no parameters. 
-
+        provideUnimportantColorRange (Boolean)
+            determines wheter color Ranges of unimportant areas are known or not
         
         Returns: 
         -------              
@@ -284,64 +284,70 @@ class ImageAnalysisController:
         ###### UNIMPORTANT AREA DETECTION ######
         #=====================================
         
+        colorRange = provideUnimportantColorRange 
         
-        # PREPARING: COLOR SPACE CONVERSION #
-
-        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
-                                                              conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
-                                                              ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
-        
-        #IMPORTANT: At this point, the original Image is required, because it is beeing used for inRange() funtion (Color Ranges should not been changed)
-        self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
-
-        
-        # Build a Tuple with the Color Ranges. More ranges can be added
-        unimportantColorRanges= ( config.floorColorRange, config.lightColorRange )          
-        
-        
-        self.processingImage =  self.processingImage.copy() 
-        ## self.processingImage (returned image) is Binary Image!
-        self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage,
-                                                            unimportantColorRanges = unimportantColorRanges)
-        
-        #==================================
-        # write intermediate result to file
-        #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK,  
-                                           mimeType= writerMimeType)
-                
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
- 
-        ## configurate the ContourFinder
-        finderConfig = ContourFinderConfiguration.ContourFinderConfiguration(
-                        approxType = ApproximationType.ApproximationType,
-                        ENUM_SELECT_APPROX = config.ENUM_SELECT_APPROX,
-                        finderType = FinderType.FinderType,
-                        ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
-                        minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_FALSE,
-                        filterbyAngle = config.FILTER_BY_ANGLE_FALSE)       
-        
-        ## call Contour Finder with the unimportant area mask as argument
-        contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
-        
-        self.processingImage = self.controlContourDrawer(contours=contours, 
-                                                         drawingMode = config.CIRCLE_DRAWING_MODE, 
-                                                         color =config.BLACK.obtainDrawingColor(), 
-                                                         thickness=config.THICKNESS_FILL)
-        
-                      
-
-        #==================================
-        # write intermediate result to file
-        #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE,  
-                                           mimeType= writerMimeType)
-        
-        
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )        
+        if colorRange == True:
+            
+            # PREPARING: COLOR SPACE CONVERSION #
+    
+            colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
+                                                                  conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
+                                                                  ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
+            
+            #IMPORTANT: At this point, the original Image is required, because it is beeing used for inRange() funtion (Color Ranges should not been changed)
+            self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
+    
+            
+            # Build a Tuple with the Color Ranges. More ranges can be added
+            
+            #  config.floorColorRange also available
+            # important: comma after only one entry in Tuple is necessary. Otherwise its not consideret to be a tuple
+            unimportantColorRanges= ( config.lightColorRange, config.floorColorRange)          
+            
+            
+            self.processingImage =  self.processingImage.copy() 
+            ## self.processingImage (returned image) is Binary Image!
+            self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage,
+                                                               unimportantColorRanges = unimportantColorRanges)
+            
+            #==================================
+            # write intermediate result to file
+            #==================================
+            writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                               fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK,  
+                                               mimeType= writerMimeType)
+                    
+            self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
+     
+            ## configurate the ContourFinder
+            finderConfig = ContourFinderConfiguration.ContourFinderConfiguration(
+                            approxType = ApproximationType.ApproximationType,
+                            ENUM_SELECT_APPROX = config.ENUM_SELECT_APPROX,
+                            finderType = FinderType.FinderType,
+                            ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
+                            minArea = config.MIN_AREA,
+                            deleteCircles = config.DELETE_CIRCLES_FALSE,
+                            filterbyAngle = config.FILTER_BY_ANGLE_FALSE)       
+            
+            ## call Contour Finder with the unimportant area mask as argument
+            contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
+            
+            self.processingImage = self.controlContourDrawer(contours=contours, 
+                                                             drawingMode = config.CIRCLE_DRAWING_MODE, 
+                                                             color =config.BLACK.obtainDrawingColor(), 
+                                                             thickness=config.THICKNESS_FILL)
+            
+                          
+    
+            #==================================
+            # write intermediate result to file
+            #==================================
+            writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
+                                               fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE,  
+                                               mimeType= writerMimeType)
+            
+            
+            self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )        
         
 
         #=====================================
@@ -451,7 +457,7 @@ class ImageAnalysisController:
                                                     ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
 
         # improve brightness and contrast of original image to facilitate export for report
-        analysisImage= self.imageProcessor.brightenImage(image = self.obtainImage(), config = brightenConfig )
+       # analysisImage= self.imageProcessor.brightenImage(image = self.obtainImage(), config = brightenConfig )
 
 
         

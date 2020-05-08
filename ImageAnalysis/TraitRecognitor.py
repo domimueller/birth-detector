@@ -133,7 +133,11 @@ class TraitRecognitor:
         lightBulbContours = []
         filteredlightBulbsByArea = []
         lateralLyingContours = []
+        removedContours = []
         negimg = originalImage.copy()
+        newimg = originalImage.copy()
+        minAreaRectImage = originalImage.copy()
+        minAreaRect_image= originalImage.copy()
         image = originalImage
 
         lightBulbAngle = 0
@@ -202,7 +206,8 @@ class TraitRecognitor:
         
         filteredByAngle = []
         adjustedAngleNegative = 0
-
+        negativeRotationAngle = 0
+        
         for contour in contours:
           
 
@@ -212,59 +217,56 @@ class TraitRecognitor:
            
             #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
             (x,y),(MA,ma),contourAngle = cv2.fitEllipse(contourApprox)
-            #cv2.ellipse(negimg,(int(x),int(y)),(int(MA),int(ma)),1,1,360,(0,0,0),2)
             
             # positive rotation values means counter-clockwise!
             
             positivRotationAngle = lightBulbAngle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
             negativeRotationAngle = lightBulbAngle - (ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION*-1)
-            
             positiveAdjustedAngle = (contourAngle -positivRotationAngle) % DEGREE_MODULO 
             negativeAdjustedAngle = (negativeRotationAngle + contourAngle) % DEGREE_MODULO 
 
             minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
             maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
             
+            # calculate the rectangle with minimal area around the contour
+            rotated_rect = cv2.minAreaRect(contour)
+            (x, y), (width, height), rotatedRectAngle = rotated_rect
+    
+            minAreaRect_image = negimg  
+            #minAreaRect_image = cv2.rectangle(minAreaRect_image, (x,x+w),(y, y+h),(0,0,0), 5) 
+            box = cv2.boxPoints(rotated_rect)
+            box = np.int0(box)
+            cv2.polylines(minAreaRect_image, [box], True, (0,0,0), 5)
+            
             if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
-                print('Winkel im positiven Bereich')
-
-                print(contourAngle)
-                print('bereinigter Winkel')
-                print(positiveAdjustedAngle)
+                
                 filteredByAngle.append(contour)
                 continue
                         
         
             ## angle analysis for legs directing from right to left
-            elif adjustedAngleNegative > minLegAngle and adjustedAngleNegative < maxLegAngle:
+            elif negativeAdjustedAngle > minLegAngle and negativeAdjustedAngle < maxLegAngle:
 
-                print('Winkel im negativen Bereich')
-                print(contourAngle)
-                print('bereinigter Winkel')
-                print(negativeAdjustedAngle)
-                
                 maxLegAngle = minLegAngle*(-1)
                 minLegAngle =  maxLegAngle*(-1)
-                    #filteredByAngle.append(contour)
+                filteredByAngle.append(contour)
             else:
-                    pass
-                    #print('nicht im Bereich')
-                    #print(contourAngle)
+                  removedContours.append(contour)  
+
 
             ## angle analysis for legs directing from left to right
 
-        minAreaRect_image = negimg        
+              
         (h, w) = negimg.shape[:2]     
         imageCenter = (w / 2, h / 2)       
         M = cv2.getRotationMatrix2D(imageCenter, negativeRotationAngle, ImageAnalysisConfiguration.SCALE)
         negimg = cv2.warpAffine(negimg, M, (h, w))
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox2.jpg', negimg)
  
         print('Endresultat')
         print(len(filteredByAngle))
         
         i = 0      
-        
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/orginal.jpg', originalImage)
         
         for contour in filteredByAngle:
             i = i+1
@@ -272,18 +274,34 @@ class TraitRecognitor:
             
             # calculate the rectangle with minimal area around the contour
             rotated_rect = cv2.minAreaRect(contour)
+            (x, y), (width, height), rotatedRectAngle = rotated_rect
+           
+            convexHull= cv2.convexHull(contour)
+            #cv2.polylines(minAreaRect_image, convexHull, False, (0,0,0), 5)
+            
+            #minAreaRect_image = cv2.rectangle(minAreaRect_image, (x,x+w),(y, y+h),(0,0,0), 5) 
             box = cv2.boxPoints(rotated_rect)
             box = np.int0(box)
-            cv2.polylines(minAreaRect_image, [box], True, (	0,0,0), 5)
-
-            
+            cv2.polylines(minAreaRect_image, [box], True, (0,0,0), 5)
             
             # compute the bounding box of the contour and use the
 			# bounding box to compute the aspect ratio           
-            x,y,w,h = cv2.boundingRect(contour )
-            aspectRatio = float(w)/h  
+
+
+            #print('width' + str(width))
+            #print('height' + str(height))
             
+            # make sure that aspect ratio is greater than 0 
+            if width > height:
+                longside = width
+                shortside = height
+            else:
+                longside = height
+                shortside = width
+
+            aspectRatio = float(longside)/shortside  
             
+  
             #### EXTEND COMPUTATION ####
             contourArea = cv2.contourArea(contour)
             rectArea = w*h
@@ -298,21 +316,50 @@ class TraitRecognitor:
             #### FILTER THE CONTOURS BASED ON ASPECT RATIO AND EXTEND ####
             aspectRatioMin = ImageAnalysisConfiguration.ASPECT_RATIO_MIN
             extentMax = ImageAnalysisConfiguration.EXTENT_MAX
+            
+            if  aspectRatio > aspectRatioMin and extent < extentMax:
 
-            if aspectRatio > aspectRatioMin and extent < extentMax:
                 lateralLyingContours.append(contour)
+  
+            else:
+                removedContours.append(contour)
+                
+        print('lateralLyingContours')
+        print(len(lateralLyingContours))
+       
+        
+        import itertools
+        sameOrientationLegs = []
+        for a, b in itertools.combinations(lateralLyingContours, 2):
+            ret = cv2.matchShapes(a,b,3,0.0)
 
 
-        # draw the minArea Rectangles in the Image and write it
+            print(ret)
+            
+            if ret < 4:
+                sameOrientationLegs.append(a)
+
+                sameOrientationLegs.append(b)
+
+            else:
+                removedContours.append(a)
+                #removedContours.append(b)                    
+
         
         #draw all the contours in the image
-        originalImage = cv2.drawContours(minAreaRect_image, contours, -1, (	120, 200, 120), -1)
-
-        #draw only the filtered contours in the image
+        testimage = minAreaRect_image.copy()
+        testimage = cv2.drawContours(testimage, contours, -1, (	0, 0,255), -1)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzall.jpg', testimage)
         
-        originalImage = cv2.drawContours(minAreaRect_image, lateralLyingContours, -1, (	0, 0,255), -1)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/filtered.jpg', minAreaRect_image)
-
+        minAreaRect_image = cv2.drawContours(testimage, lateralLyingContours, -1, (	120, 200, 120),-1)
+        
+   
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered.jpg', minAreaRect_image)
+        
+        print('LL')
+        print(len(contours))
+        #draw only the filtered contours in the image        
+            
         return (lateralLyingContours, minAreaRect_image)         
        
     def obtainStandingCowIsDetected(self ):
