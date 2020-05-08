@@ -23,14 +23,14 @@ import numpy as np
 import ImageWriter
 import ContourDrawer
 import ContourFinder
-import ImageAnalysisController
-
+import ImageAnalysisController 
 import sys
 sys.path.append('../VO-Library')
 import ColorSpaceConversion
 import ColorSpaceConversionType
-import ImageAnalysisConfiguration 
-import matplotlib.pyplot as plt
+import ImageAnalysisConfiguration  as globalConfig
+
+import itertools
 
 #==========================================================================
 # CONSTANTS
@@ -130,28 +130,39 @@ class TraitRecognitor:
         contours which are the foundation of the decision
         """          
         
-        filteredByAngle = []
         lightBulbContours = []
         filteredlightBulbsByArea = []
+        filteredByAngle = []
+        fliteredByRatios = []
+        filteredBySimilarity = []
         lateralLyingContours = []
-        removedContours = []
-        negimg = originalImage.copy()
+        uninterestingContours = []
+        analysisImage = originalImage.copy()
         newimg = originalImage.copy()
         minAreaRectImage = originalImage.copy()
         minAreaRect_image= originalImage.copy()
         image = originalImage
+        
+        ## copy and prepare imagesf for later usage       
+        positiveRotatedImage = originalImage.copy()
+        negativeRotatedImage = originalImage.copy() 
+        
+        
+        testimage = originalImage.copy()
+        whiteimage = np.zeros([testimage.shape[0],testimage.shape[1], 3], dtype=np.uint8)
+        whiteimage[:] = 255        
 
         lightBulbAngle = 0
 
         print(ANGLE_ANALYSIS_TITLE + NEWLINE + NEWLINE)
 
         # generate mask to show where in the image the light is situated
-        lowerBound = ImageAnalysisConfiguration.LOWER_BOUND_LIGHT.obtainColor()
-        upperBound = ImageAnalysisConfiguration.UPPER_BOUND_LIGHT.obtainColor()
+        lowerBound = globalConfig.LOWER_BOUND_LIGHT.obtainColor()
+        upperBound = globalConfig.UPPER_BOUND_LIGHT.obtainColor()
         image = cv2.cvtColor(originalImage, cv2.COLOR_BGR2HSV)
         
         lightBulb = cv2.inRange(image, lowerBound , upperBound)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/masks.jpg', lightBulb)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/7masks.jpg', lightBulb)
         
         #derive contours from mask of lightning 
         lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
@@ -190,18 +201,11 @@ class TraitRecognitor:
 
         # rotate the image using the light bulb as reference.
          
-        print(EXPECTED_LIGHT_BULB_REAL_LIFE_ANGLE_TITLE + str(ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION))
+        print(EXPECTED_LIGHT_BULB_REAL_LIFE_ANGLE_TITLE + str(globalConfig.LIGHT_BULB_ANGLE_EXPECTION))
         
-        rotationAngle =lightBulbAngle-ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
+        rotationAngle =lightBulbAngle-globalConfig.LIGHT_BULB_ANGLE_EXPECTION
         
-        print(ADJUSTED_ROTATION_ANGLE_TITILE + str(rotationAngle))
-
-        (h, w) = originalImage.shape[:2]     
-        imageCenter = (w / 2, h / 2)       
-        M = cv2.getRotationMatrix2D(imageCenter, rotationAngle, 0.25)
-        rotatedImage = cv2.warpAffine(originalImage, M, (h, w))
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/contoursAllpox.jpg', rotatedImage)
- 
+        print(ADJUSTED_ROTATION_ANGLE_TITILE + str(rotationAngle)) 
         
         #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
         
@@ -209,88 +213,145 @@ class TraitRecognitor:
         adjustedAngleNegative = 0
         negativeRotationAngle = 0
         
-        for contour in contours:
-          
+        #=================================================================================
+        # FILTER THE CONTOUR BY ANGLE OF ITS FITTING ELLIPSE: ONLY ANGLES IN A
+        # SPECIFIED RANGE ARE POSSIBLY LEGS IN LATERAL LYING POSITION
+        #
+        # Measure the angle of each contour and compute relative angle towards light bulb
+        #
+        # angle measurement based on fitEllipse() function.
+        #================================================================================= 
 
+        for contour in contours:
+           
+            ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
+            # calculate the rectangle with minimal area around the contour
+            rotated_rect = cv2.minAreaRect(contour)
+            (x, y), (width, height), rotatedRectAngle = rotated_rect
+            # calculate box and draw the rectangle
+            box = cv2.boxPoints(rotated_rect)
+            box = np.int0(box)
+            cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)
+            
+            ### MEASURE THE ANGLE OF THE CONTOURS FITTING ELLIPSE ###
             ## contour Approximation to a Polynon
             peri = cv2.arcLength(contour, True)
             contourApprox = cv2.approxPolyDP(contour, 0.004 * peri, True)
            
-            #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-            (x,y),(MA,ma),contourAngle = cv2.fitEllipse(contourApprox)
+            #   Important is contoursEllipseAngle. Ma and ma are Major Axis and Minor Axis lengths.
+            (x,y),(MA,ma),contoursEllipseAngle = cv2.fitEllipse(contourApprox)
             
-            # positive rotation values means counter-clockwise!
+            # rotation values = positive: counter-clockwise
+            # positivRotationAngle and negativeRotationAngle is the angle, which is to be rotated
+            # in order to achieve that the light bulb in a rotated image is in the expected position
             
-            positivRotationAngle = lightBulbAngle - ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION
-            negativeRotationAngle = lightBulbAngle - (ImageAnalysisConfiguration.LIGHT_BULB_ANGLE_EXPECTION*-1)
-            positiveAdjustedAngle = (contourAngle -positivRotationAngle) % DEGREE_MODULO 
-            negativeAdjustedAngle = (negativeRotationAngle + contourAngle) % DEGREE_MODULO 
+            # positivRotationAngle rotats the image so that the light bulb is at the top
+            positivRotationAngle = lightBulbAngle - globalConfig.LIGHT_BULB_ANGLE_EXPECTION
+            
+            # negativeRotationAngle rotats the image so that the light bulb is at the bottom. 
+            # this facilitaes to handle negative angles of the contoursEllipseAngle
+            negativeRotationAngle = lightBulbAngle - (globalConfig.LIGHT_BULB_ANGLE_EXPECTION*-1)
+            positiveAdjustedAngle = (contoursEllipseAngle -positivRotationAngle) % DEGREE_MODULO 
+            negativeAdjustedAngle = (negativeRotationAngle + contoursEllipseAngle) % DEGREE_MODULO 
 
-            minLegAngle = ImageAnalysisConfiguration.MIN_LEG_ANGLE_EXPECTION
-            maxLegAngle = ImageAnalysisConfiguration.MAX_LEG_ANGLE_EXPECTION
-            
-            # calculate the rectangle with minimal area around the contour
-            rotated_rect = cv2.minAreaRect(contour)
-            (x, y), (width, height), rotatedRectAngle = rotated_rect
-    
-            minAreaRect_image = negimg  
-            #minAreaRect_image = cv2.rectangle(minAreaRect_image, (x,x+w),(y, y+h),(0,0,0), 5) 
-            box = cv2.boxPoints(rotated_rect)
-            box = np.int0(box)
-            cv2.polylines(minAreaRect_image, [box], True, (0,0,0), 5)
-            
+            # min and max angles, that are consiered to be possible for legs in lateral lying
+            minLegAngle = globalConfig.MIN_LEG_ANGLE_EXPECTION
+            maxLegAngle = globalConfig.MAX_LEG_ANGLE_EXPECTION
+
+            # check whether the angle is in the interesting Range of Angles. 
+            # separate contours with interesting angles from contours with uninteresting angles
+
             if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
-                
                 filteredByAngle.append(contour)
-                continue
-                        
-        
-            ## angle analysis for legs directing from right to left
+                continue                                
             elif negativeAdjustedAngle > minLegAngle and negativeAdjustedAngle < maxLegAngle:
-
                 maxLegAngle = minLegAngle*(-1)
                 minLegAngle =  maxLegAngle*(-1)
                 filteredByAngle.append(contour)
             else:
-                  removedContours.append(contour)  
+                  uninterestingContours.append(contour) 
+        
+        ## write images to demonstrate what the positivRotationAngle and negativeAdjustedAngle do
+        (h, w) = analysisImage.shape[:2]     
+        imageCenter = (w / 2, h / 2)       
+        positiveRotation = cv2.getRotationMatrix2D(imageCenter, positivRotationAngle, globalConfig.SCALE)
+        negativeRotation = cv2.getRotationMatrix2D(imageCenter, negativeRotationAngle, globalConfig.SCALE)
+        
+        
+        posiveRotatedImage = cv2.warpAffine(analysisImage, positiveRotation, (h, w))
+        negativeRotatedImage = cv2.warpAffine(analysisImage, negativeRotation, (h, w))
+        
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/8minAreaRect_image.jpg', minAreaRectImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/9positiveRotatedImage.jpg', posiveRotatedImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/10negativeRotatedImage.jpg', negativeRotatedImage)
+        
+ 
+        allContoursImage = minAreaRectImage.copy()        
+        ratioFilteringImage = minAreaRectImage.copy()
+        resultingImage = minAreaRectImage.copy()
+        
+       #=================================================================================
+        # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
+        # first, contours are been drawed in an image
+        # then this image is beeing used again to overdraw the contours, which are beeing filtered and 
+        # again considered to be legs in lateral lying position
+        #=================================================================================        
+    
+        allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/11allContoursImage.jpg', allContoursImage)        
+        filteredByAngleImage = cv2.drawContours(allContoursImage, filteredByAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/12filteredByAngle.jpg', filteredByAngleImage)
+       
+                
 
+         #=================================================================
+        # probebly not important anymore - was inside the upper for loop
+        
+        #
+        #  
+        # angle measurement based on fitEllipse() function.
+        #=================================================================            
+        '''
+        rotated_rect = cv2.minAreaRect(contour)
+        (x, y), (width, height), rotatedRectAngle = rotated_rect
 
-            ## angle analysis for legs directing from left to right
+        minAreaRect_image = analysisImage  
+        box = cv2.boxPoints(rotated_rect)
+        box = np.int0(box)
+        cv2.polylines(minAreaRect_image, [box], True, (0,0,0), 5)
+        '''
 
               
-        (h, w) = negimg.shape[:2]     
-        imageCenter = (w / 2, h / 2)       
-        M = cv2.getRotationMatrix2D(imageCenter, negativeRotationAngle, ImageAnalysisConfiguration.SCALE)
-        negimg = cv2.warpAffine(negimg, M, (h, w))
- 
-        print('Endresultat')
-        print(len(filteredByAngle))
+
         
-        i = 0      
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/orginal.jpg', originalImage)
         
+        #=================================================================================
+        # FILTER THE CONTOUR BY ASPECT RATIO AND EXTENT OF ITS MIN AREA RECTANGLE: 
+        # ONLY CONTOURS WITH SPECIFIC ASPECT RATIO AND EXTENT ARE POSSIBLY LEGS
+        # IN LATERAL LYING POSITION
+        # 
+        # COMPUTATION OF MIN AREA RECTANGLE IS BASED ON minAreaRect()
+        # 
+        # CONSIDERING THE ASPECT RATIO,  WE ARE SEARCHING FOR RECTANGLES, WITH A ASPECT 
+        # RATIO BIGGER THAN A MINIMUM ASPECT RATIO PROVIDED BY CONFIGURATION
+        #
+        # CONSIDERING THE EXTENT,  WE ARE SEARCHING FOR EXTENTS, SMALLER THAN A 
+        # MINIMUM ASPECT RATIO PROVIDED BY CONFIGURATION
+        # 
+        #=================================================================================        
+
+        
+
+
         for contour in filteredByAngle:
-            i = i+1
-            #### ASPECT RATIO COMPUTATION #### 
             
             # calculate the rectangle with minimal area around the contour
             rotated_rect = cv2.minAreaRect(contour)
             (x, y), (width, height), rotatedRectAngle = rotated_rect
-           
-            #cv2.polylines(minAreaRect_image, convexHull, False, (0,0,0), 5)
             
-            #minAreaRect_image = cv2.rectangle(minAreaRect_image, (x,x+w),(y, y+h),(0,0,0), 5) 
-            box = cv2.boxPoints(rotated_rect)
-            box = np.int0(box)
-            cv2.polylines(minAreaRect_image, [box], True, (0,0,0), 5)
-            
-            # compute the bounding box of the contour and use the
-			# bounding box to compute the aspect ratio           
 
-
-            #print('width' + str(width))
-            #print('height' + str(height))
-            
+			# COMPUTE ASPECT RATIO
+            # use the bounding box to compute the aspect ratio           
             # make sure that aspect ratio is greater than 0 
             if width > height:
                 longside = width
@@ -301,107 +362,115 @@ class TraitRecognitor:
 
             aspectRatio = float(longside)/shortside  
             
-  
-            #### EXTEND COMPUTATION ####
+            #### COMPUTE EXTENT  ####
             contourArea = cv2.contourArea(contour)
-            rectArea = w*h
+            rectArea = width*height
             extent = float(contourArea)/rectArea
-            '''
-            print('################' +str(i)+'##########################')
-            print(contourArea)
-            print(rectArea)
-            print(extent)
-            print(aspectRatio)
-           '''
+
             #### FILTER THE CONTOURS BASED ON ASPECT RATIO AND EXTEND ####
-            aspectRatioMin = ImageAnalysisConfiguration.ASPECT_RATIO_MIN
-            extentMax = ImageAnalysisConfiguration.EXTENT_MAX
+            aspectRatioMin = globalConfig.ASPECT_RATIO_MIN
+            extentMax = globalConfig.EXTENT_MAX
             
             if  aspectRatio > aspectRatioMin and extent < extentMax:
 
-                lateralLyingContours.append(contour)
+                fliteredByRatios.append(contour)
   
             else:
-                removedContours.append(contour)
-                
-        print('lateralLyingContours')
-        print(len(lateralLyingContours))
+                uninterestingContours.append(contour)
+
+        #=================================================================================
+        # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
+        # first, contours are been drawed in an image
+        # then this image is beeing used again to overdraw the contours, which are beeing filtered and 
+        # again considered to be legs in lateral lying position
+        #=================================================================================        
+    
+        allContoursImage = cv2.drawContours(allContoursImage, filteredByAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/12allContoursImage.jpg', allContoursImage)        
+        ratioFilteringImage = cv2.drawContours(allContoursImage, fliteredByRatios, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/13filteredByRatios.jpg', ratioFilteringImage)
+       
         
-        adjustedRotationContours = []
-        i=0
         
-        testimage = originalImage.copy()
-        whiteimage = np.zeros([testimage.shape[0],testimage.shape[1], 3], dtype=np.uint8)
-        whiteimage[:] = 255        
-        for cnt in lateralLyingContours:
-                
-            rotated_rect_one = cv2.minAreaRect(cnt)
-            (x, y), (width, height), rotatedRectAngle_one = rotated_rect_one          
-            
-            rotationAngle =  (300-rotatedRectAngle_one)%360
-            cnt_rotated = self.rotate_contour(cnt, rotationAngle)
-            im_copy = cnt.copy()
-            #cv2.drawContours(whiteimage, contours, 0, (255, 0, 0), 3)
-            whiteimage = cv2.drawContours(whiteimage, [cnt_rotated], 0, (0,  0,255), -1)
-            
-            adjustedRotationContours.append(cnt_rotated)
+        
+        #=================================================================================
+        # FILTER THE CONTOUR BY METRIC SHOWING THE SIMILARITY: 
+        # A COW HAS AT LEAST TWO LEGS. IF ONE IS DETECTED, AT LEAST A SECOND 
+        # LEG (whiches looks similar) HAS TO BE DETECTED IN ORDER TO MAKE AN ANSSUMTION 
+        # ABOUT THE LYING POSITION
+        # 
+        # COMPUTATION OF SIMILARITY METRIC BASED ON matchShapes()
+        # 
+        #=================================================================================        
+        
+        for a, b in itertools.combinations(fliteredByRatios, 2):
+ 
+            similarity = cv2.matchShapes(a,b,1,0.0)
+            if similarity < globalConfig.SIMILARITY_MIN:
 
-            rotated_rect_one = cv2.minAreaRect(cnt_rotated)
-            (x, y), (width, height), rotatedRectAngle_one = rotated_rect_one  
-            print(rotatedRectAngle_one)
+                if a not in filteredBySimilarity: 
+                    filteredBySimilarity.append(a)
+                if b not in filteredBySimilarity:                     
+                    filteredBySimilarity.append(b)
 
-        import itertools
-        sameOrientationLegs = []
-        for a, b in itertools.combinations(contours, 2):
+            else:
+                if a not in uninterestingContours: 
+                    uninterestingContours.append(a)
+                if b not in uninterestingContours:                     
+                    uninterestingContours.append(b)   
+                    
+        #=================================================================================
+        # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
+        # first, contours are been drawed in an image
+        # then this image is beeing used again to overdraw the contours, which are beeing filtered and 
+        # again considered to be legs in lateral lying position
+        #=================================================================================        
+    
+        allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/14_fliteredByRatios.jpg', allContoursImage)        
+        similarityFilteringImage = cv2.drawContours(allContoursImage, filteredBySimilarity, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/15_filteredBySimilarity.jpg', similarityFilteringImage)
+       
+                            
+        filtedBySimNoAngle = []
+        fliteredByRatiosNoAngle = []
+        for contour in fliteredByRatios:
+        
+            rotated_rect = cv2.minAreaRect(contour)
+            (x, y), (width, height), rotatedRectAngle_one = rotated_rect          
             
-            rotated_rect_a = cv2.minAreaRect(a)
-            rotated_rect_b = cv2.minAreaRect(b)
-            
-            
+            rotationAngle =  (globalConfig.ANKER_ANGLE-rotatedRectAngle_one)%DEGREE_MODULO
+            cnt_rotated = self.rotate_contour(contour, rotationAngle)
+                      
+            fliteredByRatiosNoAngle.append(cnt_rotated)
+    
 
-            (x, y), (width, height), rotatedRectAngle = rotated_rect
-            ret = cv2.matchShapes(a,b,1,0.0)
-
-
-            
-            if ret < 2:
-                print('ret')
-                print(ret)
+            sameOrientationLegs = []
+        for a, b in itertools.combinations(fliteredByRatiosNoAngle, 2):
+ 
+            similarity = cv2.matchShapes(a,b,1,0.0)
+            if similarity < globalConfig.SIMILARITY_MIN:
 
                 if a not in sameOrientationLegs: 
-                    sameOrientationLegs.append(a)
+                    filtedBySimNoAngle.append(a)
                 if b not in sameOrientationLegs:                     
-                    sameOrientationLegs.append(b)
+                    filtedBySimNoAngle.append(b)
+                   
 
-            else:
-                removedContours.append(a)
-                #removedContours.append(b)                    
-
-        
-        #draw all the contours in the image
-
+            
+        #=================================================================================
+        # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
+        # first, contours are been drawed in an image
+        # then this image is beeing used again to overdraw the contours, which are beeing filtered and 
+        # again considered to be legs in lateral lying position
+        #=================================================================================        
+    
+        allContoursImage = cv2.drawContours(whiteimage, fliteredByRatiosNoAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        similarityFilteringImage = cv2.drawContours(whiteimage, filtedBySimNoAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/17filteredBySimilarityNoAngle.jpg', similarityFilteringImage)
        
-        #minAreaRect_image = cv2.drawContours(minAreaRect_image, adjustedRotationContours, -1, (	120, 200, 120), -1)
-       
-        #print white image
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzall.jpg', minAreaRect_image)
-        #minAreaRect_image = cv2.drawContours(minAreaRect_image, sameOrientationLegs , -1, (	0, 0, 255),-1)
-        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered2.jpg', whiteimage)
-       
-        # print normal image
-        minAreaRect_image = cv2.drawContours(testimage, removedContours, -1, (	120, 200, 120), -1)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzall.jpg', testimage)
-        whiteimage = cv2.drawContours(whiteimage, sameOrientationLegs , -1, (	120, 200, 120),-1)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered2.jpg', minAreaRect_image)        
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered22.jpg', whiteimage)
-
-        print('LL')
-        print(len(sameOrientationLegs))
-
-        print(len(contours))
-        #draw only the filtered contours in the image        
-  
-
+         
+      
 
           
         return (lateralLyingContours, minAreaRect_image)   

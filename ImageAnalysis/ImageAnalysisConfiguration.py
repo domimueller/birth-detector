@@ -65,14 +65,14 @@ WRITER_EXTENSION = 'jpg'
 WRITER_FILE_PATH_MAIN = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
 
 # Prepare FileNames to write . 
-WRITER_FILE_NAME_BRIGHTENED = '1_brightenedImage'
-WRITER_FILE_NAME_FILTERED = '2_filteredImage'
-WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = '3_unimportantAreaMask'
-WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4_unimportantAreaimage'
-WRITER_FILE_NAME_THRESHOLDED_MASK = '5_thresholdedMask'
-WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6_ContoursAfterThresholding'
-WRITER_FILE_NAME_ANALYSED_IMAGE = '7_ContoursAfterTraitRecognition'
-WRITER_FILE_NAME_ANGLE_DEMO = '99_AngleAdjustmentDemonstration'
+WRITER_FILE_NAME_BRIGHTENED = '1brightenedImage'
+WRITER_FILE_NAME_FILTERED = '2filteredImage'
+WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = '3unimportantAreaMask'
+WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4unimportantAreaimage'
+WRITER_FILE_NAME_THRESHOLDED_MASK = '5thresholdedMask'
+WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6ContoursAfterThresholding'
+WRITER_FILE_NAME_ANALYSED_IMAGE = '7ContoursAfterTraitRecognition'
+WRITER_FILE_NAME_ANGLE_DEMO = '99AngleAdjustmentDemonstration'
 
 
 #==========================================================================
@@ -272,15 +272,22 @@ ENUM_SELECT_FINDER = 1
 
 #configuration for angle filtering
 LIGHT_BULB_ANGLE_EXPECTION= 90
-MIN_LEG_ANGLE_EXPECTION= 70
-MAX_LEG_ANGLE_EXPECTION= 110
+MIN_LEG_ANGLE_EXPECTION= 60
+MAX_LEG_ANGLE_EXPECTION= 120
 SCALE = 0.75
 
 
 ## configuration for shape analysis
+
 ROUNDNESS_THRESHOLD = 0.7
-EXTENT_MAX = 0.4
+EXTENT_MAX = 0.5
 ASPECT_RATIO_MIN = 1.5
+ANKER_ANGLE = 300
+SIMILARITY_MIN = 5
+
+# value from 1 to 3
+MATCHING_METHOD =1 
+
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######
 #============================================
@@ -289,13 +296,17 @@ CIRCLE_DRAWING_MODE = 'CIRCLE'
 OUTLINE_DRAWING_MODE = 'OUTLINE'
 POINTS_DRAWING_MODE = 'POINTS'
 
-THICKNESS_BOLD = 10
+
 THICKNESS_FILL = -1
+THICKNESS_BOLD = 10
+THICKNESS_THICK = 5
 THICKNESS_THIN = 2
+
+
 
 RED = BGR.BGR(blue=0, green=0, red=250)
 BLUE= BGR.BGR(blue=255, green=0, red=0)
-GREEN= BGR.BGR(blue=0, green=255, red=0)
+GREEN= BGR.BGR(blue=120, green=200, red=120)
 BLACK= BGR.BGR(blue=0, green=0, red=0)
 
 
