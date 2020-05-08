@@ -30,6 +30,7 @@ sys.path.append('../VO-Library')
 import ColorSpaceConversion
 import ColorSpaceConversionType
 import ImageAnalysisConfiguration 
+import matplotlib.pyplot as plt
 
 #==========================================================================
 # CONSTANTS
@@ -276,7 +277,6 @@ class TraitRecognitor:
             rotated_rect = cv2.minAreaRect(contour)
             (x, y), (width, height), rotatedRectAngle = rotated_rect
            
-            convexHull= cv2.convexHull(contour)
             #cv2.polylines(minAreaRect_image, convexHull, False, (0,0,0), 5)
             
             #minAreaRect_image = cv2.rectangle(minAreaRect_image, (x,x+w),(y, y+h),(0,0,0), 5) 
@@ -326,20 +326,52 @@ class TraitRecognitor:
                 
         print('lateralLyingContours')
         print(len(lateralLyingContours))
-       
         
+        adjustedRotationContours = []
+        i=0
+        
+        testimage = originalImage.copy()
+        whiteimage = np.zeros([testimage.shape[0],testimage.shape[1], 3], dtype=np.uint8)
+        whiteimage[:] = 255        
+        for cnt in lateralLyingContours:
+                
+            rotated_rect_one = cv2.minAreaRect(cnt)
+            (x, y), (width, height), rotatedRectAngle_one = rotated_rect_one          
+            
+            rotationAngle =  (300-rotatedRectAngle_one)%360
+            cnt_rotated = self.rotate_contour(cnt, rotationAngle)
+            im_copy = cnt.copy()
+            #cv2.drawContours(whiteimage, contours, 0, (255, 0, 0), 3)
+            whiteimage = cv2.drawContours(whiteimage, [cnt_rotated], 0, (0,  0,255), -1)
+            
+            adjustedRotationContours.append(cnt_rotated)
+
+            rotated_rect_one = cv2.minAreaRect(cnt_rotated)
+            (x, y), (width, height), rotatedRectAngle_one = rotated_rect_one  
+            print(rotatedRectAngle_one)
+
         import itertools
         sameOrientationLegs = []
-        for a, b in itertools.combinations(lateralLyingContours, 2):
-            ret = cv2.matchShapes(a,b,3,0.0)
-
-
-            print(ret)
+        for a, b in itertools.combinations(contours, 2):
             
-            if ret < 4:
-                sameOrientationLegs.append(a)
+            rotated_rect_a = cv2.minAreaRect(a)
+            rotated_rect_b = cv2.minAreaRect(b)
+            
+            
 
-                sameOrientationLegs.append(b)
+            (x, y), (width, height), rotatedRectAngle = rotated_rect
+            ret = cv2.matchShapes(a,b,1,0.0)
+
+
+            
+            if ret < 2:
+                print('ret')
+                print(ret)
+
+                if a not in sameOrientationLegs: 
+                    sameOrientationLegs.append(a)
+                if b not in sameOrientationLegs:                     
+                    sameOrientationLegs.append(b)
 
             else:
                 removedContours.append(a)
@@ -347,20 +379,72 @@ class TraitRecognitor:
 
         
         #draw all the contours in the image
-        testimage = minAreaRect_image.copy()
-        testimage = cv2.drawContours(testimage, contours, -1, (	0, 0,255), -1)
+
+       
+        #minAreaRect_image = cv2.drawContours(minAreaRect_image, adjustedRotationContours, -1, (	120, 200, 120), -1)
+       
+        #print white image
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzall.jpg', minAreaRect_image)
+        #minAreaRect_image = cv2.drawContours(minAreaRect_image, sameOrientationLegs , -1, (	0, 0, 255),-1)
+        #cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered2.jpg', whiteimage)
+       
+        # print normal image
+        minAreaRect_image = cv2.drawContours(testimage, removedContours, -1, (	120, 200, 120), -1)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzall.jpg', testimage)
-        
-        minAreaRect_image = cv2.drawContours(testimage, lateralLyingContours, -1, (	120, 200, 120),-1)
-        
-   
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered.jpg', minAreaRect_image)
-        
+        whiteimage = cv2.drawContours(whiteimage, sameOrientationLegs , -1, (	120, 200, 120),-1)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered2.jpg', minAreaRect_image)        
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/zzfiltered22.jpg', whiteimage)
+
         print('LL')
+        print(len(sameOrientationLegs))
+
         print(len(contours))
         #draw only the filtered contours in the image        
-            
-        return (lateralLyingContours, minAreaRect_image)         
+  
+
+
+          
+        return (lateralLyingContours, minAreaRect_image)   
+
+    def cart2pol(self, x, y):
+        theta = np.arctan2(y, x)
+        rho = np.hypot(x, y)
+        return theta, rho
+    
+    
+    def pol2cart(self, theta, rho):
+        x = rho * np.cos(theta)
+        y = rho * np.sin(theta)
+        return x, y
+    
+    
+    def rotate_contour(self, cnt, angle):
+        M = cv2.moments(cnt)
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+    
+        cnt_norm = cnt - [cx, cy]
+        
+        coordinates = cnt_norm[:, 0, :]
+        xs, ys = coordinates[:, 0], coordinates[:, 1]
+        thetas, rhos = self.cart2pol(xs, ys)
+        
+        thetas = np.rad2deg(thetas)
+        thetas = (thetas + angle) % 360
+        thetas = np.deg2rad(thetas)
+        
+        xs, ys = self.pol2cart( thetas, rhos)
+        
+        cnt_norm[:, 0, 0] = xs
+        cnt_norm[:, 0, 1] = ys
+    
+        cnt_rotated = cnt_norm + [cx, cy]
+        cnt_rotated = cnt_rotated.astype(np.int32)
+    
+        return cnt_rotated
+    
+
+      
        
     def obtainStandingCowIsDetected(self ):
         
