@@ -259,12 +259,12 @@ class TraitRecognitor:
                 # in order to achieve that the light bulb in a rotated image is in the expected position
                 
                 # positivRotationAngle rotats the image so that the light bulb is at the top
-                positivRotationAngle = lightBulbAngle - globalConfig.LIGHT_BULB_ANGLE_EXPECTION
+                positiveRotationAngle = lightBulbAngle - globalConfig.LIGHT_BULB_ANGLE_EXPECTION
                 
                 # negativeRotationAngle rotats the image so that the light bulb is at the bottom. 
                 # this facilitaes to handle negative angles of the contoursEllipseAngle
                 negativeRotationAngle = lightBulbAngle - (globalConfig.LIGHT_BULB_ANGLE_EXPECTION*-1)
-                positiveAdjustedAngle = (contoursEllipseAngle -positivRotationAngle) % DEGREE_MODULO 
+                positiveAdjustedAngle = (contoursEllipseAngle -lightBulbAngle +globalConfig.LIGHT_BULB_ANGLE_EXPECTION)% DEGREE_MODULO 
                 negativeAdjustedAngle = (negativeRotationAngle + contoursEllipseAngle) % DEGREE_MODULO 
     
                 # min and max angles, that are consiered to be possible for legs in lateral lying
@@ -276,6 +276,7 @@ class TraitRecognitor:
                 
                 if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
                     filteredByAngle.append(contour)
+                    print('asdaasdasdsadasdasdads')
                     continue                                
                 elif negativeAdjustedAngle > minLegAngle and negativeAdjustedAngle < maxLegAngle:
                     maxLegAngle = minLegAngle*(-1)
@@ -419,7 +420,7 @@ class TraitRecognitor:
         for a, b in itertools.combinations(fliteredByRatios, 2):
  
             similarity = cv2.matchShapes(a,b,1,0.0)
-            if similarity < globalConfig.SIMILARITY_MIN:
+            if similarity < globalConfig.SIMILARITY_MAX:
 
                 if a not in filteredBySimilarity: 
                     filteredBySimilarity.append(a)
@@ -440,7 +441,6 @@ class TraitRecognitor:
         #=================================================================================        
     
         allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/14_fliteredByRatios.jpg', allContoursImage)        
         similarityFilteringImage = cv2.drawContours(allContoursImage, filteredBySimilarity, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/15_filteredBySimilarity.jpg', similarityFilteringImage)
        
@@ -461,7 +461,7 @@ class TraitRecognitor:
         for a, b in itertools.combinations(fliteredByRatiosNoAngle, 2):
  
             similarity = cv2.matchShapes(a,b,1,0.0)
-            if similarity < globalConfig.SIMILARITY_MIN:
+            if similarity < globalConfig.SIMILARITY_MAX:
 
                 if a not in sameOrientationLegs: 
                     filtedBySimNoAngle.append(a)
