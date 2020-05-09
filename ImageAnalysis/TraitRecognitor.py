@@ -231,55 +231,58 @@ class TraitRecognitor:
         # angle measurement based on fitEllipse() function.
         #================================================================================= 
 
-
-        for contour in contours:
-                      
-            ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
-            # calculate the rectangle with minimal area around the contour
-            rotated_rect = cv2.minAreaRect(contour)
-            (x, y), (width, height), rotatedRectAngle = rotated_rect
-            # calculate box and draw the rectangle
-            box = cv2.boxPoints(rotated_rect)
-            box = np.int0(box)
-            cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)
-            
-            ### MEASURE THE ANGLE OF THE CONTOURS FITTING ELLIPSE ###
-            ## contour Approximation to a Polynon
-            peri = cv2.arcLength(contour, True)
-            contourApprox = cv2.approxPolyDP(contour, 0.004 * peri, True)
-           
-            #   Important is contoursEllipseAngle. Ma and ma are Major Axis and Minor Axis lengths.
-            (x,y),(MA,ma),contoursEllipseAngle = cv2.fitEllipse(contourApprox)
-            
-            # rotation values = positive: counter-clockwise
-            # positivRotationAngle and negativeRotationAngle is the angle, which is to be rotated
-            # in order to achieve that the light bulb in a rotated image is in the expected position
-            
-            # positivRotationAngle rotats the image so that the light bulb is at the top
-            positivRotationAngle = lightBulbAngle - globalConfig.LIGHT_BULB_ANGLE_EXPECTION
-            
-            # negativeRotationAngle rotats the image so that the light bulb is at the bottom. 
-            # this facilitaes to handle negative angles of the contoursEllipseAngle
-            negativeRotationAngle = lightBulbAngle - (globalConfig.LIGHT_BULB_ANGLE_EXPECTION*-1)
-            positiveAdjustedAngle = (contoursEllipseAngle -positivRotationAngle) % DEGREE_MODULO 
-            negativeAdjustedAngle = (negativeRotationAngle + contoursEllipseAngle) % DEGREE_MODULO 
-
-            # min and max angles, that are consiered to be possible for legs in lateral lying
-            minLegAngle = globalConfig.MIN_LEG_ANGLE_EXPECTION
-            maxLegAngle = globalConfig.MAX_LEG_ANGLE_EXPECTION
-
-            # check whether the angle is in the interesting Range of Angles. 
-            # separate contours with interesting angles from contours with uninteresting angles
-
-            if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
-                filteredByAngle.append(contour)
-                continue                                
-            elif negativeAdjustedAngle > minLegAngle and negativeAdjustedAngle < maxLegAngle:
-                maxLegAngle = minLegAngle*(-1)
-                minLegAngle =  maxLegAngle*(-1)
-                filteredByAngle.append(contour)
-            else:
-                  uninterestingContours.append(contour) 
+        if finderConfig.obtainFilterbyAngle() == globalConfig.FILTER_BY_ANGLE_FALSE:
+            for contour in contours:
+               filteredByAngle.append(contour) 
+        else: 
+            for contour in contours:
+                          
+                ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
+                # calculate the rectangle with minimal area around the contour
+                rotated_rect = cv2.minAreaRect(contour)
+                (x, y), (width, height), rotatedRectAngle = rotated_rect
+                # calculate box and draw the rectangle
+                box = cv2.boxPoints(rotated_rect)
+                box = np.int0(box)
+                cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)
+                
+                ### MEASURE THE ANGLE OF THE CONTOURS FITTING ELLIPSE ###
+                ## contour Approximation to a Polynon
+                peri = cv2.arcLength(contour, True)
+                contourApprox = cv2.approxPolyDP(contour, 0.004 * peri, True)
+               
+                #   Important is contoursEllipseAngle. Ma and ma are Major Axis and Minor Axis lengths.
+                (x,y),(MA,ma),contoursEllipseAngle = cv2.fitEllipse(contourApprox)
+                
+                # rotation values = positive: counter-clockwise
+                # positivRotationAngle and negativeRotationAngle is the angle, which is to be rotated
+                # in order to achieve that the light bulb in a rotated image is in the expected position
+                
+                # positivRotationAngle rotats the image so that the light bulb is at the top
+                positivRotationAngle = lightBulbAngle - globalConfig.LIGHT_BULB_ANGLE_EXPECTION
+                
+                # negativeRotationAngle rotats the image so that the light bulb is at the bottom. 
+                # this facilitaes to handle negative angles of the contoursEllipseAngle
+                negativeRotationAngle = lightBulbAngle - (globalConfig.LIGHT_BULB_ANGLE_EXPECTION*-1)
+                positiveAdjustedAngle = (contoursEllipseAngle -positivRotationAngle) % DEGREE_MODULO 
+                negativeAdjustedAngle = (negativeRotationAngle + contoursEllipseAngle) % DEGREE_MODULO 
+    
+                # min and max angles, that are consiered to be possible for legs in lateral lying
+                minLegAngle = globalConfig.MIN_LEG_ANGLE_EXPECTION
+                maxLegAngle = globalConfig.MAX_LEG_ANGLE_EXPECTION
+    
+                # check whether the angle is in the interesting Range of Angles. 
+                # separate contours with interesting angles from contours with uninteresting angles
+                
+                if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
+                    filteredByAngle.append(contour)
+                    continue                                
+                elif negativeAdjustedAngle > minLegAngle and negativeAdjustedAngle < maxLegAngle:
+                    maxLegAngle = minLegAngle*(-1)
+                    minLegAngle =  maxLegAngle*(-1)
+                    filteredByAngle.append(contour)
+                else:
+                      uninterestingContours.append(contour) 
         
         ## write images to demonstrate what the positivRotationAngle and negativeAdjustedAngle do
         (h, w) = analysisImage.shape[:2]     

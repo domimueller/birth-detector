@@ -417,7 +417,7 @@ class ImageAnalysisController:
                         ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
                         minArea = config.MIN_AREA,
                         deleteCircles = config.DELETE_CIRCLES_TRUE,
-                        filterbyAngle = config.FILTER_BY_ANGLE_FALSE)       
+                        filterbyAngle = config.FILTER_BY_ANGLE_TRUE)       
        
         
 
