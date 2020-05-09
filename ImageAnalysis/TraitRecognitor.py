@@ -130,6 +130,15 @@ class TraitRecognitor:
         contours which are the foundation of the decision
         """          
         
+        ### Brightening the Image: Only for Exporting the images to the report!
+       
+        M = np.ones(originalImage.shape, dtype="uint8")*60  
+        originalImage = cv2.add(originalImage, M)
+        clahe = cv2.createCLAHE(clipLimit= 4.0)
+        H, S, V = cv2.split(cv2.cvtColor(originalImage, cv2.COLOR_BGR2HSV))
+        eq_V = clahe.apply(V)
+        originalImage = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)         
+
         lightBulbContours = []
         filteredlightBulbsByArea = []
         filteredByAngle = []
@@ -169,11 +178,9 @@ class TraitRecognitor:
             
         image = cv2.cvtColor(originalImage, cv2.COLOR_HSV2BGR)
 
-        
         # filter contours from lightning mask by area size        
         for contour in lightBulbContours:
             conturArea = cv2.contourArea(contour)
-            
             if conturArea >= finderConfig.obtainMinArea():
 
                 filteredlightBulbsByArea.append(contour)             
@@ -212,6 +219,8 @@ class TraitRecognitor:
         filteredByAngle = []
         adjustedAngleNegative = 0
         negativeRotationAngle = 0
+        positiveRotation = 0
+        positivRotationAngle = 0
         
         #=================================================================================
         # FILTER THE CONTOUR BY ANGLE OF ITS FITTING ELLIPSE: ONLY ANGLES IN A
@@ -222,8 +231,9 @@ class TraitRecognitor:
         # angle measurement based on fitEllipse() function.
         #================================================================================= 
 
+
         for contour in contours:
-           
+                      
             ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
             # calculate the rectangle with minimal area around the contour
             rotated_rect = cv2.minAreaRect(contour)
@@ -344,7 +354,7 @@ class TraitRecognitor:
 
 
         for contour in filteredByAngle:
-            
+
             # calculate the rectangle with minimal area around the contour
             rotated_rect = cv2.minAreaRect(contour)
             (x, y), (width, height), rotatedRectAngle = rotated_rect
@@ -443,9 +453,8 @@ class TraitRecognitor:
             cnt_rotated = self.rotate_contour(contour, rotationAngle)
                       
             fliteredByRatiosNoAngle.append(cnt_rotated)
-    
-
-            sameOrientationLegs = []
+     
+        sameOrientationLegs = []
         for a, b in itertools.combinations(fliteredByRatiosNoAngle, 2):
  
             similarity = cv2.matchShapes(a,b,1,0.0)
@@ -453,11 +462,11 @@ class TraitRecognitor:
 
                 if a not in sameOrientationLegs: 
                     filtedBySimNoAngle.append(a)
+                    
                 if b not in sameOrientationLegs:                     
                     filtedBySimNoAngle.append(b)
-                   
+                            
 
-            
         #=================================================================================
         # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
         # first, contours are been drawed in an image
