@@ -73,14 +73,13 @@ class ContourFinderConfiguration:
         
    """    
     
-    def __init__(self, approxType, ENUM_SELECT_APPROX, finderType, ENUM_SELECT_FINDER, minArea,  deleteCircles, filterbyAngle):
+    def __init__(self, approxType, ENUM_SELECT_APPROX, finderType, ENUM_SELECT_FINDER, minArea,  deleteCircles):
         self.approxType = approxType
         self.ENUM_SELECT_APPROX = ENUM_SELECT_APPROX
         self.finderType = finderType
         self.ENUM_SELECT_FINDER = ENUM_SELECT_FINDER
         self.deleteCircles = deleteCircles
         self.minArea = minArea
-        self.filterbyAngle = filterbyAngle
 
 
     def obtainApproxType(self, ):
@@ -147,22 +146,6 @@ class ContourFinderConfiguration:
         
         return self.deleteCircles
 
-
-    def obtainFilterbyAngle(self, ):
-        
-        """    
-        Returns whether Filtering by Angles is desired or not
-        ----------        
-              
-        Returns: 
-        ----------                
-        Consideration of Angle Filtering or not
-      
-        """              
-       
-        
-        return self.filterbyAngle
-
    
 
     def obtainContourFinderConfiguration(self, ):
@@ -176,7 +159,7 @@ class ContourFinderConfiguration:
         Contour Finder as string. 
       
         """ 
-        data = 'Approximation Type: ' + str(self.obtainApproxType())  + DELIMITER + 'Contour Finder Type: ' + str(self.obtainFinderType())+ DELIMITER + 'Contour Min Area: ' + str(self.obtainMinArea ())+ DELIMITER + 'Circle Deletion: ' + str(self.obtainDeleteCircles()) + DELIMITER+ 'Filter by Angle: ' + str(self.obtainFilterbyAngle()) 
+        data = 'Approximation Type: ' + str(self.obtainApproxType())  + DELIMITER + 'Contour Finder Type: ' + str(self.obtainFinderType())+ DELIMITER + 'Contour Min Area: ' + str(self.obtainMinArea ())+ DELIMITER + 'Circle Deletion: ' + str(self.obtainDeleteCircles()) + DELIMITER
         strForReturn = TITLE + NEWLINE + data + NEWLINE + NEWLINE      
         return strForReturn
     

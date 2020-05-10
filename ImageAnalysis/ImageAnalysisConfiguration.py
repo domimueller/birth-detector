@@ -36,8 +36,8 @@ import ColorRange
 # to be unimportant. Knowing that, the Image Analysis will provide better results. If you do not do not have 
 # this knowledge, the corresponding variable needs to set to False. In any case, the information, that the light bulb
 # is at the very bright position will be used. 
-AdvancedUnimportantColorRange = True
-
+AdvancedUnimportantColorRange = False
+FILTER_BY_ANGLE = True
 
 #============================================
 ###### IMAGE READER CONFIGURATION ######
@@ -51,7 +51,7 @@ READER_EXTENSION = 'jpg'
 #Filepath and Filename for the Image Reader
 
 READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '2'
+READER_FILE_NAME = '1'
 
 #============================================
 ###### IMAGE WRITER CONFIGURATION ######
@@ -236,9 +236,6 @@ MIN_AREA_BIG = 2000
 
 DELETE_CIRCLES_TRUE = True
 DELETE_CIRCLES_FALSE = False
-
-FILTER_BY_ANGLE_TRUE = True
-FILTER_BY_ANGLE_FALSE = False
 
 
 '''

@@ -223,7 +223,7 @@ class TraitRecognitor:
         # angle measurement based on fitEllipse() function.
         #================================================================================= 
 
-        if finderConfig.obtainFilterbyAngle() == globalConfig.FILTER_BY_ANGLE_FALSE:
+        if globalConfig.FILTER_BY_ANGLE == False:
             for contour in contours:
                filteredByAngle.append(contour) 
         else: 

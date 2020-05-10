@@ -327,8 +327,7 @@ class ImageAnalysisController:
                         finderType = FinderType.FinderType,
                         ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
                         minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_FALSE,
-                        filterbyAngle = config.FILTER_BY_ANGLE_FALSE)       
+                        deleteCircles = config.DELETE_CIRCLES_FALSE)       
         
         ## call Contour Finder with the unimportant area mask as argument
         contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
@@ -418,8 +417,7 @@ class ImageAnalysisController:
                         finderType = FinderType.FinderType,
                         ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
                         minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_TRUE,
-                        filterbyAngle = config.FILTER_BY_ANGLE_TRUE)       
+                        deleteCircles = config.DELETE_CIRCLES_TRUE)       
        
         
 
@@ -539,11 +537,7 @@ class ImageAnalysisController:
 
         contours, image = self.contourFinder.findContours(image, self.obtainImage(), finderConfig)
         
-       
-        #if finderConfig.obtainFilterbyAngle() == config.FILTER_BY_ANGLE_TRUE:
-         #   self.image = self.controlImageReader()
-          #  contours, image= self.contourFinder.contourAngleFiltering(contours, self.obtainImage(), finderConfig)        
-        
+ 
         self.contourFinder.countContours(contours)
 
        
