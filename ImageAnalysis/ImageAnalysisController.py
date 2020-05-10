@@ -72,7 +72,7 @@ NEWLINE = '\n'
 
 INFORMATION_MSG_NO_COW = 'NO COW DETECTED IN THIS IMAGE. '
 INFORMATION_MSG_LATERAL_LYING_COW= 'IT APPEARS, THAT THE COW IS IN LATERAL LYING POSITION. CHECK THE CAMERA!'
-ERROR_MSG_NO_STANDING_CONTOURS = 'IT APPEARS, THAT THE COW IS STANDING. PLEASE STAY PATIENT AND HANG ON!'
+INFORMATION_MSG_STANDING_COW = 'IT APPEARS, THAT THE COW IS STANDING. PLEASE STAY PATIENT AND HANG ON!'
 
 
 #==========================================================================
@@ -220,7 +220,7 @@ class ImageAnalysisController:
         
         
         # image analysis will be performend on the processingImage which is a copy of the original image
-        self.processingImage = self.image.copy()
+        self.processingImage = self.obtainImage().copy()
         segmenentingImage = self.image.copy()
 
         #=====================================
@@ -297,8 +297,7 @@ class ImageAnalysisController:
         self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
 
         
-        # Build a Tuple with the Color Ranges. More ranges can be added
-        
+        # Build a List with the Color Ranges. More ranges can be added
         
         unimportantColorRanges=  [config.lightColorRange ]      
         
@@ -448,9 +447,9 @@ class ImageAnalysisController:
 
 
 
-        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE_FALSE, 
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE_TRUE, 
                                                     brightenerFactor = config.BRIGHTENER_FACTOR, 
-                                                    equalizingImage = config.EQUALIZING_IMAGE_FALSE, 
+                                                    equalizingImage = config.EQUALIZING_IMAGE_TRUE, 
                                                     clipLimit = config.CLIP_LIMIT , 
                                                     equalizingType = EqualizingType.EqualizingType, 
                                                     ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
@@ -466,41 +465,34 @@ class ImageAnalysisController:
         # if typical Conours for standing and lying apprear, print the msg that lateral lying is detected.
         # It is better, if the farmer checks the camera and sees that the cow is no in an imminent birth position than
         # the farmer is beeing kept in the opinion that no action is needed.
+        
         if standingContours is not None or lateralLyingContours is not None:
           
  
 
-             if standingContours is not None and lateralLyingContours is not None:   
+             if len(lateralLyingContours) >= config.MIN_NUMBER_LYING_CONTOURS:   
                 print(INFORMATION_MSG_LATERAL_LYING_COW)  
                 self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_FILL)             
-             if standingContours is None and lateralLyingContours is not None:
-                print(INFORMATION_MSG_LATERAL_LYING_COW)  
-                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
-                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
-                                                         color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_FILL)          
-                     
-            
+                                                         thickness=config.THICKNESS_FILL)                         
 
-             if standingContours is not None and lateralLyingContours is  None:  
-                print(ERROR_MSG_NO_STANDING_CONTOURS)
+             elif len(lateralLyingContours) < config.MIN_NUMBER_LYING_CONTOURS:  
+                print(INFORMATION_MSG_STANDING_COW)
 
                 self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 
                                                          color=config.RED.obtainDrawingColor(),
                                                          thickness=config.THICKNESS_FILL)
-         
-        
+             else:
+                    self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
+                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
+                                         color=config.RED.obtainDrawingColor(),
+                                         thickness=config.THICKNESS_FILL)
+                    print(INFORMATION_MSG_NO_COW)
 
         else:
             print(INFORMATION_MSG_NO_COW)
-            
-
-
-        
         #==================================
         # write intermediate result to file
         #==================================

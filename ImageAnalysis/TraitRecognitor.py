@@ -188,14 +188,14 @@ class TraitRecognitor:
                 
                 
                 if int(len(filteredlightBulbsByArea)) == 1:
-                    lightBulbAngle = angle
+                    lightBulbAngle = angle % DEGREE_MODULO 
                     print(MEASURED_LIGHT_BULB_ANGLE_TITLE + str(angle))
                                       
 
            
                     #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
                 else:
-                    lightBulbAngle = lightBulbAngle + angle
+                    lightBulbAngle = (lightBulbAngle + angle)% DEGREE_MODULO 
                     print(WARNING_MSG)
 
         # rotate the image using the light bulb as reference.
@@ -225,7 +225,15 @@ class TraitRecognitor:
 
         if globalConfig.FILTER_BY_ANGLE == False:
             for contour in contours:
-               filteredByAngle.append(contour) 
+               filteredByAngle.append(contour)
+               ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
+               # calculate the rectangle with minimal area around the contour
+               rotated_rect = cv2.minAreaRect(contour)
+               (x, y), (width, height), rotatedRectAngle = rotated_rect
+               # calculate box and draw the rectangle
+               box = cv2.boxPoints(rotated_rect)
+               box = np.int0(box)
+               cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)               
         else: 
             for contour in contours:
                           
@@ -342,7 +350,7 @@ class TraitRecognitor:
                 shortside = width
 
             aspectRatio = float(longside)/shortside  
-            
+            print(aspectRatio )
             #### COMPUTE EXTENT  ####
             contourArea = cv2.contourArea(contour)
             rectArea = width*height
@@ -450,8 +458,7 @@ class TraitRecognitor:
          
       
 
-          
-        return (lateralLyingContours, minAreaRect_image)   
+        return (filteredBySimilarity, minAreaRect_image)   
 
     def cart2pol(self, x, y):
         theta = np.arctan2(y, x)

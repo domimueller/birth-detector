@@ -30,14 +30,35 @@ import ColorRange
 # CONSTANTS - CONFIGURATION OF THE IMAGE ANALYSIS CONTROLLER
 #==========================================================================
 
-#### IMPORTANT! #####
+#### IMPORTANT Information! #####
 
 # AdvancedUnimportantColorRange  defines, whether you already know, which areas of the image can be considered
 # to be unimportant. Knowing that, the Image Analysis will provide better results. If you do not do not have 
 # this knowledge, the corresponding variable needs to set to False. In any case, the information, that the light bulb
 # is at the very bright position will be used. 
 AdvancedUnimportantColorRange = False
-FILTER_BY_ANGLE = True
+
+# if the cow is laying straight in the box, set FILTER_BY_ANGLE to True. If the cow is lying anyhow, set it to false
+FILTER_BY_ANGLE = False
+
+
+#configuration for angle filtering
+LIGHT_BULB_ANGLE_EXPECTION= 90
+MIN_LEG_ANGLE_EXPECTION= 70
+MAX_LEG_ANGLE_EXPECTION= 110
+
+# determines, how many lateral lying contours are necessary to make prediction
+MIN_NUMBER_LYING_CONTOURS = 2
+MIN_NUMBER_LYING_CONTOURS = 1
+## configuration for shape analysis
+ROUNDNESS_THRESHOLD = 0.7
+EXTENT_MAX = 0.5
+ASPECT_RATIO_MIN = 1.5
+ANKER_ANGLE = 300
+SIMILARITY_MAX= 15
+
+# value from 1 to 3
+MATCHING_METHOD = 1
 
 #============================================
 ###### IMAGE READER CONFIGURATION ######
@@ -204,7 +225,8 @@ ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
 #============================================
 ###### UNIMPORTANT AREAS CONFIGURATION ######
 #============================================
-
+# Scale for rotated image
+SCALE = 0.75
 
 # light (HSV) Bounds
 LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
@@ -268,23 +290,6 @@ ENUM_SELECT_APPROX = 1
 ENUM_SELECT_FINDER = 1
 
 
-#configuration for angle filtering
-LIGHT_BULB_ANGLE_EXPECTION= 90
-MIN_LEG_ANGLE_EXPECTION= 70
-MAX_LEG_ANGLE_EXPECTION= 110
-SCALE = 0.75
-
-
-## configuration for shape analysis
-
-ROUNDNESS_THRESHOLD = 0.7
-EXTENT_MAX = 0.5
-ASPECT_RATIO_MIN = 1.5
-ANKER_ANGLE = 300
-SIMILARITY_MAX= 5
-
-# value from 1 to 3
-MATCHING_METHOD =1 
 
 #============================================
 ###### CONTOUR DRAWER CONFIGURATION ######
