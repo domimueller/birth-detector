@@ -181,22 +181,23 @@ class TraitRecognitor:
         for lightBulb in filteredlightBulbsByArea:
                              
                 #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-                (x,y),(MA,ma),angle = cv2.fitEllipse(lightBulb) 
+                if len(lightBulb) > 4:
+                    (x,y),(MA,ma),angle = cv2.fitEllipse(lightBulb) 
                 
-                # uncomment to see how the ellipse looks like
-                #img = cv2.ellipse(originalImage.copy(),(int(x),int(y)),(int(MA),int(ma)),0,0,360,(0,0,0),2) 
-                
-                
-                if int(len(filteredlightBulbsByArea)) == 1:
-                    lightBulbAngle = angle % DEGREE_MODULO 
-                    print(MEASURED_LIGHT_BULB_ANGLE_TITLE + str(angle))
-                                      
-
-           
-                    #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
-                else:
-                    lightBulbAngle = (lightBulbAngle + angle)% DEGREE_MODULO 
-                    print(WARNING_MSG)
+                    # uncomment to see how the ellipse looks like
+                    #img = cv2.ellipse(originalImage.copy(),(int(x),int(y)),(int(MA),int(ma)),0,0,360,(0,0,0),2) 
+                    
+                    
+                    if int(len(filteredlightBulbsByArea)) == 1:
+                        lightBulbAngle = angle % DEGREE_MODULO 
+                        print(MEASURED_LIGHT_BULB_ANGLE_TITLE + str(angle))
+                                          
+    
+               
+                        #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
+                    else:
+                        lightBulbAngle = (lightBulbAngle + angle)% DEGREE_MODULO 
+                        print(WARNING_MSG)
 
         # rotate the image using the light bulb as reference.
          
@@ -350,7 +351,6 @@ class TraitRecognitor:
                 shortside = width
 
             aspectRatio = float(longside)/shortside  
-            print(aspectRatio )
             #### COMPUTE EXTENT  ####
             contourArea = cv2.contourArea(contour)
             rectArea = width*height

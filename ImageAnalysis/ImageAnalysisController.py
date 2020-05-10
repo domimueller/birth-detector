@@ -73,7 +73,7 @@ NEWLINE = '\n'
 INFORMATION_MSG_NO_COW = 'NO COW DETECTED IN THIS IMAGE. '
 INFORMATION_MSG_LATERAL_LYING_COW= 'IT APPEARS, THAT THE COW IS IN LATERAL LYING POSITION. CHECK THE CAMERA!'
 INFORMATION_MSG_STANDING_COW = 'IT APPEARS, THAT THE COW IS STANDING. PLEASE STAY PATIENT AND HANG ON!'
-
+INFORMATION_MSG_STANDING_COW_OR_NO_COW = 'ITS NOT SURE: EITHER THE COW IS STANDING OR NO COW IS DETECTED.'
 
 #==========================================================================
 # FUNCTIONS
@@ -155,7 +155,7 @@ class ImageAnalysisController:
         
         
         self.controlImageReader()
-        self.controlImageProcessor( AdvancedUnimportantColorRange = config.AdvancedUnimportantColorRange)
+        self.controlImageProcessor( AdvancedUnimportantColorRange = config.ADVANCED_UNIMPORTANT_COLOR_RANGE)
         
     def controlImageReader(self ):
 
@@ -299,11 +299,15 @@ class ImageAnalysisController:
         
         # Build a List with the Color Ranges. More ranges can be added
         
-        unimportantColorRanges=  [config.lightColorRange ]      
+        unimportantColorRanges=  config.defaultColorRanges       
         
         # adding more Color Ranges is possible
-        if colorRange == True:         
-            unimportantColorRanges.append(config.floorColorRange)
+        if colorRange == True:   
+            additionalColors = config.additionalUnimportantColorRanges
+            
+            for additionalColor in additionalColors:
+
+                unimportantColorRanges.append(additionalColor )
         
         self.processingImage =  self.processingImage.copy() 
         ## self.processingImage (returned image) is Binary Image!
@@ -478,7 +482,7 @@ class ImageAnalysisController:
                                                          thickness=config.THICKNESS_FILL)                         
 
              elif len(lateralLyingContours) < config.MIN_NUMBER_LYING_CONTOURS:  
-                print(INFORMATION_MSG_STANDING_COW)
+                print(INFORMATION_MSG_STANDING_COW_OR_NO_COW)
 
                 self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = config.OUTLINE_DRAWING_MODE, 

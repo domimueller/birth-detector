@@ -36,10 +36,50 @@ import ColorRange
 # to be unimportant. Knowing that, the Image Analysis will provide better results. If you do not do not have 
 # this knowledge, the corresponding variable needs to set to False. In any case, the information, that the light bulb
 # is at the very bright position will be used. 
-AdvancedUnimportantColorRange = False
+ADVANCED_UNIMPORTANT_COLOR_RANGE = True
 
 # if the cow is laying straight in the box, set FILTER_BY_ANGLE to True. If the cow is lying anyhow, set it to false
-FILTER_BY_ANGLE = False
+FILTER_BY_ANGLE = True
+
+
+
+
+#============================================
+###### UNIMPORTANT AREAS CONFIGURATION ######
+#============================================
+# Scale for rotated image
+SCALE = 0.75
+
+# light (HSV) Bounds
+LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=80)
+UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
+
+# light (HSV) Bounds
+LOWER_BOUND_LIGHT_FLIMMERING= HSV.HSV(hue=0, saturation=0, value=100)
+UPPER_BOUND_LIGHT_FLIMMERING= HSV.HSV(hue=360, saturation=100, value=255)
+                           
+#floor (HSV) 
+LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
+UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
+
+#Straw (HSV) 
+LOWER_BOUND_STRAW= HSV.HSV(hue=0, saturation=138, value=0) 
+UPPER_BOUND_STRAW = HSV.HSV(hue=360, saturation=1000, value=2000)
+
+# Color Ranges
+lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
+lightFlimmeringColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
+floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBound=UPPER_BOUND_FLOOR )
+strawColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_STRAW, upperBound=UPPER_BOUND_STRAW )
+
+
+defaultColorRanges = [lightColorRange]
+additionalUnimportantColorRanges = [strawColorRange, lightFlimmeringColorRange]
+
+#Filepath and Filename for the Image Reader
+
+READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
+READER_FILE_NAME = '3'
 
 
 #configuration for angle filtering
@@ -68,11 +108,6 @@ MATCHING_METHOD = 1
 READER_MAJOR = 'image'
 READER_MINOR = 'jpeg'
 READER_EXTENSION = 'jpg' 
-
-#Filepath and Filename for the Image Reader
-
-READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '1'
 
 #============================================
 ###### IMAGE WRITER CONFIGURATION ######
@@ -221,25 +256,6 @@ C_SUBTRACTOR = 3
 ENUM_SELECT_ADAPTIVE_THRESHOLDING = 1
 
 
-
-#============================================
-###### UNIMPORTANT AREAS CONFIGURATION ######
-#============================================
-# Scale for rotated image
-SCALE = 0.75
-
-# light (HSV) Bounds
-LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
-UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
-                           
-#floor (HSV) 
-LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
-UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
-
-
-# Color Ranges
-lightColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_LIGHT, upperBound=UPPER_BOUND_LIGHT )
-floorColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_FLOOR, upperBound=UPPER_BOUND_FLOOR )
 
 
 
