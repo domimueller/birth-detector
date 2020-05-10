@@ -129,15 +129,7 @@ class TraitRecognitor:
         -------              
         contours which are the foundation of the decision
         """          
-        
-        ### Brightening the Image: Only for Exporting the images to the report!
-       
-        M = np.ones(originalImage.shape, dtype="uint8")*60  
-        originalImage = cv2.add(originalImage, M)
-        clahe = cv2.createCLAHE(clipLimit= 4.0)
-        H, S, V = cv2.split(cv2.cvtColor(originalImage, cv2.COLOR_BGR2HSV))
-        eq_V = clahe.apply(V)
-        originalImage = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)         
+            
 
         lightBulbContours = []
         filteredlightBulbsByArea = []
@@ -264,7 +256,7 @@ class TraitRecognitor:
                 # negativeRotationAngle rotats the image so that the light bulb is at the bottom. 
                 # this facilitaes to handle negative angles of the contoursEllipseAngle
                 negativeRotationAngle = lightBulbAngle - (globalConfig.LIGHT_BULB_ANGLE_EXPECTION*-1)
-                positiveAdjustedAngle = (contoursEllipseAngle -lightBulbAngle +globalConfig.LIGHT_BULB_ANGLE_EXPECTION)% DEGREE_MODULO 
+                positiveAdjustedAngle = (contoursEllipseAngle - positiveRotationAngle)% DEGREE_MODULO 
                 negativeAdjustedAngle = (negativeRotationAngle + contoursEllipseAngle) % DEGREE_MODULO 
     
                 # min and max angles, that are consiered to be possible for legs in lateral lying
@@ -276,7 +268,6 @@ class TraitRecognitor:
                 
                 if positiveAdjustedAngle > minLegAngle and positiveAdjustedAngle < maxLegAngle:
                     filteredByAngle.append(contour)
-                    print('asdaasdasdsadasdasdads')
                     continue                                
                 elif negativeAdjustedAngle > minLegAngle and negativeAdjustedAngle < maxLegAngle:
                     maxLegAngle = minLegAngle*(-1)
@@ -297,7 +288,6 @@ class TraitRecognitor:
         
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/8minAreaRect_image.jpg', minAreaRectImage)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/9positiveRotatedImage.jpg', posiveRotatedImage)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/10negativeRotatedImage.jpg', negativeRotatedImage)
         
  
         allContoursImage = minAreaRectImage.copy()        
@@ -312,31 +302,8 @@ class TraitRecognitor:
         #=================================================================================        
     
         allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/11allContoursImage.jpg', allContoursImage)        
         filteredByAngleImage = cv2.drawContours(allContoursImage, filteredByAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/12filteredByAngle.jpg', filteredByAngleImage)
-       
-                
-
-         #=================================================================
-        # probebly not important anymore - was inside the upper for loop
-        
-        #
-        #  
-        # angle measurement based on fitEllipse() function.
-        #=================================================================            
-        '''
-        rotated_rect = cv2.minAreaRect(contour)
-        (x, y), (width, height), rotatedRectAngle = rotated_rect
-
-        minAreaRect_image = analysisImage  
-        box = cv2.boxPoints(rotated_rect)
-        box = np.int0(box)
-        cv2.polylines(minAreaRect_image, [box], True, (0,0,0), 5)
-        '''
-
-              
-
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/10filteredByAngle.jpg', filteredByAngleImage)
         
         
         #=================================================================================
@@ -400,9 +367,8 @@ class TraitRecognitor:
         #=================================================================================        
     
         allContoursImage = cv2.drawContours(allContoursImage, filteredByAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/12allContoursImage.jpg', allContoursImage)        
         ratioFilteringImage = cv2.drawContours(allContoursImage, fliteredByRatios, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/13filteredByRatios.jpg', ratioFilteringImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/11filteredByRatios.jpg', ratioFilteringImage)
        
         
         
@@ -442,7 +408,7 @@ class TraitRecognitor:
     
         allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         similarityFilteringImage = cv2.drawContours(allContoursImage, filteredBySimilarity, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/15_filteredBySimilarity.jpg', similarityFilteringImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/12filteredBySimilarity.jpg', similarityFilteringImage)
        
                             
         filtedBySimNoAngle = []
@@ -479,7 +445,7 @@ class TraitRecognitor:
     
         allContoursImage = cv2.drawContours(whiteimage, fliteredByRatiosNoAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         similarityFilteringImage = cv2.drawContours(whiteimage, filtedBySimNoAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/17filteredBySimilarityNoAngle.jpg', similarityFilteringImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/13filteredBySimilarityNoAngle.jpg', similarityFilteringImage)
        
          
       

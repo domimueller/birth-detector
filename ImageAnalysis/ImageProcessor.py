@@ -266,11 +266,9 @@ class ImageProcessor:
         
         self.unimportantColorRanges = unimportantColorRanges
 
-        i=0
         irrelevant_areas = []
         
         for unimportantColorRange in unimportantColorRanges:
-            i=i+1
 
             ### Binarize the HSV image ###
             # inRange() converts any color inside the Range to white. 

@@ -32,10 +32,11 @@ import ColorRange
 
 #### IMPORTANT! #####
 
-# provideUnimportantColorRange  defines, whether you already know, which areas of the image can be considered
+# AdvancedUnimportantColorRange  defines, whether you already know, which areas of the image can be considered
 # to be unimportant. Knowing that, the Image Analysis will provide better results. If you do not do not have 
-# this knowledge, the corresponding variable needs to set to False.
-provideUnimportantColorRange = True
+# this knowledge, the corresponding variable needs to set to False. In any case, the information, that the light bulb
+# is at the very bright position will be used. 
+AdvancedUnimportantColorRange = True
 
 
 #============================================
