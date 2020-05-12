@@ -19,7 +19,10 @@
 ## Import Classes for Functionality
 import numpy as np
 import cv2 
+import sys
 
+sys.path.append('../VO-Library')
+sys.path.append('../ImageAnalysis')
 
 import ImageReader 
 import TraitRecognitor
@@ -29,8 +32,7 @@ import ImageProcessor
 import ContourFinder
 import ContourDrawer
 
-import sys
-sys.path.append('../VO-Library')
+
 
 ## Import Value Objects
 

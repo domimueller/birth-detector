@@ -89,6 +89,8 @@ class TraitRecognitor:
     def detectStandingCow(self, contours, image,  finderConfig):
         
         """ 
+        
+        ### OUT OF SCOPE - NOT YET IMPLEMENTED ###
        
         Analyses Image data to detect standing cow
         -------              
@@ -427,7 +429,7 @@ class TraitRecognitor:
             (x, y), (width, height), rotatedRectAngle_one = rotated_rect          
             
             rotationAngle =  (globalConfig.ANKER_ANGLE-rotatedRectAngle_one)%DEGREE_MODULO
-            cnt_rotated = self.rotate_contour(contour, rotationAngle)
+            cnt_rotated = self.rotateContour(contour, rotationAngle)
                       
             fliteredByRatiosNoAngle.append(cnt_rotated)
      
@@ -472,12 +474,12 @@ class TraitRecognitor:
         return x, y
     
     
-    def rotate_contour(self, cnt, angle):
-        M = cv2.moments(cnt)
+    def rotateContour(self, contour, angle):
+        M = cv2.moments(contour)
         cx = int(M['m10']/M['m00'])
         cy = int(M['m01']/M['m00'])
     
-        cnt_norm = cnt - [cx, cy]
+        cnt_norm = contour - [cx, cy]
         
         coordinates = cnt_norm[:, 0, :]
         xs, ys = coordinates[:, 0], coordinates[:, 1]
