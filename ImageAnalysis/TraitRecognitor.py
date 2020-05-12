@@ -30,6 +30,8 @@ import ColorSpaceConversion
 import ColorSpaceConversionType
 import ImageAnalysisConfiguration  as globalConfig
 
+import ContourRotator as rotator
+
 import itertools
 
 #==========================================================================
@@ -429,9 +431,10 @@ class TraitRecognitor:
             (x, y), (width, height), rotatedRectAngle_one = rotated_rect          
             
             rotationAngle =  (globalConfig.ANKER_ANGLE-rotatedRectAngle_one)%DEGREE_MODULO
-            cnt_rotated = self.rotateContour(contour, rotationAngle)
-                      
-            fliteredByRatiosNoAngle.append(cnt_rotated)
+            
+            contourRotatated = rotator.ContourRotator().rotateContour(contour, rotationAngle)
+                     
+            fliteredByRatiosNoAngle.append(contourRotatated)
      
         sameOrientationLegs = []
         for a, b in itertools.combinations(fliteredByRatiosNoAngle, 2):
@@ -461,47 +464,7 @@ class TraitRecognitor:
       
 
         return (filteredBySimilarity, minAreaRect_image)   
-
-    def cart2pol(self, x, y):
-        theta = np.arctan2(y, x)
-        rho = np.hypot(x, y)
-        return theta, rho
     
-    
-    def pol2cart(self, theta, rho):
-        x = rho * np.cos(theta)
-        y = rho * np.sin(theta)
-        return x, y
-    
-    
-    def rotateContour(self, contour, angle):
-        M = cv2.moments(contour)
-        cx = int(M['m10']/M['m00'])
-        cy = int(M['m01']/M['m00'])
-    
-        cnt_norm = contour - [cx, cy]
-        
-        coordinates = cnt_norm[:, 0, :]
-        xs, ys = coordinates[:, 0], coordinates[:, 1]
-        thetas, rhos = self.cart2pol(xs, ys)
-        
-        thetas = np.rad2deg(thetas)
-        thetas = (thetas + angle) % 360
-        thetas = np.deg2rad(thetas)
-        
-        xs, ys = self.pol2cart( thetas, rhos)
-        
-        cnt_norm[:, 0, 0] = xs
-        cnt_norm[:, 0, 1] = ys
-    
-        cnt_rotated = cnt_norm + [cx, cy]
-        cnt_rotated = cnt_rotated.astype(np.int32)
-    
-        return cnt_rotated
-    
-
-      
-       
     def obtainStandingCowIsDetected(self ):
         
 
