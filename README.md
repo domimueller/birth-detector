@@ -4,7 +4,7 @@ A Project to use Images in order to recognize whether a Birth is already in Prog
 # Person Responsible
 Dominique Müller
 
-# IMPPORTANT NOTES
+# IMPORTANT NOTES
 
 Some part of the configuration is highly important and influences the results of the analysis a lot! 
 this configuration part is quite specific to the analysed situation in the stable. it is based on the position of the cow in the stable
@@ -29,14 +29,26 @@ If the cow is lying next to an empty box and therefore able to lying anyhow, set
 If you do have any further questions or remarks, please do not hesitate to contact me: dominique_mueller@gmx.ch
 
 # Contributors And Acknowledgment
-## the lecturers to provide Guidance during the Bachelor Thesis  
+## the lecturers   
 - Prof. Dr. Patrizio Collovà
 - Dr. Klaus-Georg Deck
 
-## the Veterinarian for providing knowledge in their field
+for providing Guidance during the Bachelor Thesis
+
+## the Veterinarian 
 - Prof. Dr. med. vet. Gaby Hirsbrunner
 - Prof. Dr. Samuel Kohler
 
-## the Sponsor of the Bachelor Thesis and his wife for proding knowledge and improving the results of image capturing with empirical work 
+for providing knowledge in their field
+
+## the Sponsor of the Bachelor Thesis and his wife  
 - Nelly Müller
 - Peter Müller
+
+for proding knowledge and improving the results of image capturing with empirical work
+
+## the employer of the Author
+- cubetech GmbH (www.cubetech.ch) and especially the CEO and Founder Christoph Ackermann
+
+for prociding the relevant server infrastructure.
+
