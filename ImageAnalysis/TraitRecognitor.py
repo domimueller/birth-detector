@@ -4,7 +4,7 @@
 
 
 #==========================================================================
-# ImageProcessor.py – DESCRIPTIONS 
+# RraitRecognitor.py – DESCRIPTIONS 
 #==========================================================================
 
 """
@@ -20,17 +20,11 @@
 import cv2 
 import numpy as np
 
-import ImageWriter
-import ContourDrawer
-import ContourFinder
-import ImageAnalysisController 
 import sys
 sys.path.append('../VO-Library')
-import ColorSpaceConversion
-import ColorSpaceConversionType
-import ImageAnalysisConfiguration  as globalConfig
-
+sys.path.append('../ImageAnalysisHousekeeping')
 import ContourRotator as rotator
+import ImageAnalysisConfiguration  as globalConfig
 
 import itertools
 
@@ -57,10 +51,13 @@ MIN_ECCENTRICITY = 0.9
 DEGREE_MODULO = 360
 
 ANGLE_INVERTER = -1
+BLANK_IMG_COLOR = 255
+
 class TraitRecognitor:
     
     """
     A class used to represent and implement the functionality for the Trait Recognition of Cows.
+    Filters contours based on given criteria.
     ...
     
     Attributes
@@ -68,28 +65,27 @@ class TraitRecognitor:
     standingCowIsDetected: Boolean
         Expresses, whether a standing cow is been detected     
     lateralLyingCowIsDetected: Image
-       Expresses, whether a lateral lying cow is been detected     
+       Expresses, whether a lateral lying cow is been detected    
+       
       
     Methods - See descriptions below.
     
     -------
-    detectStandingCow(self, image, contours )
-    detectLateralLyingClow(self, image, contours )
+    detectStandingCow(self, contour, image, config):
+    detectLateralLyingClow(self, contours, image, config)
+    detectRotationAngle(self, image, config)
+    filterByAngle(self, image, contours, config)
+    filterByGeometricRatios(self, image, allContours, filteredByAngleContours)  
+    matchShapes(self, image, allContours, filteredByRatiosContours):
     obtainStandingCowIsDetected()       
     obtainLateralLyingCowIsDetected()
-    obtainTraitRecognitor()
     
-    """ 
-     
+    """
     def __init__(self):
         self.standingCowIsDetected = None
         self.lateralLyingCowIsDetected = None
-        
-        # funtion execution
 
-
-    def detectStandingCow(self, contours, image,  finderConfig):
-        
+    def detectStandingCow(self, contour, image, config):
         """ 
         
         ### OUT OF SCOPE - NOT YET IMPLEMENTED ###
@@ -110,69 +106,85 @@ class TraitRecognitor:
         contours which are the foundation of the decision
         """              
         
-        
-       
+        pass
+    
 
-    def detectLateralLyingClow(self, contours, originalImage,  finderConfig ):
-        
+    def detectLateralLyingCow(self, contours, image, config):
         """ 
        
-        Analyses Image data to detect a cow in lateral lying position
+        Orchestrates other Contour Filtering functions
         -------              
       
-        Detects Contours in order to analyse wheter a cow in in lateral lying position, which is a sign
-        for an ongoing or imminent birth.
+        acts as orchestration function to execute angle filtering, extent filtering, 
+        aspect ratio filtering and similarity filtering
         -------              
       
         Parameters: 
         -------                 
         contours : Contours detected by findContours()
-
+        image: Image to draw
+        config: Filtering parameters
         
         Returns: 
         -------              
         contours which are the foundation of the decision
+        minAreaRectImage: Image with minimal area Rectangle going around each contour
         """          
-            
+               
+        
+        filteredByRatios, filteredBySimilarity  = [],  []
+        minAreaRectImage = image.copy()
 
-        lightBulbContours = []
-        filteredlightBulbsByArea = []
-        filteredByAngle = []
-        fliteredByRatios = []
-        filteredBySimilarity = []
-        lateralLyingContours = []
-        uninterestingContours = []
-        analysisImage = originalImage.copy()
-        newimg = originalImage.copy()
-        minAreaRectImage = originalImage.copy()
-        minAreaRect_image= originalImage.copy()
-        image = originalImage
+        filteredByAngle = self.filterByAngle( image, contours, config)        
+        filteredByRatios = self.filterByGeometricRatios( image, contours, filteredByAngle)  
+        filteredBySimilarity = self.matchShapes(image, contours, filteredByRatios)
+               
+        return (filteredBySimilarity, minAreaRectImage)   
+
+
+    def detectRotationAngle(self, image, config):
         
-        ## copy and prepare imagesf for later usage       
-        positiveRotatedImage = originalImage.copy()
-        negativeRotatedImage = originalImage.copy() 
+        """ 
+       
+        Detects the rotation Angle to compute the angle for angle Comparison
+        -------              
+      
+        This Function reads a Color Range, which is corresponding to an unique object (reference object) in the image
+        with know orientation (angle). Because we know the real-life angle, we can compute the correct angle
+        for comparison. In the current implementation, this unique object is the light bulb.
+        -------              
+      
+        Parameters: 
+        -------                 
+        image: Image to draw
+        config: Filtering parameters
+        
+        Returns: 
+        -------              
+        angle for comparison
+
+        """          
         
         
-        testimage = originalImage.copy()
-        whiteimage = np.zeros([testimage.shape[0],testimage.shape[1], 3], dtype=np.uint8)
-        whiteimage[:] = 255        
+        filteredlightBulbsByArea = []   
 
         lightBulbAngle = 0
+        finderConfig= config
+        
 
         print(ANGLE_ANALYSIS_TITLE + NEWLINE + NEWLINE)
 
         # generate mask to show where in the image the light is situated
         lowerBound = globalConfig.LOWER_BOUND_LIGHT.obtainColor()
         upperBound = globalConfig.UPPER_BOUND_LIGHT.obtainColor()
-        image = cv2.cvtColor(originalImage, cv2.COLOR_BGR2HSV)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         
         lightBulb = cv2.inRange(image, lowerBound , upperBound)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/7masks.jpg', lightBulb)
         
         #derive contours from mask of lightning 
-        lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE );
-            
-        image = cv2.cvtColor(originalImage, cv2.COLOR_HSV2BGR)
+        lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
         # filter contours from lightning mask by area size        
         for contour in lightBulbContours:
@@ -204,20 +216,34 @@ class TraitRecognitor:
                         print(WARNING_MSG)
 
         # rotate the image using the light bulb as reference.
-         
         print(EXPECTED_LIGHT_BULB_REAL_LIFE_ANGLE_TITLE + str(globalConfig.LIGHT_BULB_ANGLE_EXPECTION))
-        
         rotationAngle =lightBulbAngle-globalConfig.LIGHT_BULB_ANGLE_EXPECTION
-        
         print(ADJUSTED_ROTATION_ANGLE_TITILE + str(rotationAngle)) 
+     
+        return lightBulbAngle
+    
+    def filterByAngle(self, image, contours, config):
+   
         
-        #image = cv2.cvtColor(rotatedImage, cv2.COLOR_HSV2BGR)
+        """ 
+       
+        Detects the rotation Angle to compute the angle for angle Comparison
+        -------              
+      
+        Measure the angle of each contour and compute relative angle towards the reference object (light bulb)
+        -------              
+      
+        Parameters: 
+        -------                 
+        image: Image to draw
+        config: Filtering parameters
+        contours: Contours to filter
         
-        filteredByAngle = []
-        adjustedAngleNegative = 0
-        negativeRotationAngle = 0
-        positiveRotation = 0
-        positivRotationAngle = 0
+        Returns: 
+        -------              
+        contours: filtered Contours
+       
+        """ 
         
         #=================================================================================
         # FILTER THE CONTOUR BY ANGLE OF ITS FITTING ELLIPSE: ONLY ANGLES IN A
@@ -228,13 +254,25 @@ class TraitRecognitor:
         # angle measurement based on fitEllipse() function.
         #================================================================================= 
 
+
+        ## copy and prepare imagesf for later usage       
+        negativeRotatedImage, minAreaRectImage, analysisImage  = image.copy(), image.copy(), image.copy() 
+        
+        
+        filteredByAngle, uninterestingContours = [], []
+        negativeRotationAngle, positiveRotation, positivRotationAngle, lightBulbAngle  = 0, 0, 0, 0
+
+        lightBulbAngle = self.detectRotationAngle(image, config)
+
         if globalConfig.FILTER_BY_ANGLE == False:
             for contour in contours:
                filteredByAngle.append(contour)
-               ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
+             
+                ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
                # calculate the rectangle with minimal area around the contour
                rotated_rect = cv2.minAreaRect(contour)
                (x, y), (width, height), rotatedRectAngle = rotated_rect
+               
                # calculate box and draw the rectangle
                box = cv2.boxPoints(rotated_rect)
                box = np.int0(box)
@@ -244,9 +282,11 @@ class TraitRecognitor:
                           
                 ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
                 # calculate the rectangle with minimal area around the contour
+               
                 rotated_rect = cv2.minAreaRect(contour)
                 (x, y), (width, height), rotatedRectAngle = rotated_rect
                 # calculate box and draw the rectangle
+              
                 box = cv2.boxPoints(rotated_rect)
                 box = np.int0(box)
                 cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)
@@ -295,17 +335,17 @@ class TraitRecognitor:
         positiveRotation = cv2.getRotationMatrix2D(imageCenter, positivRotationAngle, globalConfig.SCALE)
         negativeRotation = cv2.getRotationMatrix2D(imageCenter, negativeRotationAngle, globalConfig.SCALE)
         
-        
+        # writing this images will show the result of this step
         posiveRotatedImage = cv2.warpAffine(analysisImage, positiveRotation, (h, w))
         negativeRotatedImage = cv2.warpAffine(analysisImage, negativeRotation, (h, w))
         
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/8minAreaRect_image.jpg', minAreaRectImage)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/9positiveRotatedImage.jpg', posiveRotatedImage)
         
- 
-        allContoursImage = minAreaRectImage.copy()        
-        ratioFilteringImage = minAreaRectImage.copy()
-        resultingImage = minAreaRectImage.copy()
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/8minAreaRect_image.jpg', minAreaRectImage)
+        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/9positiveRotatedImage.jpg', negativeRotatedImage)
+         
+
         
        #=================================================================================
         # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
@@ -314,11 +354,36 @@ class TraitRecognitor:
         # again considered to be legs in lateral lying position
         #=================================================================================        
     
+        allContoursImage = minAreaRectImage.copy()        
         allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         filteredByAngleImage = cv2.drawContours(allContoursImage, filteredByAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/10filteredByAngle.jpg', filteredByAngleImage)
         
+        return filteredByAngle
+    
+    def filterByGeometricRatios(self, image, allContours, filteredByAngleContours):
+
+        """ 
+       
+        Filters the contours by geometric properties
+        -------              
+      
+        The function filters the contours by the Ratios "Aspect Ratio" and "Extent"
+        -------              
+      
+        Parameters: 
+        -------                 
+        image: Image to draw
+        allContours: Not filtered contours, all contours
+        filteredByAngleContours: Contours filtered by angle
         
+        Returns: 
+        -------              
+        fliteredByRatios: filtered Contours
+       
+        """ 
+           
+
         #=================================================================================
         # FILTER THE CONTOUR BY ASPECT RATIO AND EXTENT OF ITS MIN AREA RECTANGLE: 
         # ONLY CONTOURS WITH SPECIFIC ASPECT RATIO AND EXTENT ARE POSSIBLY LEGS
@@ -330,13 +395,15 @@ class TraitRecognitor:
         # RATIO BIGGER THAN A MINIMUM ASPECT RATIO PROVIDED BY CONFIGURATION
         #
         # CONSIDERING THE EXTENT,  WE ARE SEARCHING FOR EXTENTS, SMALLER THAN A 
-        # MINIMUM ASPECT RATIO PROVIDED BY CONFIGURATION
+        # MAXIMUM EXTENT PROVIDED BY CONFIGURATION
         # 
         #=================================================================================        
+       
+        filteredByAngle = filteredByAngleContours 
+        fliteredByRatios, uninterestingContours = [], []
+        allContoursImage = image.copy()        
 
         
-
-
         for contour in filteredByAngle:
 
             # calculate the rectangle with minimal area around the contour
@@ -355,6 +422,7 @@ class TraitRecognitor:
                 shortside = width
 
             aspectRatio = float(longside)/shortside  
+          
             #### COMPUTE EXTENT  ####
             contourArea = cv2.contourArea(contour)
             rectArea = width*height
@@ -378,12 +446,37 @@ class TraitRecognitor:
         # again considered to be legs in lateral lying position
         #=================================================================================        
     
-        allContoursImage = cv2.drawContours(allContoursImage, filteredByAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        allContoursImage = cv2.drawContours(allContoursImage, allContours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         ratioFilteringImage = cv2.drawContours(allContoursImage, fliteredByRatios, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/11filteredByRatios.jpg', ratioFilteringImage)
        
+        return fliteredByRatios
         
         
+       
+    def matchShapes(self, image, allContours, filteredByRatiosContours):
+
+        """ 
+       
+        Filters the contours by Similarity Metric
+        -------              
+      
+        The function filters the contours based on the OpenCV function cv2.matchShapes().
+        This Function returns a similarity metric, which is been applied for filtering.
+        -------              
+      
+        Parameters: 
+        -------                 
+        image: Image to draw
+        allContours: Not filtered contours, all contours
+        filteredByRatiosContours: Contours filtered by angle and Ratios
+        
+        Returns: 
+        -------              
+        filteredBySimilarity: filtered Contours
+       
+        """ 
+           
         
         #=================================================================================
         # FILTER THE CONTOUR BY METRIC SHOWING THE SIMILARITY: 
@@ -395,46 +488,21 @@ class TraitRecognitor:
         # 
         #=================================================================================        
         
-        for a, b in itertools.combinations(fliteredByRatios, 2):
- 
-            similarity = cv2.matchShapes(a,b,1,0.0)
-            if similarity < globalConfig.SIMILARITY_MAX:
+        whiteimage = image.copy()
+        whiteimage = np.zeros([whiteimage.shape[0],whiteimage.shape[1], 3], dtype=np.uint8)
+        whiteimage[:] = BLANK_IMG_COLOR    
+        
+        fliteredByRatios = filteredByRatiosContours
+        fliteredByRatiosNoAngle, filteredBySimilarity, uninterestingContours  = [], [], []
 
-                if a not in filteredBySimilarity: 
-                    filteredBySimilarity.append(a)
-                if b not in filteredBySimilarity:                     
-                    filteredBySimilarity.append(b)
-
-            else:
-                if a not in uninterestingContours: 
-                    uninterestingContours.append(a)
-                if b not in uninterestingContours:                     
-                    uninterestingContours.append(b)   
-                    
-        #=================================================================================
-        # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
-        # first, contours are been drawed in an image
-        # then this image is beeing used again to overdraw the contours, which are beeing filtered and 
-        # again considered to be legs in lateral lying position
-        #=================================================================================        
-    
-        allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        similarityFilteringImage = cv2.drawContours(allContoursImage, filteredBySimilarity, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/12filteredBySimilarity.jpg', similarityFilteringImage)
-       
-                            
-        filtedBySimNoAngle = []
-        fliteredByRatiosNoAngle = []
         for contour in fliteredByRatios:
         
             rotated_rect = cv2.minAreaRect(contour)
-            (x, y), (width, height), rotatedRectAngle_one = rotated_rect          
-            
-            rotationAngle =  (globalConfig.ANKER_ANGLE-rotatedRectAngle_one)%DEGREE_MODULO
-            
-            contourRotatated = rotator.ContourRotator().rotateContour(contour, rotationAngle)
-                     
-            fliteredByRatiosNoAngle.append(contourRotatated)
+            (x, y), (width, height), rotatedRectAngle = rotated_rect               
+            rotationAngle =  (globalConfig.ANKER_ANGLE-rotatedRectAngle)%DEGREE_MODULO
+            cnt_rotated = rotator.ContourRotator().rotateContour(contour, rotationAngle)
+                      
+            fliteredByRatiosNoAngle.append(cnt_rotated)
      
         sameOrientationLegs = []
         for a, b in itertools.combinations(fliteredByRatiosNoAngle, 2):
@@ -443,11 +511,15 @@ class TraitRecognitor:
             if similarity < globalConfig.SIMILARITY_MAX:
 
                 if a not in sameOrientationLegs: 
-                    filtedBySimNoAngle.append(a)
+                    filteredBySimilarity.append(a)
                     
                 if b not in sameOrientationLegs:                     
-                    filtedBySimNoAngle.append(b)
-                            
+                    filteredBySimilarity.append(b)
+            else:
+                if a not in uninterestingContours: 
+                    uninterestingContours.append(a)
+                if b not in uninterestingContours:                     
+                    uninterestingContours.append(b)                               
 
         #=================================================================================
         # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
@@ -456,19 +528,19 @@ class TraitRecognitor:
         # again considered to be legs in lateral lying position
         #=================================================================================        
     
-        allContoursImage = cv2.drawContours(whiteimage, fliteredByRatiosNoAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        similarityFilteringImage = cv2.drawContours(whiteimage, filtedBySimNoAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        whiteimage = cv2.drawContours(whiteimage, fliteredByRatiosNoAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
+        similarityFilteringImage = cv2.drawContours(whiteimage, filteredBySimilarity, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/13filteredBySimilarityNoAngle.jpg', similarityFilteringImage)
        
-         
-      
+        return filteredBySimilarity
 
-        return (filteredBySimilarity, minAreaRect_image)   
-    
+      
+       
     def obtainStandingCowIsDetected(self ):
         
 
-        """ 
+        """
+        ## not yet used but helpfull for further development ##
        
         Returns wheter standing Cow is been detected by last analysis (without executing analysis again) 
         ----------        
@@ -482,8 +554,11 @@ class TraitRecognitor:
         return self.standingCowIsDetected
 
     def obtainLateralLyingCowIsDetected(self, ):
+
+
         """ 
-       
+        ## not yet used but helpfull for further development ##
+        
         Returns wheter lateral lying Cow is been detected by last analysis (without executing analysis again) 
         ----------        
               
@@ -493,20 +568,4 @@ class TraitRecognitor:
       
         """        
         return self.lateralLyingCowIsDetected
-
-
-    def obtainTraitRecognitor(self, ):
-      
-        """ 
-       
-        Returns general Information about Trait Recognition
-        ----------        
-              
-        Returns: 
-        ----------                
-        String. 
-              
-        """
-        
-        pass
 

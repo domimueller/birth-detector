@@ -513,11 +513,11 @@ class ImageAnalysisController:
         originalImage: OriginalImage
         """  
 
-        lateralLyingContours, originalImage = self.traitRecognitor.detectLateralLyingClow(contours, image,  config)
+        lateralLyingContours = []
+        lateralLyingContours, originalImage = self.traitRecognitor.detectLateralLyingCow(contours, image,  config)
+        ## detection of standing contours no yet implemented
         standingContours = self.traitRecognitor.detectStandingCow(contours, image,  config)
-                
-             
-        
+   
         print(NEWLINE+NEWLINE )
         print(TRAIT_RECOGNITOR_TITLE)
 

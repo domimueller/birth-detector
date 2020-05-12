@@ -25,7 +25,6 @@ sys.path.append('../VO-Library')
 
 
 
-
 #==========================================================================
 # CONSTANTS
 #==========================================================================
@@ -133,8 +132,10 @@ class ContourRotator:
 
         
         M = cv2.moments(contour)
-        cx = int(M[MOMENTS_M10]/M[MOMENTS_M00])
-        cy = int(M[MOMENTS_M01]/M[MOMENTS_M00])
+        cx,cy= 1,1 
+        if M[MOMENTS_M00] > 0:  
+            cx = int(M[MOMENTS_M10]/M[MOMENTS_M00])
+            cy = int(M[MOMENTS_M01]/M[MOMENTS_M00])
     
         cnt_norm = contour - [cx, cy]
         
