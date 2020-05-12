@@ -26,12 +26,13 @@ sys.path.append('../ImageAnalysis')
 
 import ImageReader 
 import TraitRecognitor
-import ScoreCalculator
 import ImageWriter
 import ImageProcessor
 import ContourFinder
 import ContourDrawer
 
+# Score calculator not yet implemented, it was not focus of Bachelor Thesis
+#import ScoreCalculator
 
 
 ## Import Value Objects
@@ -57,7 +58,7 @@ import ThresholdingMethod
 import HSV
 import ColorRange
 import ContourFinderConfiguration 
-import ImageAnalysisConfiguration as config
+import ImageAnalysisConfiguration as globalConfig
 
 
 #==========================================================================
@@ -86,7 +87,8 @@ def main():
 
     imageReader = ImageReader.ImageReader()
     traitRecognitor = TraitRecognitor.TraitRecognitor()
-    scoreCalculator = ScoreCalculator.ScoreCalculator()       
+# ScoreCalculator is modelled but not yet implemented. its not foccussed during the Bachelor Thesis
+#    scoreCalculator = ScoreCalculator.ScoreCalculator()       
     imageProcessor = ImageProcessor.ImageProcessor()       
     contourFinder = ContourFinder.ContourFinder()       
     contourDrawer = ContourDrawer.ContourDrawer()   
@@ -94,14 +96,19 @@ def main():
     
     
     
-    ImageAnalysisController(imageReader = imageReader, traitRecognitor = traitRecognitor, 
-                            scoreCalculator = scoreCalculator, imageWriter = imageWriter, 
-                            imageProcessor = imageProcessor, contourFinder = contourFinder, 
+    ImageAnalysisController(imageReader = imageReader, 
+                            traitRecognitor = traitRecognitor, 
+                            # Score calculator not yet implemented, it was not focus of Bachelor Thesis
+                            #scoreCalculator = scoreCalculator, 
+                            imageWriter = imageWriter, 
+                            imageProcessor = imageProcessor, 
+                            contourFinder = contourFinder, 
                             contourDrawer = contourDrawer) 
 
 
 
 class ImageAnalysisController:
+
     
     '''
     A class used to represent and implement the functionality for the Image Analysis Controller.
@@ -114,7 +121,7 @@ class ImageAnalysisController:
          brings the data and functionality of the ImageReader.
     traitRecognitor : TraitRecognitor
          brings the data and functionality of the TraitRecognitor.
-    scoreCalculator : ScoreCalculator
+    scoreCalculator : ScoreCalculator --> not implemented
          brings the data and functionality of the ScoreCalculator.
     imageProcessor : ImageProcessor
          brings the data and functionality of the ImageProcessor.
@@ -132,22 +139,23 @@ class ImageAnalysisController:
     -------
    controlImageReader(self )
    controlImageProcessor(self )   
-   controlContourFinder(self, processingImage )
-   controlContourDrawer(self ) 
-   controlTraitRecognitor(self ) 
+   controlContourFinder(processingImage, finderConfig)
+   controlContourDrawer(self, contour, drawingMode ) 
+   controlTraitRecognitor(self, contours ) 
    controlScoreCalculator(self )
-   controlImageWriter(self )
+   controlImageWriter(self, filepathAndName, image )
    obtainImage(self )
    obtainProcessingImage(self )    
         
     '''
     
-    def __init__(self, imageReader, traitRecognitor, scoreCalculator, 
+    def __init__(self, imageReader, traitRecognitor, #scoreCalculator, 
                  imageWriter, imageProcessor, contourFinder,contourDrawer):
         
         self.imageReader = imageReader
         self.traitRecognitor = traitRecognitor
-        self.scoreCalculator = scoreCalculator
+        # Score calculator not yet implemented, it was not focus of Bachelor Thesis
+        #self.scoreCalculator = scoreCalculator
         self.imageWriter = imageWriter
         self.imageProcessor = imageProcessor
         self.contourFinder = contourFinder
@@ -157,10 +165,9 @@ class ImageAnalysisController:
         
         
         self.controlImageReader()
-        self.controlImageProcessor( AdvancedUnimportantColorRange = config.ADVANCED_UNIMPORTANT_COLOR_RANGE)
+        self.controlImageProcessor( )
         
-    def controlImageReader(self ):
-
+    def controlImageReader(self, ):
         """ 
        
         Controls the Execution of the ImageReader
@@ -176,66 +183,66 @@ class ImageAnalysisController:
         
         Returns: 
         -------              
-        nothing will be returned.
+        Image will be returned.
       
         """  
         
         
-        readerMimeType = MimeType.MimeType(major = config.READER_MAJOR, 
-                                           minor= config.READER_MINOR, 
-                                           extension= config.READER_EXTENSION)   
+        readerMimeType = MimeType.MimeType(major = globalConfig.READER_MAJOR, 
+                                           minor= globalConfig.READER_MINOR, 
+                                           extension= globalConfig.READER_EXTENSION)   
         
-        readerFilepath = Filepath.Filepath(filePath = config.READER_FILE_PATH, 
-                                           fileName = config.READER_FILE_NAME,  
+        readerFilepath = Filepath.Filepath(filePath = globalConfig.READER_FILE_PATH, 
+                                           fileName = globalConfig.READER_FILE_NAME,  
                                            mimeType= readerMimeType)
         
         self.image = self.imageReader.readImage( filePathAndName = readerFilepath ) 
         
         return self.image
-        
-    def controlImageProcessor(self, AdvancedUnimportantColorRange ):
-       
+ 
+    
+    def controlImageProcessor(self, ):
         """ 
        
         Controls the Execution of the ImageProcessor
         -------              
       
         This function  controls the ImageProcessor. In this Project, Image Processing means f.e. brightening, 
-        filtering or binarizationing Images in order to facilitate contour detection.
+        filtering or binarizationing Images in order to facilitate contour detection. The Image Provider gets information
+        of the global config file and uses VOs
         -------              
       
         Parameters: 
         -------                 
-        provideUnimportantColorRange (Boolean)
-            determines wheter color Ranges of unimportant areas are known or not
-        
+
         Returns: 
         -------              
         nothing will be returned. 
       
         """  
         # set MimeType for files to be written
-        writerMimeType = MimeType.MimeType(major = config.WRITER_MAJOR, 
-                                           minor= config.WRITER_MINOR, 
-                                           extension=config.WRITER_EXTENSION)   
+        writerMimeType = MimeType.MimeType(major = globalConfig.WRITER_MAJOR, 
+                                           minor= globalConfig.WRITER_MINOR, 
+                                           extension=globalConfig.WRITER_EXTENSION)   
         
         
         
         # image analysis will be performend on the processingImage which is a copy of the original image
         self.processingImage = self.obtainImage().copy()
         segmenentingImage = self.image.copy()
+    
 
         #=====================================
         ###### BRIGHTENING ######
         #=====================================   
 
         # apply brightening configuration
-        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE_FALSE, 
-                                                    brightenerFactor = config.BRIGHTENER_FACTOR, 
-                                                    equalizingImage = config.EQUALIZING_IMAGE_FALSE, 
-                                                    clipLimit = config.CLIP_LIMIT , 
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = globalConfig.BRIGHTENING_IMAGE_FALSE, 
+                                                    brightenerFactor = globalConfig.BRIGHTENER_FACTOR, 
+                                                    equalizingImage = globalConfig.EQUALIZING_IMAGE_FALSE, 
+                                                    clipLimit = globalConfig.CLIP_LIMIT , 
                                                     equalizingType = EqualizingType.EqualizingType, 
-                                                    ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
+                                                    ENUM_SELECT = globalConfig.ENUM_SELECT_EQUALIZING)
 
         # improve brightness and contrast of original image to facilitate export for report
         self.processingImage= self.imageProcessor.brightenImage(image = self.obtainProcessingImage(), config = brightenConfig )
@@ -244,8 +251,8 @@ class ImageAnalysisController:
         #==================================
         # write intermediate result to file
         #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_BRIGHTENED,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_BRIGHTENED,  
                                            mimeType= writerMimeType)
         
         
@@ -256,13 +263,13 @@ class ImageAnalysisController:
         #===================================== 
 
         # apply filtering configuration
-        kernelSize = KernelSize.KernelSize(width = config.KERNEL_WIDTH, 
-                                           length = config.KERNEL_LENGTH)  
+        kernelSize = KernelSize.KernelSize(width = globalConfig.KERNEL_WIDTH, 
+                                           length = globalConfig.KERNEL_LENGTH)  
          
-        filterConfig = FilterConfiguration.FilterConfiguration(filteringImage = config.FILTERING_IMAGE, 
+        filterConfig = FilterConfiguration.FilterConfiguration(filteringImage = globalConfig.FILTERING_IMAGE, 
                                                               kernelSize = kernelSize,
                                                               filteringType = FilteringType.FilteringType,           
-                                                              ENUM_SELECT = config.ENUM_SELECT_FILTERING)
+                                                              ENUM_SELECT = globalConfig.ENUM_SELECT_FILTERING)
         
         self.processingImage = self.imageProcessor.filterImage(image = self.processingImage, config = filterConfig )
         #self.Image = self.imageProcessor.filterImage(image = self.obtainImage(), config = filterConfig )
@@ -272,8 +279,8 @@ class ImageAnalysisController:
         # write intermediate result to file
         #==================================
         
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_FILTERED,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_FILTERED,  
                                            mimeType= writerMimeType)
         
         
@@ -286,14 +293,14 @@ class ImageAnalysisController:
         ###### UNIMPORTANT AREA DETECTION ######
         #=====================================
         
-        colorRange = AdvancedUnimportantColorRange 
+        colorRange = globalConfig.ADVANCED_UNIMPORTANT_COLOR_RANGE 
         
             
         # PREPARING: COLOR SPACE CONVERSION #
 
-        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = config.CONVERTING_IMAGE, 
+        colorspaceConvertConfig = ColorSpaceConversion.ColorSpaceConversion(convertingImage = globalConfig.CONVERTING_IMAGE, 
                                                               conversionType = ColorSpaceConversionType.ColorSpaceConversionType,           
-                                                              ENUM_SELECT = config.ENUM_SELECT_CONVERTING_BGR2HSV)
+                                                              ENUM_SELECT = globalConfig.ENUM_SELECT_CONVERTING_BGR2HSV)
         
         #IMPORTANT: At this point, the original Image is required, because it is beeing used for inRange() funtion (Color Ranges should not been changed)
         self.processingImage = self.imageProcessor.convertColorSpace(image = self.processingImage, config = colorspaceConvertConfig )
@@ -301,11 +308,11 @@ class ImageAnalysisController:
         
         # Build a List with the Color Ranges. More ranges can be added
         
-        unimportantColorRanges=  config.defaultColorRanges       
+        unimportantColorRanges=  globalConfig.defaultColorRanges       
         
         # adding more Color Ranges is possible
         if colorRange == True:   
-            additionalColors = config.additionalUnimportantColorRanges
+            additionalColors = globalConfig.additionalUnimportantColorRanges
             
             for additionalColor in additionalColors:
 
@@ -319,8 +326,8 @@ class ImageAnalysisController:
         #==================================
         # write intermediate result to file
         #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK,  
                                            mimeType= writerMimeType)
                 
         self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
@@ -328,27 +335,27 @@ class ImageAnalysisController:
         ## configurate the ContourFinder
         finderConfig = ContourFinderConfiguration.ContourFinderConfiguration(
                         approxType = ApproximationType.ApproximationType,
-                        ENUM_SELECT_APPROX = config.ENUM_SELECT_APPROX,
+                        ENUM_SELECT_APPROX = globalConfig.ENUM_SELECT_APPROX,
                         finderType = FinderType.FinderType,
-                        ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
-                        minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_FALSE)       
+                        ENUM_SELECT_FINDER = globalConfig.ENUM_SELECT_FINDER,
+                        minArea = globalConfig.MIN_AREA,
+                        deleteCircles = globalConfig.DELETE_CIRCLES_FALSE)       
         
         ## call Contour Finder with the unimportant area mask as argument
         contours, self.processingImage = self.controlContourFinder(self.processingImage, finderConfig )
         
         self.processingImage = self.controlContourDrawer(contours=contours, 
-                                                         drawingMode = config.CIRCLE_DRAWING_MODE, 
-                                                         color =config.BLACK.obtainDrawingColor(), 
-                                                         thickness=config.THICKNESS_FILL)
+                                                         drawingMode = globalConfig.CIRCLE_DRAWING_MODE, 
+                                                         color =globalConfig.BLACK.obtainDrawingColor(), 
+                                                         thickness=globalConfig.THICKNESS_FILL)
         
                       
 
         #==================================
         # write intermediate result to file
         #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE,  
                                            mimeType= writerMimeType)
         
         
@@ -361,12 +368,12 @@ class ImageAnalysisController:
         ##BRIGHTENING as preparation for thresholding
            
 
-        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE_TRUE, 
-                                                    brightenerFactor = config.BRIGHTENER_FACTOR, 
-                                                    equalizingImage = config.EQUALIZING_IMAGE_FALSE, 
-                                                    clipLimit = config.CLIP_LIMIT , 
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = globalConfig.BRIGHTENING_IMAGE_TRUE, 
+                                                    brightenerFactor = globalConfig.BRIGHTENER_FACTOR, 
+                                                    equalizingImage = globalConfig.EQUALIZING_IMAGE_FALSE, 
+                                                    clipLimit = globalConfig.CLIP_LIMIT , 
                                                     equalizingType = EqualizingType.EqualizingType, 
-                                                    ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
+                                                    ENUM_SELECT = globalConfig.ENUM_SELECT_EQUALIZING)
 
         # improve brightness and contrast of original image to facilitate export for report
         self.processingImage= self.imageProcessor.brightenImage(image = self.obtainProcessingImage(), config = brightenConfig )
@@ -375,26 +382,24 @@ class ImageAnalysisController:
         # apply adaptive thresholding configuration 
         adaptiveThresholdingConfiguration = AdaptiveThresholdingConfiguration.AdaptiveThresholdingConfiguration(
                                             thresholdingType= AdaptiveThresholdingType.AdaptiveThresholdingType,
-                                            ENUM_SELECT = config.ENUM_SELECT_ADAPTIVE_THRESHOLDING,
-                                            blockSize = config.BLOCK_SIZE, 
-                                            cSubtractor = config.C_SUBTRACTOR)      
+                                            ENUM_SELECT = globalConfig.ENUM_SELECT_ADAPTIVE_THRESHOLDING,
+                                            blockSize = globalConfig.BLOCK_SIZE, 
+                                            cSubtractor = globalConfig.C_SUBTRACTOR)      
         # put all together 
         threshConfig = ThresholdingConfiguration.ThresholdingConfiguration(
-                        thresholdingImage = config.THRESHOLDING_IMAGE,
-                        threshold = config.THRESHOLD,
+                        thresholdingImage = globalConfig.THRESHOLDING_IMAGE,
+                        threshold = globalConfig.THRESHOLD,
                         thresholdingMethod = ThresholdingMethod.ThresholdingMethod,
-                        ENUM_SELECT_METHOD = config.ENUM_SELECT_METHOD,
+                        ENUM_SELECT_METHOD = globalConfig.ENUM_SELECT_METHOD,
                         thresholdingType = ThresholdingType.ThresholdingType,
-                        ENUM_SELECT_TYPE = config.ENUM_SELECT_TYPE,
+                        ENUM_SELECT_TYPE = globalConfig.ENUM_SELECT_TYPE,
                         adaptiveThresholdingConfiguration = adaptiveThresholdingConfiguration,
-                        maximumValue = config.MAXIMUM_VALUE)
+                        maximumValue = globalConfig.MAXIMUM_VALUE)
       
         ## here I can demonstrate difference between Processing Image (my intermidiate results and Image)
         ## If I do obtainImage() f.e. Light bulb will be detected
         segmenentingImage  =  self.obtainProcessingImage().copy() 
         segmenentingImage = cv2.cvtColor(segmenentingImage, cv2.COLOR_BGR2GRAY)        
-        
-        
         
 
 
@@ -406,8 +411,8 @@ class ImageAnalysisController:
         #==================================
         # write intermediate result to file
         #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_THRESHOLDED_MASK,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_THRESHOLDED_MASK,  
                                            mimeType= writerMimeType)
         
         
@@ -418,11 +423,11 @@ class ImageAnalysisController:
         ## configurate the ContourFinder
         finderConfig = ContourFinderConfiguration.ContourFinderConfiguration(
                         approxType = ApproximationType.ApproximationType,
-                        ENUM_SELECT_APPROX = config.ENUM_SELECT_APPROX,
+                        ENUM_SELECT_APPROX = globalConfig.ENUM_SELECT_APPROX,
                         finderType = FinderType.FinderType,
-                        ENUM_SELECT_FINDER = config.ENUM_SELECT_FINDER,
-                        minArea = config.MIN_AREA,
-                        deleteCircles = config.DELETE_CIRCLES_TRUE)       
+                        ENUM_SELECT_FINDER = globalConfig.ENUM_SELECT_FINDER,
+                        minArea = globalConfig.MIN_AREA,
+                        deleteCircles = globalConfig.DELETE_CIRCLES_TRUE)       
        
         
 
@@ -430,15 +435,25 @@ class ImageAnalysisController:
         contours, segmenentingImage= self.controlContourFinder(segmenentingImage, finderConfig )
 
         segmenentingImage = self.controlContourDrawer(contours=contours, 
-                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
-                                                         color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_FILL)
+                                                         drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
+                                                         color=globalConfig.RED.obtainDrawingColor(),
+                                                         thickness=globalConfig.THICKNESS_FILL)
         
         #==================================
         # write intermediate result to file
         #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_THRESHOLDED_IMAGE,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_THRESHOLDED_IMAGE,  
+                                           mimeType= writerMimeType)
+        
+        
+        self.controlImageWriter( filepathAndName=writerFilepath, image= segmenentingImage )  
+        
+        #==================================
+        # write intermediate result to file
+        #==================================
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_THRESHOLDED_IMAGE,  
                                            mimeType= writerMimeType)
         
         
@@ -449,181 +464,105 @@ class ImageAnalysisController:
         #=====================================
 
 
-
-
-
-
-        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = config.BRIGHTENING_IMAGE_TRUE, 
-                                                    brightenerFactor = config.BRIGHTENER_FACTOR, 
-                                                    equalizingImage = config.EQUALIZING_IMAGE_TRUE, 
-                                                    clipLimit = config.CLIP_LIMIT , 
+        brightenConfig = BrightenConfiguration.BrightenConfiguration(brighteningImage = globalConfig.BRIGHTENING_IMAGE_FALSE, 
+                                                    brightenerFactor = globalConfig.BRIGHTENER_FACTOR, 
+                                                    equalizingImage = globalConfig.EQUALIZING_IMAGE_FALSE, 
+                                                    clipLimit = globalConfig.CLIP_LIMIT , 
                                                     equalizingType = EqualizingType.EqualizingType, 
-                                                    ENUM_SELECT = config.ENUM_SELECT_EQUALIZING)
+                                                    ENUM_SELECT = globalConfig.ENUM_SELECT_EQUALIZING)
 
         #improve brightness and contrast of original image to facilitate export for report if above brightening config is changed to True
         analysisImage= self.imageProcessor.brightenImage(image = self.obtainImage(), config = brightenConfig )
         
         
         lateralLyingContours, standingContours, analysedImage  = self.controlTraitRecognitor(contours, analysisImage,  finderConfig)
-        print(NEWLINE+NEWLINE )
-        print(TRAIT_RECOGNITOR_TITLE)
 
-        # if typical Conours for standing and lying apprear, print the msg that lateral lying is detected.
-        # It is better, if the farmer checks the camera and sees that the cow is no in an imminent birth position than
-        # the farmer is beeing kept in the opinion that no action is needed.
-        
-        if standingContours is not None or lateralLyingContours is not None:
-          
- 
 
-             if len(lateralLyingContours) >= config.MIN_NUMBER_LYING_CONTOURS:   
-                print(INFORMATION_MSG_LATERAL_LYING_COW)  
-                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
-                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
-                                                         color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_FILL)                         
-
-             elif len(lateralLyingContours) < config.MIN_NUMBER_LYING_CONTOURS:  
-                print(INFORMATION_MSG_STANDING_COW_OR_NO_COW)
-
-                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
-                                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
-                                                         color=config.RED.obtainDrawingColor(),
-                                                         thickness=config.THICKNESS_FILL)
-             else:
-                    self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
-                                         drawingMode = config.OUTLINE_DRAWING_MODE, 
-                                         color=config.RED.obtainDrawingColor(),
-                                         thickness=config.THICKNESS_FILL)
-                    print(INFORMATION_MSG_NO_COW)
-
-        else:
-            print(INFORMATION_MSG_NO_COW)
+  
         #==================================
         # write intermediate result to file
         #==================================
-        writerFilepath = Filepath.Filepath(filePath = config.WRITER_FILE_PATH_MAIN, 
-                                           fileName = config.WRITER_FILE_NAME_ANALYSED_IMAGE,  
+        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
+                                           fileName = globalConfig.WRITER_FILE_NAME_ANALYSED_IMAGE,  
                                            mimeType= writerMimeType)
         
         
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage )                       
-
-    def controlContourFinder(self, image,  finderConfig ):
- 
-        """ 
-       
-        Controls the Execution of the ContourFinder.
-        -------              
-      
-        This function  controls the ContourFinder. In this Project, finding Contours is 
-        strongly  related to the OpenCV function: cv.findContours().
-
-        -------              
-      
-        Parameters: 
-        -------                 
-        processingImage: Image for analysis (Binary Image!)
-        finderConfig: ContourFinderConfiguration
-        
-        Returns: 
-        contours : Contours
-        processingImage : Image
-      
-        """  
-        image = image.copy()
-
-        contours, image = self.contourFinder.findContours(image, self.obtainImage(), finderConfig)
-        
- 
-        self.contourFinder.countContours(contours)
-
-       
-        return (contours, image) 
-    
-    def controlContourDrawer(self, contours, drawingMode, color, thickness ):
-        
-        """ 
-       
-        Controls the Execution of the ContourDrawer.
-        -------              
-      
-        This function  controls the ContourDrawer. Drawing Contours is 
-        strongly  related to the OpenCV function: cv.drawContours().
-        -------              
-      
-        Parameters: 
-        -------                 
-        contours: Contours derived from findContours()
-
-        
-        Returns: 
-        -------              
-        processingImage : Image
+        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
         
         
-
-        """  
-        
-        #=====================================
-        ###### IMPORTANT NOTE FOR USAGE OF DRAWER ######
-        #=====================================   
-        
-        
-        # If copy is been done, only the copy will be used for drawing. That means, that every
-        # intermediate step will be used for analysis, but the drawing of the last steps will not 
-        # be visible in the image
-        image = self.obtainProcessingImage().copy()
-        
-        # if the drawing of every step of the processing is required, dont do the copy.
-        #image = self.obtainProcessingImage()
-        
-        if drawingMode == config.OUTLINE_DRAWING_MODE:
-            image = self.contourDrawer.drawContourOutline(image, contours, color, thickness )
-        
-        elif drawingMode == config.POINTS_DRAWING_MODE:
-            image = self.contourDrawer.drawContourPoints(image, contours, color, thickness)
-        elif drawingMode == config.CIRCLE_DRAWING_MODE:        
-            image = self.contourDrawer.fillCircle(image, contours, color, thickness )
-            
-                       
-        return image
-        
-        
-    def controlTraitRecognitor(self, contours, image,  finderConfig ):
+    def controlTraitRecognitor(self, contours, image, config):
         
         """ 
        
         Controls the Execution of the TraitRecognitor.
         -------              
       
-        This function  controls the TraitRecognitor. Traits are described in the report of the Bachelor Thesis.
+        This function  controls the TraitRecognitor. lateral lying is focused
         -------              
       
         Parameters: 
         -------                 
-        no parameters.
+        retrieved contours from findContours .
+        image: Image for analysis
+        config: Contour Finder Config
         
         Returns: 
         -------              
-        nothing will be returned. 
-      
+        lateralLyingContours: List with the detected an filtered contours for later lying
+        standingContours list with standing contours, not yet important.
+        originalImage: OriginalImage
         """  
-            
-        lateralLyingContours, originalImage = self.traitRecognitor.detectLateralLyingClow(contours, image,  finderConfig)
-        standingContours = self.traitRecognitor.detectStandingCow(contours, image,  finderConfig)
 
+        lateralLyingContours, originalImage = self.traitRecognitor.detectLateralLyingClow(contours, image,  config)
+        standingContours = self.traitRecognitor.detectStandingCow(contours, image,  config)
+                
+             
+        
+        print(NEWLINE+NEWLINE )
+        print(TRAIT_RECOGNITOR_TITLE)
+
+        # if typical Conours for standing and lying apprear, print the msg that lateral lying is detected.
+        # It is better, if the farmer checks the camera and sees that the cow is no in an imminent birth position than
+        # the farmer is beeing kept in the opinion that no action is needed.
+
+
+        if standingContours is not None or lateralLyingContours is not None:
+          
+ 
+
+             if len(lateralLyingContours) >= globalConfig.MIN_NUMBER_LYING_CONTOURS:   
+                print(INFORMATION_MSG_LATERAL_LYING_COW)  
+                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
+                                                         drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
+                                                         color=globalConfig.RED.obtainDrawingColor(),
+                                                         thickness=globalConfig.THICKNESS_FILL)                         
+
+             elif len(lateralLyingContours) < globalConfig.MIN_NUMBER_LYING_CONTOURS:  
+                print(INFORMATION_MSG_STANDING_COW_OR_NO_COW)
+
+                self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
+                                                         drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
+                                                         color=globalConfig.RED.obtainDrawingColor(),
+                                                         thickness=globalConfig.THICKNESS_FILL)
+             else:
+                    self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
+                                         drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
+                                         color=globalConfig.RED.obtainDrawingColor(),
+                                         thickness=globalConfig.THICKNESS_FILL)
+                    print(INFORMATION_MSG_NO_COW)
+
+        else:
+            print(INFORMATION_MSG_NO_COW)              
        
         return (lateralLyingContours, standingContours, originalImage)
-    
-        #jump to the next function
-        self.controlScoreCalculator()
+                    
 
-    def controlScoreCalculator(self ):
+    def controlScoreCalculator(self, ):
+       
         
         """ 
        
-        Controls the Execution of the ScoreCalculator.
+        Controls the Execution of the ScoreCalculator. Not yet implemented during Bachelor Thesis
         -------              
       
         This function controls the ScoreCalculator. The Calculation of the Score is 
@@ -640,16 +579,8 @@ class ImageAnalysisController:
         nothing will be returned. 
       
         """  
-        
-
-        #jump to the next function
-        #self.controlImageWriter()
-
-
-
-    
-    def controlImageWriter(self, filepathAndName, image ):
-        
+     
+    def controlImageWriter(self, filepathAndName, image):
         """ 
        
         Controls the Execution of the ImageWriter.
@@ -673,9 +604,90 @@ class ImageAnalysisController:
         """
         
         self.imageWriter.writeImage( image = image, filePathAndName = filepathAndName  ) 
+
+
+    def controlContourFinder(self, image, finderConfig):
+     
+        """ 
+       
+        Controls the Execution of the ContourFinder.
+        -------              
+      
+        This function  controls the ContourFinder. In this Project, finding Contours is 
+        strongly  related to the OpenCV function: cv.findContours().
+
+        -------              
+      
+        Parameters: 
+        -------                 
+        processingImage: Image for analysis (Binary Image!)
+        finderConfig: ContourFinderConfiguration
         
-    def obtainImage(self ):
+        Returns: 
+        contours : Contours retrieved
+        processingImage : Image
+      
+        """  
+        image = image.copy()
+
+        contours, image = self.contourFinder.findContours(image, self.obtainImage(), finderConfig)
         
+ 
+        self.contourFinder.countContours(contours)
+
+       
+        return (contours, image) 
+    
+    
+    def controlContourDrawer(self, contours, drawingMode, color, thickness):
+        """ 
+       
+        Controls the Execution of the ContourDrawer.
+        -------              
+      
+        This function  controls the ContourDrawer. Drawing Contours is 
+        strongly  related to the OpenCV function: cv.drawContours().
+        -------              
+      
+        Parameters: 
+        -------                 
+        contours: Contours derived from findContours()
+        drawingMode: Mode for drawing: Circle, Points or Outline possible
+        
+        Returns: 
+        -------              
+        Image : Image for further analysis
+        
+        
+
+        """  
+        
+        #=====================================
+        ###### IMPORTANT NOTE FOR USAGE OF DRAWER ######
+        #=====================================   
+        
+        
+        # If copy is been done, only the copy will be used for drawing. That means, that every
+        # intermediate step will be used for analysis, but the drawing of the last steps will not 
+        # be visible in the image
+        image = self.obtainProcessingImage().copy()
+        
+        # if the drawing of every step of the processing is required, dont do the copy.
+        #image = self.obtainProcessingImage()
+        
+        if drawingMode == globalConfig.OUTLINE_DRAWING_MODE:
+            image = self.contourDrawer.drawContourOutline(image, contours, color, thickness )
+        
+        elif drawingMode == globalConfig.POINTS_DRAWING_MODE:
+            image = self.contourDrawer.drawContourPoints(image, contours, color, thickness)
+        elif drawingMode == globalConfig.CIRCLE_DRAWING_MODE:        
+            image = self.contourDrawer.fillCircle(image, contours, color, thickness )
+            
+        return image
+        
+    
+    def obtainImage(self, ):
+      
         """ 
        
         Obtains the Image Attribute.
@@ -697,7 +709,7 @@ class ImageAnalysisController:
         
         return self.image
     
-    def obtainProcessingImage(self ):
+    def obtainProcessingImage(self, ):
         
         """ 
        
@@ -720,7 +732,7 @@ class ImageAnalysisController:
         
         return self.processingImage
     
-     
+    
 #==========================================================================
 # MAIN
 #==========================================================================

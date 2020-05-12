@@ -51,13 +51,12 @@ FILTER_BY_ANGLE = True
 SCALE = 0.75
 
 # light (HSV) Bounds
-LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=80)
-UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
-
-# light (HSV) Bounds
 LOWER_BOUND_LIGHT_FLIMMERING= HSV.HSV(hue=0, saturation=0, value=100)
 UPPER_BOUND_LIGHT_FLIMMERING= HSV.HSV(hue=360, saturation=100, value=255)
-                           
+      
+LOWER_BOUND_LIGHT= HSV.HSV(hue=0, saturation=0, value=140)
+UPPER_BOUND_LIGHT= HSV.HSV(hue=360, saturation=100, value=255)
+                     
 #floor (HSV) 
 LOWER_BOUND_FLOOR= HSV.HSV(hue=0, saturation=0, value=0) 
 UPPER_BOUND_FLOOR = HSV.HSV(hue=360, saturation=100, value=90)
@@ -74,18 +73,18 @@ strawColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_STRAW, upperBou
 
 
 defaultColorRanges = [lightColorRange]
-additionalUnimportantColorRanges = [strawColorRange, lightFlimmeringColorRange]
+additionalUnimportantColorRanges = [floorColorRange,]
 
 #Filepath and Filename for the Image Reader
 
 READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '3'
+READER_FILE_NAME = '2'
 
 
 #configuration for angle filtering
 LIGHT_BULB_ANGLE_EXPECTION= 90
-MIN_LEG_ANGLE_EXPECTION= 70
-MAX_LEG_ANGLE_EXPECTION= 110
+MIN_LEG_ANGLE_EXPECTION= 65
+MAX_LEG_ANGLE_EXPECTION= 125
 
 # determines, how many lateral lying contours are necessary to make prediction
 MIN_NUMBER_LYING_CONTOURS = 2

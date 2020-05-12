@@ -87,7 +87,7 @@ class ThresholdingConfiguration:
                  ENUM_SELECT_TYPE, adaptiveThresholdingConfiguration, maximumValue):
         
         self.thresholdingImage = thresholdingImage
-        self. threshold = threshold
+        self.threshold = threshold
         self.thresholdingMethod = thresholdingMethod
         self.ENUM_SELECT_METHOD = ENUM_SELECT_METHOD        
         self.thresholdingType = thresholdingType

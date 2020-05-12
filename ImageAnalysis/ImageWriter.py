@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 #==========================================================================
-# ImageController.py – DESCRIPTIONS 
+# ImageWriter.py – DESCRIPTIONS 
 #==========================================================================
 
 """
@@ -27,7 +27,6 @@ import cv2
 
 class ImageWriter:
     
-    
     """
     A class used to represent and implement the functionality for the Image Writer.
     Writes an Image to a File.
@@ -35,31 +34,22 @@ class ImageWriter:
     
     Attributes
         ----------        
-    filePathAndNames: Tuple of Filepaths
-        A Filepath Object consists of File Path, File Name and the corresponding Mime Type 
-        of the File to identify it in Filesystem.     
-    image: Image
-        Image to write. 
+
       
     Methods
     -------
-    writeImages(self, image, filePathAndNames )
+    writeImage(self, filePathAndName, image )
          See descriptions below.
     """ 
-    
-    
-    def __init__(self ):
-        # further statements not yet required. Because
-        #Parametrization of readImage method is more convenient
+        
+    def __init__(self):
         pass
 
-
-    def writeImage(self, image, filePathAndName ):
-        
+    def writeImage(self, filePathAndName, image):
     
         """ 
        
-        Writes an Image to corresponding Files.
+        Writes an Image to a corresponding File.
         -------              
       
         This function is based on the library OpenCV and the corresponding function cv2.imwrite.
@@ -68,8 +58,8 @@ class ImageWriter:
         Parameters: 
         -------                 
         image (Image): Image to write
-        filePathAndNames : Tuple of File Paths, File Names and corresponding Mime Types 
-        in order to identify the file. 
+        filePathAndName (Filepath): File Path, File Name and corresponding Mime Type of the File to identify it in Filesystem. 
+
 
         
         Returns: 
@@ -77,12 +67,6 @@ class ImageWriter:
         Nothing will be returned. 
       
         """  
-        
-        self.filePathAndName = filePathAndName 
-        self.image = image 
-        
-        cv2.imwrite(self.filePathAndName.obtainFileNameAndPath(), self.image)
+                
+        cv2.imwrite(filePathAndName.obtainFileNameAndPath(), image)
 
-#==========================================================================
-# END
-#==========================================================================

@@ -32,14 +32,23 @@ import ColorSpaceConversionType
 import ImageAnalysisConfiguration 
 
 
+
 #==========================================================================
 # CONSTANTS
 
 #==========================================================================
+
+
+DATA_TYPE= 'uint8'
+EQUALIZING_TYPE = 'CLAHE'
+OPEN_CV_PREFIX = 'cv2.'
+
 DELIMITER = ': '
 
 
 # Color Space Conversion Configuration #
+
+
 CONVERTING_IMAGE = True
 ## Converting Type
 '''
@@ -63,11 +72,10 @@ ENUM_SELECT_CONVERTING_GRAY2BGR = 4
 
 class ImageProcessor:
     
-        
     """
     A class used to represent and implement the functionality for the Image Processor.
-    The Image Processor gets a File from Image Reader and optimizes Brightness, Contrast, converts Colorspace
-    and applys filters on the Image. Furthermore, the Image will be binarized using the thresholding technique.
+    The Image Processor gets a File from Image Reader and optimizes Brightness, Contrast, converts Colorspace, detects
+    Unimportant areas and applys filters on the Image. Furthermore, the Image will be binarized using the thresholding technique.
     ...
     
     Attributes
@@ -87,32 +95,32 @@ class ImageProcessor:
          brings the data needed to Binarize an Image based on a threshold.
     unimportantColorRange : HSV[1..*]
          Color Ranges, that are likely not to be part of a cow.
-    importantColorRange : HSV[1..*]
-         Color Ranges, that are likel to be part of a cow.  
-     
+ 
 
     Methods
     -------
     brightenImage(image, config)
     convertColorSpace(image, config)
     filterImage(self, image, config)
-    segmentImage(self, image, config)
     detectUnimporantArea(self, image, unimportantColorRange)
-    detectImporantArea(self, image, importantColorRange)
+    segmentImage(self, image, config)
          See descriptions below.
-    """ 
+    """     
     
     def __init__(self):
+        self.image = None
+        self.processingImage = None        
         self.reader = None
+        self.writer = None
         self.brightenConfig = None
         self.colorspaceConvertConfig = None
         self.filterConfig = None
         self.threshConfig = None
-        self.writer = None
+        self.unimportantColorRanges = []
         
 
     def brightenImage(self, image, config):
-        
+      
         """ 
        
         Raises the Brightness and performs Histogram Equalization on the image.
@@ -133,7 +141,7 @@ class ImageProcessor:
         
         Returns: 
         -------              
-        New Image will be returned 
+        Image will be returned 
       
         """  
         
@@ -143,7 +151,7 @@ class ImageProcessor:
         
         ## check if Brightening is desired and then perform the brightening based on the Brightener Factor
         if self.brightenConfig.obtainBrighteningImage()== True: 
-            M = np.ones(image.shape, dtype="uint8")*self.brightenConfig.obtainBrightenerFactor()  
+            M = np.ones(image.shape, dtype=DATA_TYPE)*self.brightenConfig.obtainBrightenerFactor()  
             image = cv2.add(image, M)
        
         
@@ -152,14 +160,16 @@ class ImageProcessor:
             
            ## check if selected Equalizing Type = CLAHE. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_EQUALIZING in ImageAnalysisController.py
-           if self.brightenConfig.obtainEqualizingType() == 'CLAHE':
+           if self.brightenConfig.obtainEqualizingType() == EQUALIZING_TYPE:
                 clahe = cv2.createCLAHE(clipLimit= self.brightenConfig.obtainClipLimit())
                 H, S, V = cv2.split(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
                 eq_V = clahe.apply(V)
                 image = cv2.cvtColor(cv2.merge([H, S, eq_V]), cv2.COLOR_HSV2BGR)            
         
         return image
-   
+    
+    
+        
     def convertColorSpace(self, image, config):
 
         """ 
@@ -169,7 +179,7 @@ class ImageProcessor:
       
         The Conversion between the Color Spaces will be performed by using the 
         function cv2.cvtColor() of the OpenCV Library.  The most important 
-        Conversions are from BGR to Grayscale and from BGR to YUV and vise versa 
+        Conversions are from BGR to Grayscale and from BGR to HSV and vise versa 
         
         -------              
       
@@ -193,13 +203,15 @@ class ImageProcessor:
         if self.colorspaceConvertConfig.obtainConvertingImage()== True: 
                       
            # pass the value given by enumeration to the Function cv2.cvtColor() 
-           conversionParameter = 'cv2.' + self.colorspaceConvertConfig.obtainConversionType()
+           conversionParameter = OPEN_CV_PREFIX + self.colorspaceConvertConfig.obtainConversionType()
            image = cv2.cvtColor(image, eval(conversionParameter))
-        
+           
         return image
-
+    
+    
+           
     def filterImage(self, image, config):
-       
+      
         """ 
        
         Applys a Filter to the Image.
@@ -223,7 +235,7 @@ class ImageProcessor:
         -------              
         Nothing will be returned 
         
-        """    
+        """  
         self.filterConfig = config
      
         print(self.filterConfig.obtainFilterConfiguration())
@@ -237,9 +249,11 @@ class ImageProcessor:
                image = cv2.GaussianBlur(image, 
                                       (self.filterConfig.kernelSize.obtainKernelWidth(), self.filterConfig.kernelSize.obtainKernelLength()), 
                                       0)
-        return image
+        return image   
+    
+    
 
-    def detectUnimporantArea(self, image, unimportantColorRanges):
+    def detectUnimporantArea(self, unimportantColorRanges, image):
        
         """ 
        
@@ -260,9 +274,9 @@ class ImageProcessor:
         
         Returns: 
         -------              
-        adjusted Image 
+        Image with unimportant Areas filled with black color
         
-        """    
+        """  
         
         self.unimportantColorRanges = unimportantColorRanges
 
@@ -277,9 +291,7 @@ class ImageProcessor:
             
             lowerBound = unimportantColorRange.obtainLowerBound().obtainColor()
             upperBound = unimportantColorRange.obtainUpperBound().obtainColor()
-
             irrelevant_area_mask= cv2.inRange(image, lowerBound , upperBound)
-
             
             #append all the irrelevant areas as a binary image to a list
             irrelevant_areas.append(irrelevant_area_mask)
@@ -291,43 +303,11 @@ class ImageProcessor:
         for irrelevant_area in irrelevant_areas:
            
             #put the irrelevant areas together    
-            cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )
-    
-       
+            cummulated_irrelevant_areas = cv2.bitwise_or(irrelevant_area,cummulated_irrelevant_areas )  
 
         return cummulated_irrelevant_areas
-
-
-    def detectImporantArea(self, image, importantColorRanges):
-       
-        """ 
-       
-        Detects important Areas in the Image and returns adjusted Image.
-        -------              
-      
-        The Detection ofnimportant Areas is based on Color Ranges, which are  likely
-        to represent a part of a cow. Therefore, they can be considered to be important.
-        
-        -------              
-      
-        Parameters: 
-        -------                 
-        image (Image): Image to process. 
-        importantColorRange (HSV[1..*]): Color Range in HSV Color Model
-        
-
-        
-        Returns: 
-        -------              
-        adjusted Image 
-        
-        """  
-        self.filterConfig = importantColorRanges
-        
-        #possible_cow_area_mask = cv2.bitwise_not(negative_masks)
-
-        return image
-
+    
+    
     def segmentImage(self, image, config):
 
         """ 
@@ -354,10 +334,10 @@ class ImageProcessor:
         
         Returns: 
         -------              
-        New Image will be returned  
+        Image will be returned  
         
-        """   
-        
+        """ 
+
         self.threshConfig = config
         print(self.threshConfig.obtainThresholdingConfiguration())
 
@@ -366,8 +346,6 @@ class ImageProcessor:
             
            ## check if selected Thresholding Method = THRESHOLD. Enumeration Selection 
            # done by enumeration Config variable ENUM_SELECT_THRESHOLDING in ImageAnalysisController.py
-    
-
            if self.threshConfig.obtainThresholdingMethod() == ImageAnalysisConfiguration.SIMPLE_THRESHOLD_NAME:  
 
                rect, image = cv2.threshold(image, 
@@ -392,13 +370,5 @@ class ImageProcessor:
                                                          self.threshConfig.adaptiveThresholdingConfiguration.obtainBlockSize(),
                                                          self.threshConfig.adaptiveThresholdingConfiguration.obtainCSubtractor())               
                
-        return image        
-    
+        return image    
 
-
-
-
-
-#==========================================================================
-# END
-#==========================================================================

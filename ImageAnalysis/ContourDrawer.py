@@ -20,6 +20,12 @@ import numpy as np
 # CONSTANTS
 #==========================================================================
 
+# DRAWING MODE 1 means that its only 1 contour drawed once. In this SW-Architecute
+# other configuration is not usefull
+DRAWING_MODE_DEFAULT = 0
+DRAWING_MODE_ALL = -1
+
+DRAWING_RADIUS = 2
 
 #==========================================================================
 # FUNCTIONS
@@ -27,31 +33,26 @@ import numpy as np
 
 class ContourDrawer:
     
-    
-    
     """
     A class used to Draw Contours into an Image.
     ...
     
     Attributes
         ----------        
-    color: BGR
-        color for contour drawing.     
-    thickness: int
-        thickness of drawing. -1 means filling the contour instead of drawing lines 
       
     Methods - See descriptions below.
     -------
-    drawContourOutline(img, cnts, color, thickness=1)
-    drawContourPoints(img, cnts, color) 
-    fillConjtour(self, image, contours ):
+    drawContourOutline(image, contour, thickness, color)
+    drawContourPoints( image, contour, thickness, color) 
+    fillCircle(image, contour, thickness, color ):
     """ 
     
-        
+       
     def __init__(self):
         pass
-
-    def drawContourOutline(self, image, contours, color, thickness ):
+    
+    
+    def drawContourOutline(self, image, contours, color, thickness):
     
         """ 
        
@@ -64,22 +65,23 @@ class ContourDrawer:
         Parameters: 
         -------                 
         image (Image): Image use for drawing
-        contour: contours to draw 
+        contours: contours to draw 
         thickness: thickness of drawing lines. thickness = -1 means filling the contour with color
-
-        
+        color: BGR Drawing Color 
+   
         Returns: 
         -------              
-        Nothing will be returned. 
+        Image
       
         """
+
         for contour in contours:
-            cv2.drawContours(image, [contour], 0, color, thickness)
-        
+            cv2.drawContours(image, [contour], DRAWING_MODE_DEFAULT, color, thickness)
         return image
 
-    def drawContourPoints(self, image, contours, color, thickness):
 
+    def drawContourPoints(self, image, contours, color, thickness):
+      
         """ 
        
         draws points around a contour.
@@ -92,29 +94,28 @@ class ContourDrawer:
 
         -------                 
         image (Image): Image use for drawing
-        contour: contours to draw 
-
-        
+        contours: contours to draw 
+        thickness: thickness of drawing lines. thickness = -1 means filling the contour with color
+        color: BGR Drawing Color 
+    
         Returns: 
         -------              
         Image will be returned      
-        """    
-      
+        """   
+        
         for contour in contours:
 
             squeeze = np.squeeze(contour)
-
-    
-            for p in squeeze:
-                p = tuple(p.reshape(1, -1)[0])
+            for point in squeeze:
+                point = tuple(point.reshape(1, -1)[0])
                        
-                if len(p) > 1:     
-                    cv2.circle(image, p , 2, color, thickness)
+                if len(point) > 1:     
+                    cv2.circle(image, point , DRAWING_RADIUS, color, thickness)
                 
         return image
-    
+            
     def fillCircle(self, image, contours, color, thickness):
-       
+      
         """ 
        
         creats minimal enclosing Circle and fills it with color.
@@ -123,18 +124,20 @@ class ContourDrawer:
         This function is based on the library OpenCV and the corresponding function cv2.minEnclosingCircle.
         -------              
       
-        Parameters:         -------              
+        Parameters:                    
 
         -------                 
         image (Image): Image use for drawing
-        contour: contours to draw 
-
+        contours: contours to draw 
+        thickness: thickness of drawing lines. thickness = -1 means filling the contour with color
+        color: BGR Drawing Color 
+    
         
         Returns: 
         -------              
         Image will be returned      
-        """        
-          
+        """       
+                  
         for contour in contours:    
             # draw minimal circle around contour
             (x,y),radius = cv2.minEnclosingCircle(contour)
@@ -142,9 +145,6 @@ class ContourDrawer:
             radius = int(radius)
             # draw the circles in the originalImage, not the processing image (which is binary!).
             cv2.circle(image,center,radius,color,thickness)
-     
+            
         return  image
-    
-#==========================================================================
-# END
-#==========================================================================
+

@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 #==========================================================================
-# ContourDrawer.py – DESCRIPTIONS 
+# ContourFinder.py – DESCRIPTIONS 
 #==========================================================================
 
 """
@@ -32,6 +32,12 @@ ERROR_MSG = 'PAY ATTENTION! MORE THAN 1 CONTURE DETECTED AS LIGHT CONTUR'
 ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
 ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
 
+# MOMENT CONFIGURATION
+MU20 = 'mu20'
+MU02 = 'mu02'
+MU11 = 'mu11'
+  
+
 #==========================================================================
 # FUNCTIONS
 #==========================================================================
@@ -39,22 +45,22 @@ ADJUSTED_ANGLE_TITILE = 'MEASURED ANGLE AFTER ADJUSTMENT'
 class ContourFinder:
     
     """
-    A class used to Find and Filter Contours in an Image.
+    A class used to Find and Pre-Filter Contours
     ...
     
     Attributes
-        ----------        
+    ----------        
     finderConfig: FinderConfig
-        configuration for finding and filtering contours     
+        configuration for finding and Pre-Filtering contours     
 
     Methods - See descriptions below.
     -------
     findContours(img, cnts, color, thickness=1)
     filterContours(img, cnts, color) 
-    countAllContours()
-    countRelevantContours()
+    countContours()
     """ 
         
+    
     def __init__(self):
         self.finderConfig = None
 
@@ -80,71 +86,68 @@ class ContourFinder:
         contours (Contour): contours found
         processingImage (Image): Image for further processing
         
-        """          
+        """           
+ 
+
         print(finderConfig.obtainContourFinderConfiguration())
 
         contours, hierarchy = cv2.findContours(processingImage, eval(finderConfig.obtainFinderType()) , eval(finderConfig.obtainApproxType()) )
-        
-        contours, processingImage = self.filterContours(contours, processingImage, originalImage, finderConfig)
+        contours, processingImage = self.filterContours(processingImage, originalImage, finderConfig, contours)
         
         return (contours, processingImage)
 
-    def filterContours(self, contours, processingImage, originalImage, finderConfig ):
-        
+
+    def filterContours(self,  processingImage, originalImage, finderConfig, contours):
+  
         """ 
        
-        Filters Contours of an Image.
+        Pre-Filters Contours of an Image.
         -------              
       
-        This function is based on the library OpenCV and the corresponding function cv2.contourArea.
+        This function is based on the library OpenCV and the corresponding function cv2.contourArea and cv2.moments().
         -------              
       
         Parameters: 
         -------                 
-        contours (Contour): contours found retrieved from findContours()
         processingImage (Image): Image to use for Contour Filtering and Application
         originalImage (Image): Image for Contour Drawing. 
         finderConfig (FinderConfig): Configuration for Conour finder and Filtering
+        contours (Contour): contours found retrieved from findContours()
 
         
         Returns: 
         -------              
         contours (Contour): contours found
-        processingImage (Image): Image for further processing
+        orignalImage (Image): Original Image
         
         """  
-        filteredContours = []
-        for contour in contours:
-            
-            conturArea = cv2.contourArea(contour)
-            
-            # if circles dont have to be ignored, check for minArea and then add contour to the list conturArea >= minArea
-            if finderConfig.obtainDeleteCircles() == False and conturArea >= finderConfig.obtainMinArea():
+        
+        preFilteredContours = []
+        
+        if len(contours) >= 1: 
+            for contour in contours:
                 
-                filteredContours.append(contour)
-            
-            # if circles have to be ignored, only add them to the list if contour is no circle and conturArea >= minArea 
-            if finderConfig.obtainDeleteCircles() == True and conturArea >= finderConfig.obtainMinArea():
+                conturArea = cv2.contourArea(contour)
                 
-                # Calculate image moments of the detected contour
-                moments = cv2.moments(contour)
+                # if circles dont have to be ignored, check for minArea and then add contour to the list conturArea >= minArea
+                if finderConfig.obtainDeleteCircles() == False and conturArea >= finderConfig.obtainMinArea():
+                    preFilteredContours.append(contour)
                 
-                # determine eccentricity according to the book "Mastering OpenCV 4 with Python" written by Alberto Fernández Villán 
-                a1 = (moments['mu20'] + moments['mu02']) / 2
-                a2 = np.sqrt(4 * moments['mu11'] ** 2 + (moments['mu20'] - moments['mu02']) ** 2) / 2
-                eccentricity  = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
-                
-                               
-                if eccentricity  > ImageAnalysisConfiguration.ROUNDNESS_THRESHOLD:
-                    filteredContours.append(contour)
-            
-            
+                # if circles have to be ignored, only add them to the list if contour is no circle and conturArea >= minArea 
+                if finderConfig.obtainDeleteCircles() == True and conturArea >= finderConfig.obtainMinArea():
                     
-            #this image will now be our processingImage                
-            processingImage = originalImage
+                    # Calculate image moments of the detected contour
+                    moments = cv2.moments(contour)
+                    
+                    # determine eccentricity according to the book "Mastering OpenCV 4 with Python" written by Alberto Fernández Villán 
+                    a1 = (moments[MU20] + moments[MU02]) / 2
+                    a2 = np.sqrt(4 * moments[MU11] ** 2 + (moments[MU20] - moments[MU02]) ** 2) / 2
+                    eccentricity  = np.sqrt(1 - (a1 - a2) / (a1 + a2))                
+                                                  
+                    if eccentricity  > ImageAnalysisConfiguration.ROUNDNESS_THRESHOLD:
+                        preFilteredContours.append(contour)                                            
             
-            
-        return (filteredContours, processingImage)
+        return (preFilteredContours, originalImage)
 
 
     def countContours(self, contours):
@@ -174,3 +177,5 @@ class ContourFinder:
         print(str)
         
         return contourAmount
+
+

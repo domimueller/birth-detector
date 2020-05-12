@@ -35,9 +35,7 @@ class ImageReader:
     
     Attributes
         ----------        
-    filePathAndName: Filepath
-        File Path, File Name and corresponding Mime Type of the File to identify it in Filesystem. 
-   
+
     Methods
     -------
     readImage(self, filePathAndName )
@@ -72,9 +70,7 @@ class ImageReader:
       
         """  
 
-        
-        self.filePathAndName = filePathAndName       
-        return cv2.imread(self.filePathAndName.obtainFileNameAndPath())
+        return cv2.imread(filePathAndName.obtainFileNameAndPath())
 
 #==========================================================================
 # END

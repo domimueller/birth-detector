@@ -168,7 +168,7 @@ class TraitRecognitor:
         cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/7masks.jpg', lightBulb)
         
         #derive contours from mask of lightning 
-        lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
+        lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE );
             
         image = cv2.cvtColor(originalImage, cv2.COLOR_HSV2BGR)
 
