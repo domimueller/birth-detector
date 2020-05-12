@@ -117,7 +117,7 @@ class ContourFinder:
         
         Returns: 
         -------              
-        contours (Contour): contours found
+        contours (Contour): prefiltered contours 
         orignalImage (Image): Original Image
         
         """  

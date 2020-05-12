@@ -24,7 +24,6 @@ import numpy as np
 # other configuration is not usefull
 DRAWING_MODE_DEFAULT = 0
 DRAWING_MODE_ALL = -1
-
 DRAWING_RADIUS = 2
 
 #==========================================================================

@@ -16,8 +16,6 @@
 # IMPORT DECLARATIONS
 #==========================================================================
 
-## Import Classes for Functionality
-import numpy as np
 import cv2 
 import sys
 
@@ -40,7 +38,6 @@ import ContourDrawer
 import AdaptiveThresholdingConfiguration
 import AdaptiveThresholdingType
 import ApproximationType
-import BGR
 import BrightenConfiguration
 import ColorSpaceConversion
 import ColorSpaceConversionType
@@ -55,9 +52,6 @@ import MimeType
 import ThresholdingType
 import ThresholdingConfiguration
 import ThresholdingMethod
-import HSV
-import ColorRange
-import ContourFinderConfiguration 
 import ImageAnalysisConfiguration as globalConfig
 
 
@@ -70,13 +64,6 @@ import ImageAnalysisConfiguration as globalConfig
 # see: ImageAnalysisConfiguration as config
 
 
-TRAIT_RECOGNITOR_TITLE = '############ RESULT OF THE TRAIT RECOGNITOR ############'
-NEWLINE = '\n'
-
-INFORMATION_MSG_NO_COW = 'NO COW DETECTED IN THIS IMAGE. '
-INFORMATION_MSG_LATERAL_LYING_COW= 'IT APPEARS, THAT THE COW IS IN LATERAL LYING POSITION. CHECK THE CAMERA!'
-INFORMATION_MSG_STANDING_COW = 'IT APPEARS, THAT THE COW IS STANDING. PLEASE STAY PATIENT AND HANG ON!'
-INFORMATION_MSG_STANDING_COW_OR_NO_COW = 'ITS NOT SURE: EITHER THE COW IS STANDING OR NO COW IS DETECTED.'
 
 #==========================================================================
 # FUNCTIONS
@@ -214,6 +201,7 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
+        no parameters. 
 
         Returns: 
         -------              
@@ -272,7 +260,6 @@ class ImageAnalysisController:
                                                               ENUM_SELECT = globalConfig.ENUM_SELECT_FILTERING)
         
         self.processingImage = self.imageProcessor.filterImage(image = self.processingImage, config = filterConfig )
-        #self.Image = self.imageProcessor.filterImage(image = self.obtainImage(), config = filterConfig )
         
  
         #==================================
@@ -319,6 +306,7 @@ class ImageAnalysisController:
                 unimportantColorRanges.append(additionalColor )
         
         self.processingImage =  self.processingImage.copy() 
+       
         ## self.processingImage (returned image) is Binary Image!
         self.processingImage = self.imageProcessor.detectUnimporantArea( image = self.processingImage,
                                                            unimportantColorRanges = unimportantColorRanges)
@@ -502,7 +490,7 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        retrieved contours from findContours .
+        contours: retrieved contours from findContours .
         image: Image for analysis
         config: Contour Finder Config
         
@@ -510,35 +498,33 @@ class ImageAnalysisController:
         -------              
         lateralLyingContours: List with the detected an filtered contours for later lying
         standingContours list with standing contours, not yet important.
-        originalImage: OriginalImage
+        image: OriginalImage
         """  
 
         lateralLyingContours = []
         lateralLyingContours, originalImage = self.traitRecognitor.detectLateralLyingCow(contours, image,  config)
+       
         ## detection of standing contours no yet implemented
         standingContours = self.traitRecognitor.detectStandingCow(contours, image,  config)
-   
-        print(NEWLINE+NEWLINE )
-        print(TRAIT_RECOGNITOR_TITLE)
+        newline = globalConfig.NEWLINE
+        print(newline+newline)
+        print(globalConfig.TRAIT_RECOGNITOR_TITLE)
 
         # if typical Conours for standing and lying apprear, print the msg that lateral lying is detected.
         # It is better, if the farmer checks the camera and sees that the cow is no in an imminent birth position than
         # the farmer is beeing kept in the opinion that no action is needed.
-
-
         if standingContours is not None or lateralLyingContours is not None:
           
- 
 
              if len(lateralLyingContours) >= globalConfig.MIN_NUMBER_LYING_CONTOURS:   
-                print(INFORMATION_MSG_LATERAL_LYING_COW)  
+                print(globalConfig.INFORMATION_MSG_LATERAL_LYING_COW)  
                 self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
                                                          color=globalConfig.RED.obtainDrawingColor(),
                                                          thickness=globalConfig.THICKNESS_FILL)                         
 
              elif len(lateralLyingContours) < globalConfig.MIN_NUMBER_LYING_CONTOURS:  
-                print(INFORMATION_MSG_STANDING_COW_OR_NO_COW)
+                print(globalConfig.INFORMATION_MSG_STANDING_COW_OR_NO_COW)
 
                 self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
@@ -549,10 +535,10 @@ class ImageAnalysisController:
                                          drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
                                          color=globalConfig.RED.obtainDrawingColor(),
                                          thickness=globalConfig.THICKNESS_FILL)
-                    print(INFORMATION_MSG_NO_COW)
+                    print(globalConfig.INFORMATION_MSG_NO_COW)
 
         else:
-            print(INFORMATION_MSG_NO_COW)              
+            print(globalConfig.INFORMATION_MSG_NO_COW)              
        
         return (lateralLyingContours, standingContours, originalImage)
                     
@@ -561,8 +547,8 @@ class ImageAnalysisController:
        
         
         """ 
-       
-        Controls the Execution of the ScoreCalculator. Not yet implemented during Bachelor Thesis
+        ### Not yet implemented during Bachelor Thesis ###
+        Controls the Execution of the ScoreCalculator. 
         -------              
       
         This function controls the ScoreCalculator. The Calculation of the Score is 
@@ -581,6 +567,7 @@ class ImageAnalysisController:
         """  
      
     def controlImageWriter(self, filepathAndName, image):
+       
         """ 
        
         Controls the Execution of the ImageWriter.
@@ -620,12 +607,12 @@ class ImageAnalysisController:
       
         Parameters: 
         -------                 
-        processingImage: Image for analysis (Binary Image!)
+        image: Image for analysis (Binary Image!)
         finderConfig: ContourFinderConfiguration
         
         Returns: 
         contours : Contours retrieved
-        processingImage : Image
+        image : Image for further processing
       
         """  
         image = image.copy()
@@ -640,6 +627,7 @@ class ImageAnalysisController:
     
     
     def controlContourDrawer(self, contours, drawingMode, color, thickness):
+       
         """ 
        
         Controls the Execution of the ContourDrawer.
@@ -653,6 +641,8 @@ class ImageAnalysisController:
         -------                 
         contours: Contours derived from findContours()
         drawingMode: Mode for drawing: Circle, Points or Outline possible
+        color: Drawing Color as BRG
+        thickness: Drawing Line Thickness. -1 means filling the contour
         
         Returns: 
         -------              

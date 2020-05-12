@@ -26,30 +26,46 @@ import ColorRange
 
 
 
-#==========================================================================
-# CONSTANTS - CONFIGURATION OF THE IMAGE ANALYSIS CONTROLLER
+
+
+#=====================================================================================================================
+#=====================================================================================================================
+#
+# IMPPORTANT NOTES
+#
+# this part of the configuration is highly important and influences the results of the analysis a lot! 
+# this configuration part is quite specific to images. it is based on the position of the cow in the stable
+# and the lightning and brightness quality of the image
 #==========================================================================
 
-#### IMPORTANT Information! #####
+
+#Filepath and Filename for the Image Reader
+
+READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
+# reader file name without extension. by default extension is jpg, other confifuration can be provided below.
+READER_FILE_NAME = '2'
+
+
+
 
 # AdvancedUnimportantColorRange  defines, whether you already know, which areas of the image can be considered
 # to be unimportant. Knowing that, the Image Analysis will provide better results. If you do not do not have 
 # this knowledge, the corresponding variable needs to set to False. In any case, the information, that the light bulb
-# is at the very bright position will be used. 
+# is at the very bright position will be used, because this is a quite generic Information.
 ADVANCED_UNIMPORTANT_COLOR_RANGE = True
 
-# if the cow is laying straight in the box, set FILTER_BY_ANGLE to True. If the cow is lying anyhow, set it to false
+# if the cow is only able to laying straight in the box, set FILTER_BY_ANGLE to True. 
+# If the cow is lying next to an empty box and therefore able to lying anyhow, set FILTER_BY_ANGLE to false
 FILTER_BY_ANGLE = True
 
 
 
-
-#============================================
-###### UNIMPORTANT AREAS CONFIGURATION ######
-#============================================
-# Scale for rotated image
-SCALE = 0.75
-
+# If you now which areas of the image are not important, do the following_
+    # 1. Define Lower and upper Bound in HSV Color Space
+    # 2. Create a Color Range Object with the lower and upper Bound in Stept 1.
+    # 3. Add the Color Range Object to the list additionalUnimportantColorRanges
+    # 4. Be Patient And  Have Fun!
+    
 # light (HSV) Bounds
 LOWER_BOUND_LIGHT_FLIMMERING= HSV.HSV(hue=0, saturation=0, value=100)
 UPPER_BOUND_LIGHT_FLIMMERING= HSV.HSV(hue=360, saturation=100, value=255)
@@ -75,16 +91,25 @@ strawColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_STRAW, upperBou
 defaultColorRanges = [lightColorRange]
 additionalUnimportantColorRanges = [floorColorRange,]
 
-#Filepath and Filename for the Image Reader
 
-READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
-READER_FILE_NAME = '2'
 
+#=====================================================================================================================
+#=====================================================================================================================
+
+
+#==========================================================================
+# FURTHER CONFIGURATION OF THE IMAGE ANALYSIS CONTROLLER
+# this part of the configuration is more generic and does not really depend 
+# on the current analysed image.
+#==========================================================================
 
 #configuration for angle filtering
 LIGHT_BULB_ANGLE_EXPECTION= 90
 MIN_LEG_ANGLE_EXPECTION= 65
 MAX_LEG_ANGLE_EXPECTION= 125
+
+# Scale for rotated image
+SCALE = 0.75
 
 # determines, how many lateral lying contours are necessary to make prediction
 MIN_NUMBER_LYING_CONTOURS = 2
@@ -334,3 +359,11 @@ BLACK= BGR.BGR(blue=0, green=0, red=0)
 
 CONTOUR_NAME_STANDING = 'standingContours'
 CONTOUR_NAME_LATERAL_LYING = 'lateralLyingContours'
+
+TRAIT_RECOGNITOR_TITLE = '############ RESULT OF THE TRAIT RECOGNITOR ############'
+NEWLINE = '\n'
+
+INFORMATION_MSG_NO_COW = 'NO COW DETECTED IN THIS IMAGE. '
+INFORMATION_MSG_LATERAL_LYING_COW= 'IT APPEARS, THAT THE COW IS IN LATERAL LYING POSITION. CHECK THE CAMERA!'
+INFORMATION_MSG_STANDING_COW = 'IT APPEARS, THAT THE COW IS STANDING. PLEASE STAY PATIENT AND HANG ON!'
+INFORMATION_MSG_STANDING_COW_OR_NO_COW = 'ITS NOT SURE: EITHER THE COW IS STANDING OR NO COW IS DETECTED.'
