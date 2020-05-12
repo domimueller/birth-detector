@@ -1,8 +1,9 @@
 # Description
-A Project to use Images in order to recognize whether a Birth is already in Progress, imminent, or the Cow is not yet ready. Focus on detection of lateryl lying.
+A Project to use Images of Cows in order to recognize whether a Birth is already in Progress, imminent, or the Cow is not yet ready. Focus on detection of lateral lying.
 
 # Person Responsible
 Dominique Müller
+dominique_mueller@gmx.ch
 
 # IMPORTANT NOTES
 
@@ -26,29 +27,31 @@ FILTER_BY_ANGLE determines, whether the contours are beeing filtered by angle.
 If the cow is only able to lay straight in the box, set FILTER_BY_ANGLE to True. This will improve the results.
 If the cow is lying next to an empty box and therefore able to lying anyhow, set FILTER_BY_ANGLE to False
 
+The Configuration is located in ImageAnalysisHousekeeping/ImageAnalysisConfiguration.py
+
 If you do have any further questions or remarks, please do not hesitate to contact me: dominique_mueller@gmx.ch
 
 # Contributors And Acknowledgment
-## the lecturers   
+## The lecturers   
 - Prof. Dr. Patrizio Collovà
 - Dr. Klaus-Georg Deck
 
-for providing Guidance during the Bachelor Thesis
+For providing Guidance during the Bachelor Thesis.
 
-## the Veterinarian 
+## The Veterinarians 
 - Prof. Dr. med. vet. Gaby Hirsbrunner
 - Prof. Dr. Samuel Kohler
 
-for providing knowledge in their field
+For providing knowledge in their field.
 
-## the Sponsor of the Bachelor Thesis and his wife  
+## The Sponsor of the Bachelor Thesis and his wife  
 - Nelly Müller
 - Peter Müller
 
-for proding knowledge and improving the results of image capturing with empirical work
+For proving knowledge and improving the results of image capturing with empirical work.
 
-## the employer of the Author
+## The employer of the Author
 - cubetech GmbH (www.cubetech.ch) and especially the CEO and Founder Christoph Ackermann
 
-for prociding the relevant server infrastructure.
+For providing the relevant server infrastructure.
 

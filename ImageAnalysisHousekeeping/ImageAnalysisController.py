@@ -464,18 +464,6 @@ class ImageAnalysisController:
         
         
         lateralLyingContours, standingContours, analysedImage  = self.controlTraitRecognitor(contours, analysisImage,  finderConfig)
-
-
-  
-        #==================================
-        # write intermediate result to file
-        #==================================
-        writerFilepath = Filepath.Filepath(filePath = globalConfig.WRITER_FILE_PATH_MAIN, 
-                                           fileName = globalConfig.WRITER_FILE_NAME_ANALYSED_IMAGE,  
-                                           mimeType= writerMimeType)
-        
-        
-        self.controlImageWriter( filepathAndName=writerFilepath, image= self.processingImage ) 
         
         
     def controlTraitRecognitor(self, contours, image, config):
@@ -509,7 +497,6 @@ class ImageAnalysisController:
         newline = globalConfig.NEWLINE
         print(newline+newline)
         print(globalConfig.TRAIT_RECOGNITOR_TITLE)
-
         # if typical Conours for standing and lying apprear, print the msg that lateral lying is detected.
         # It is better, if the farmer checks the camera and sees that the cow is no in an imminent birth position than
         # the farmer is beeing kept in the opinion that no action is needed.
@@ -523,8 +510,8 @@ class ImageAnalysisController:
                                                          color=globalConfig.RED.obtainDrawingColor(),
                                                          thickness=globalConfig.THICKNESS_FILL)                         
 
-             elif len(lateralLyingContours) < globalConfig.MIN_NUMBER_LYING_CONTOURS:  
-                print(globalConfig.INFORMATION_MSG_STANDING_COW_OR_NO_COW)
+             elif len(lateralLyingContours) < globalConfig.MIN_NUMBER_LYING_CONTOURS and len(lateralLyingContours) >0 :  
+                print(globalConfig.INFORMATION_MSG_STANDING_COW)
 
                 self.processingImage = self.controlContourDrawer(contours =lateralLyingContours, 
                                                          drawingMode = globalConfig.OUTLINE_DRAWING_MODE, 
@@ -537,9 +524,13 @@ class ImageAnalysisController:
                                          thickness=globalConfig.THICKNESS_FILL)
                     print(globalConfig.INFORMATION_MSG_NO_COW)
 
+ 
+        elif standingContours is None and len(lateralLyingContours) == 0:
+            print(globalConfig.INFORMATION_MSG_STANDING_COW_OR_NO_COW)              
+
         else:
             print(globalConfig.INFORMATION_MSG_NO_COW)              
-       
+
         return (lateralLyingContours, standingContours, originalImage)
                     
 

@@ -53,6 +53,21 @@ DEGREE_MODULO = 360
 ANGLE_INVERTER = -1
 BLANK_IMG_COLOR = 255
 
+##### For Demonstration Purpose. Write down the intermidiate steps
+
+
+PATH = globalConfig.WRITER_FILE_PATH_MAIN 
+
+FILENAME_MASK = '7LightBulbMasks.jpg'
+FILENAME_FILTERED_BY_ANGLE = '8filteredByAngle.jpg'
+FILENAME_FILTERED_BY_RATIOS = '9filteredByRatios.jpg'
+FILENAME_FILTERED_BY_SIMILARITY = '10filteredBySimilarity.jpg'
+
+maskFileNamePath = PATH + FILENAME_MASK
+angleFileNamePath = PATH + FILENAME_FILTERED_BY_ANGLE
+ratiosFileNamePath = PATH + FILENAME_FILTERED_BY_RATIOS
+similarityFileNamePath = PATH + FILENAME_FILTERED_BY_SIMILARITY
+
 class TraitRecognitor:
     
     """
@@ -134,12 +149,31 @@ class TraitRecognitor:
         
         filteredByRatios, filteredBySimilarity  = [],  []
         minAreaRectImage = image.copy()
+        
+        for contour in contours: 
+            ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
+            # calculate the rectangle with minimal area around the contour
+            rotated_rect = cv2.minAreaRect(contour)
+            (x, y), (width, height), rotatedRectAngle = rotated_rect
+       
+            # calculate box and draw the rectangle
+            box = cv2.boxPoints(rotated_rect)
+            box = np.int0(box)
+            cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)  
 
-        filteredByAngle = self.filterByAngle( image, contours, config)        
-        filteredByRatios = self.filterByGeometricRatios( image, contours, filteredByAngle)  
-        filteredBySimilarity = self.matchShapes(image, contours, filteredByRatios)
-               
-        return (filteredBySimilarity, minAreaRectImage)   
+
+        filteredByAngle = self.filterByAngle( minAreaRectImage, contours, config)        
+        filteredByRatios = self.filterByGeometricRatios( minAreaRectImage, contours, filteredByAngle)  
+        
+        # return filteredByRatios because filteredBySimilarity is zero if only one Contour is left
+        filteredBySimilarity = self.matchShapes(minAreaRectImage, contours, filteredByRatios)
+        
+        if len(filteredBySimilarity) < 2:
+            filteredContours = filteredByRatios
+        else:
+            filteredContours = filteredBySimilarity
+            
+        return (filteredContours, minAreaRectImage)   
 
 
     def detectRotationAngle(self, image, config):
@@ -180,7 +214,7 @@ class TraitRecognitor:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         
         lightBulb = cv2.inRange(image, lowerBound , upperBound)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/7masks.jpg', lightBulb)
+        cv2.imwrite(maskFileNamePath, lightBulb)
         
         #derive contours from mask of lightning 
         lightBulbContours, hierachy = cv2.findContours( lightBulb, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE );
@@ -268,29 +302,10 @@ class TraitRecognitor:
             for contour in contours:
                filteredByAngle.append(contour)
              
-                ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
-               # calculate the rectangle with minimal area around the contour
-               rotated_rect = cv2.minAreaRect(contour)
-               (x, y), (width, height), rotatedRectAngle = rotated_rect
-               
-               # calculate box and draw the rectangle
-               box = cv2.boxPoints(rotated_rect)
-               box = np.int0(box)
-               cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)               
+              
         else: 
             for contour in contours:
                           
-                ### DRAW THE MIN AREA RECTAGNLE FOR BETTER UNDERSTANDING OF THE CONTOURS ###
-                # calculate the rectangle with minimal area around the contour
-               
-                rotated_rect = cv2.minAreaRect(contour)
-                (x, y), (width, height), rotatedRectAngle = rotated_rect
-                # calculate box and draw the rectangle
-              
-                box = cv2.boxPoints(rotated_rect)
-                box = np.int0(box)
-                cv2.polylines(minAreaRectImage, [box], True, globalConfig.BLACK.obtainDrawingColor(), globalConfig.THICKNESS_THICK)
-                
                 ### MEASURE THE ANGLE OF THE CONTOURS FITTING ELLIPSE ###
                 ## contour Approximation to a Polynon
                 peri = cv2.arcLength(contour, True)
@@ -335,18 +350,11 @@ class TraitRecognitor:
         positiveRotation = cv2.getRotationMatrix2D(imageCenter, positivRotationAngle, globalConfig.SCALE)
         negativeRotation = cv2.getRotationMatrix2D(imageCenter, negativeRotationAngle, globalConfig.SCALE)
         
-        # writing this images will show the result of this step
+        # writing this images will show the result of this step --> writing not required at the moment
         posiveRotatedImage = cv2.warpAffine(analysisImage, positiveRotation, (h, w))
         negativeRotatedImage = cv2.warpAffine(analysisImage, negativeRotation, (h, w))
-        
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/8minAreaRect_image.jpg', minAreaRectImage)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/9positiveRotatedImage.jpg', posiveRotatedImage)
-        
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/8minAreaRect_image.jpg', minAreaRectImage)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/9positiveRotatedImage.jpg', negativeRotatedImage)
-         
+                
 
-        
        #=================================================================================
         # DRAW THE IMAGE TO A HAVE A NICE OVERVIEW 
         # first, contours are been drawed in an image
@@ -357,7 +365,7 @@ class TraitRecognitor:
         allContoursImage = minAreaRectImage.copy()        
         allContoursImage = cv2.drawContours(allContoursImage, contours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         filteredByAngleImage = cv2.drawContours(allContoursImage, filteredByAngle, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/10filteredByAngle.jpg', filteredByAngleImage)
+        cv2.imwrite(angleFileNamePath, filteredByAngleImage)
         
         return filteredByAngle
     
@@ -448,7 +456,7 @@ class TraitRecognitor:
     
         allContoursImage = cv2.drawContours(allContoursImage, allContours, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         ratioFilteringImage = cv2.drawContours(allContoursImage, fliteredByRatios, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/11filteredByRatios.jpg', ratioFilteringImage)
+        cv2.imwrite(ratiosFileNamePath, ratioFilteringImage)
        
         return fliteredByRatios
         
@@ -530,7 +538,7 @@ class TraitRecognitor:
     
         whiteimage = cv2.drawContours(whiteimage, fliteredByRatiosNoAngle, -1,  globalConfig.GREEN.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
         similarityFilteringImage = cv2.drawContours(whiteimage, filteredBySimilarity, -1, globalConfig.RED.obtainDrawingColor(), globalConfig.THICKNESS_FILL)
-        cv2.imwrite('C:/Users/domim/OneDrive/Desktop/bilder/neuetests/13filteredBySimilarityNoAngle.jpg', similarityFilteringImage)
+        cv2.imwrite(similarityFileNamePath, similarityFilteringImage)
        
         return filteredBySimilarity
 

@@ -18,6 +18,9 @@
 
 import sys
 sys.path.append('../VO-Library')
+sys.path.append('../Testdata')
+sys.path.append('../Testresults')
+
 
 ## Import Value Objects
 import HSV
@@ -41,9 +44,9 @@ import ColorRange
 
 #Filepath and Filename for the Image Reader
 
-READER_FILE_PATH = 'C:/Users/domim/OneDrive/Desktop/bilder/seitlich/'
+READER_FILE_PATH = '../Testdata/'
 # reader file name without extension. by default extension is jpg, other confifuration can be provided below.
-READER_FILE_NAME = '2'
+READER_FILE_NAME = '5'
 
 
 
@@ -89,7 +92,7 @@ strawColorRange = ColorRange.ColorRange(lowerBound = LOWER_BOUND_STRAW, upperBou
 
 
 defaultColorRanges = [lightColorRange]
-additionalUnimportantColorRanges = [floorColorRange,]
+additionalUnimportantColorRanges = [floorColorRange ]
 
 
 
@@ -105,15 +108,15 @@ additionalUnimportantColorRanges = [floorColorRange,]
 
 #configuration for angle filtering
 LIGHT_BULB_ANGLE_EXPECTION= 90
-MIN_LEG_ANGLE_EXPECTION= 65
-MAX_LEG_ANGLE_EXPECTION= 125
+MIN_LEG_ANGLE_EXPECTION= 70
+MAX_LEG_ANGLE_EXPECTION= 110
 
 # Scale for rotated image
 SCALE = 0.75
 
 # determines, how many lateral lying contours are necessary to make prediction
 MIN_NUMBER_LYING_CONTOURS = 2
-MIN_NUMBER_LYING_CONTOURS = 1
+MIN_NUMBER_STANDING_CONTOURS = 1
 ## configuration for shape analysis
 ROUNDNESS_THRESHOLD = 0.7
 EXTENT_MAX = 0.5
@@ -143,16 +146,15 @@ WRITER_MINOR = 'jpeg'
 WRITER_EXTENSION = 'jpg'
 
 # Prepare FilePaths to write . 
-WRITER_FILE_PATH_MAIN = 'C:/Users/domim/OneDrive/Desktop/bilder/neuetests/'
+WRITER_FILE_PATH_MAIN = '../Testresults/'
 
 # Prepare FileNames to write . 
-WRITER_FILE_NAME_BRIGHTENED = '1brightenedImage'
+WRITER_FILE_NAME_BRIGHTENED = '1originalImage'
 WRITER_FILE_NAME_FILTERED = '2filteredImage'
 WRITER_FILE_NAME_UNIMPORTANT_AREAS_MASK = '3unimportantAreaMask'
 WRITER_FILE_NAME_UNIMPORTANT_AREAS_IMAGE = '4unimportantAreaimage'
 WRITER_FILE_NAME_THRESHOLDED_MASK = '5thresholdedMask'
 WRITER_FILE_NAME_THRESHOLDED_IMAGE = '6ContoursAfterThresholding'
-WRITER_FILE_NAME_ANALYSED_IMAGE = '7ContoursAfterTraitRecognition'
 WRITER_FILE_NAME_ANGLE_DEMO = '99AngleAdjustmentDemonstration'
 
 
