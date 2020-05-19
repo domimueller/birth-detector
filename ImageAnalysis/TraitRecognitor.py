@@ -241,9 +241,7 @@ class TraitRecognitor:
                     if int(len(filteredlightBulbsByArea)) == 1:
                         lightBulbAngle = angle % DEGREE_MODULO 
                         print(MEASURED_LIGHT_BULB_ANGLE_TITLE + str(angle))
-                                          
-    
-               
+                                                      
                         #  Ma and ma are Major Axis and Minor Axis lengths. angle ist orientation of Ellipse
                     else:
                         lightBulbAngle = (lightBulbAngle + angle)% DEGREE_MODULO 
